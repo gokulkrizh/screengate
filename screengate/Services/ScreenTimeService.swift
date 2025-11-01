@@ -22,6 +22,7 @@ class ScreenTimeService: ObservableObject {
     private var authorizationObserver: NSObjectProtocol?
 
     // MARK: - Shared Instance
+    @MainActor
     static let shared = ScreenTimeService()
 
     private init() {

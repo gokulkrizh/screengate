@@ -8,70 +8,39 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var viewModel = ContentViewModel()
+    @State private var selectedTab = 0
 
     var body: some View {
-        NavigationView {
-            VStack {
-                if viewModel.isLoading {
-                    ProgressView("Loading content...")
-                        .padding()
-                } else if let errorMessage = viewModel.errorMessage {
-                    Text(errorMessage)
-                        .foregroundColor(.red)
-                        .padding()
-                } else {
-                    List {
-                        ForEach(viewModel.contentItems) { item in
-                            ContentItemView(item: item) {
-                                viewModel.toggleCompletion(for: item)
-                            }
-                        }
-                        .onDelete(perform: viewModel.deleteItem)
-                    }
-                    .listStyle(PlainListStyle())
+        TabView(selection: $selectedTab) {
+            // Dashboard Tab
+            DashboardView()
+                .tabItem {
+                    Label("Dashboard", systemImage: "house.fill")
                 }
-            }
-            .navigationTitle("ScreenGate")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Add") {
-                        viewModel.addNewItem(
-                            title: "New Item",
-                            subtitle: "Added at \(Date().formatted(date: .omitted, time: .shortened))"
-                        )
-                    }
+                .tag(0)
+
+            // Restrictions Tab
+            AppSelectionView()
+                .tabItem {
+                    Label("Restrictions", systemImage: "shield.fill")
                 }
-            }
+                .tag(1)
+
+            // Intentions Tab
+            IntentionLibraryView()
+                .tabItem {
+                    Label("Intentions", systemImage: "brain.head.profile")
+                }
+                .tag(2)
+
+            // Settings Tab
+            SettingsView()
+                .tabItem {
+                    Label("Settings", systemImage: "gearshape.fill")
+                }
+                .tag(3)
         }
-    }
-}
-
-struct ContentItemView: View {
-    let item: ContentModel
-    let onTap: () -> Void
-
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(item.title)
-                    .font(.headline)
-                    .strikethrough(item.isCompleted, color: .primary)
-                Text(item.subtitle)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-
-            Spacer()
-
-            Image(systemName: item.isCompleted ? "checkmark.circle.fill" : "circle")
-                .foregroundColor(item.isCompleted ? .green : .gray)
-                .font(.title2)
-        }
-        .contentShape(Rectangle())
-        .onTapGesture {
-            onTap()
-        }
+        .accentColor(.blue)
     }
 }
 

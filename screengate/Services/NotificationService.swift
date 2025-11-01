@@ -23,6 +23,7 @@ class NotificationService: NSObject, ObservableObject {
     // MARK: - Shared Instance
     static let shared = NotificationService()
 
+    @MainActor
     init(screenTimeService: ScreenTimeService = .shared) {
         self.screenTimeService = screenTimeService
         super.init()

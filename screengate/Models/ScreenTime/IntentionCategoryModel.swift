@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI
 
 // MARK: - Intention Category Model
 
@@ -50,6 +51,16 @@ enum IntentionCategory: String, Codable, CaseIterable, Identifiable {
         case .reflection: return "pink"
         case .movement: return "green"
         case .quickBreak: return "orange"
+        }
+    }
+
+    var swiftUIColor: Color {
+        switch self {
+        case .breathing: return .blue
+        case .mindfulness: return .purple
+        case .reflection: return .pink
+        case .movement: return .green
+        case .quickBreak: return .orange
         }
     }
 

@@ -288,7 +288,7 @@ class RestrictionViewModel: ObservableObject {
         loadSavedSelection()
     }
 
-    private func loadRestrictions() {
+    func loadRestrictions() {
         restrictions = appRestrictionManager.getActiveRestrictions()
         print("📂 Loaded \(restrictions.count) app restrictions")
     }

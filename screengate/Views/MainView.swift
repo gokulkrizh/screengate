@@ -10,6 +10,7 @@ import SwiftUI
 struct MainView: View {
     @State private var showSplash = true
     @State private var showOnboarding = false
+    @EnvironmentObject var deepLinkManager: DeepLinkManager
 
     var body: some View {
         Group {
@@ -19,7 +20,20 @@ struct MainView: View {
                 OnboardingView {
                     showOnboarding = false
                 }
+            } else if deepLinkManager.shouldShowIntention {
+                // Show intention screen when deep link is received
+                IntentionContainerView(
+                    intention: deepLinkManager.currentIntention,
+                    sourceAppInfo: deepLinkManager.sourceAppInfo
+                )
+                .onDisappear {
+                    // Reset deep link state after completion
+                    deepLinkManager.shouldShowIntention = false
+                    deepLinkManager.currentIntention = nil
+                    deepLinkManager.sourceAppInfo = nil
+                }
             } else {
+                // Show main Screen Time navigation
                 ContentView()
             }
         }
@@ -34,9 +48,13 @@ struct MainView: View {
                 }
             }
         }
+        .onChange(of: deepLinkManager.shouldShowIntention) {
+            print("🔗 Deep link navigation: \(deepLinkManager.shouldShowIntention ? "Showing intention" : "Showing main app")")
+        }
     }
 }
 
 #Preview {
     MainView()
+        .environmentObject(DeepLinkManager())
 }
