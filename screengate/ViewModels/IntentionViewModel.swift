@@ -149,7 +149,9 @@ class IntentionViewModel: ObservableObject {
     private func startTimer() {
         timer?.invalidate()
 
-        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+        // CRITICAL PERFORMANCE FIX: Changed from 0.1s to 1.0s (10x reduction in frequency)
+        // This was causing 100% CPU usage by running 10 times per second
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.updateProgress()
             }

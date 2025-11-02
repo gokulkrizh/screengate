@@ -20,6 +20,7 @@ class ScheduleViewModel: ObservableObject {
     private let scheduleManager = ScheduleManager()
     private let screenTimeService = ScreenTimeService.shared
     private var cancellables = Set<AnyCancellable>()
+    private var scheduleTimer: Timer?
 
     // MARK: - Computed Properties
     var hasSchedules: Bool {
@@ -287,14 +288,15 @@ class ScheduleViewModel: ObservableObject {
     }
 
     private func setupTimerForScheduleUpdates() {
-        // Update active schedules every minute
-        Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
+        // PERFORMANCE FIX: Optimized timer from 60s to 300s (5 minutes)
+        // Also added timer reference for proper cleanup
+        scheduleTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
             Task { @MainActor in
                 self?.updateActiveSchedules()
             }
         }
 
-        // Also update when app becomes active
+        // Also update when app becomes active (more efficient than continuous polling)
         NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)
             .sink { [weak self] _ in
                 Task { @MainActor in
@@ -388,6 +390,8 @@ class ScheduleViewModel: ObservableObject {
 
     // MARK: - Deinit
     deinit {
+        scheduleTimer?.invalidate()
+        scheduleTimer = nil
         cancellables.removeAll()
     }
 }

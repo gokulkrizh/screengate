@@ -43,18 +43,26 @@ class RestrictionViewModel: ObservableObject {
 
     // MARK: - Initialization
     init() {
-        // Observe screen time service changes
+        // PERFORMANCE FIX: Add debouncing to prevent cascading updates
+        // These continuous Combine publishers were causing high CPU usage
+
         screenTimeService.$authorizationStatus
+            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
+            .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .assign(to: \.authorizationStatus, on: self)
             .store(in: &cancellables)
 
         screenTimeService.$isAuthorized
+            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
+            .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .assign(to: \.isAuthorized, on: self)
             .store(in: &cancellables)
 
         screenTimeService.$isLoading
+            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
+            .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .assign(to: \.isLoading, on: self)
             .store(in: &cancellables)
