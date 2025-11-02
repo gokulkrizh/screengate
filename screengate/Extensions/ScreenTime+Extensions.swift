@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 import FamilyControls
 import ManagedSettings
 import DeviceActivity
@@ -85,10 +86,10 @@ extension FamilyActivitySelection {
 // MARK: - Authorization Center Extensions
 
 extension FamilyControls.AuthorizationCenter {
-    /// Monitor authorization status changes
+    /// Monitor authorization status changes using event-driven approach
     func authorizationStatusPublisher() -> AnyPublisher<FamilyControls.AuthorizationStatus, Never> {
-        return Timer.publish(every: 1.0, on: .main, in: .common)
-            .autoconnect()
+        return NotificationCenter.default
+            .publisher(for: UIApplication.didBecomeActiveNotification)
             .compactMap { [weak self] _ in
                 self?.authorizationStatus
             }
@@ -178,7 +179,7 @@ extension DeviceActivityCenter {
     func startMonitoringSafely(
         _ name: DeviceActivityName,
         during schedule: DeviceActivitySchedule
-    ) -> Result<Void, Error> {
+    ) -> Result<Void, Error> { 
         do {
             try startMonitoring(name, during: schedule)
             return .success(())

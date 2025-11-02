@@ -58,6 +58,11 @@ class ScreenTimeService: ObservableObject {
         isAuthorized = (authorizationStatus == .approved)
     }
 
+    /// Manually refresh authorization status (call when user returns from Settings)
+    func refreshAuthorizationStatus() {
+        checkAuthorizationStatus()
+    }
+
     // MARK: - App Selection Management
 
     /// Save selected apps and categories
