@@ -197,6 +197,11 @@ struct AgeAndOccupationView: View {
 struct ScreenTimePermissionView: View {
     let onNext: () -> Void
 
+    @StateObject private var screenTimeService = ScreenTimeService.shared
+    @State private var isLoading = false
+    @State private var showingAlert = false
+    @State private var alertMessage = ""
+
     var body: some View {
         VStack(spacing: 24) {
             // Title
@@ -231,15 +236,50 @@ struct ScreenTimePermissionView: View {
                     }
 
                     Button("Grant Screen Time Access") {
-                        // Request Screen Time permission
-                        onNext()
+                        requestScreenTimeAccess()
                     }
                     .buttonStyle(PrimaryButtonStyle())
+                    .disabled(isLoading)
                 }
                 .padding(.horizontal)
             }
         }
         .padding()
+        .alert("Screen Time Access", isPresented: $showingAlert) {
+            Button("OK") {
+                if screenTimeService.isAuthorized {
+                    onNext()
+                }
+            }
+        } message: {
+            Text(alertMessage)
+        }
+    }
+
+    private func requestScreenTimeAccess() {
+        isLoading = true
+
+        Task {
+            do {
+                try await screenTimeService.requestAuthorization()
+                await MainActor.run {
+                    isLoading = false
+                    if screenTimeService.isAuthorized {
+                        alertMessage = "Screen Time access granted successfully!"
+                        showingAlert = true
+                    } else {
+                        alertMessage = "Screen Time access was denied. You can enable it later in Settings."
+                        showingAlert = true
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    isLoading = false
+                    alertMessage = "Failed to request Screen Time access: \(error.localizedDescription)"
+                    showingAlert = true
+                }
+            }
+        }
     }
 }
 
@@ -302,6 +342,11 @@ struct PersonalizedProjectionView: View {
 struct CompletionView: View {
     let onFinish: () -> Void
 
+    @StateObject private var screenTimeService = ScreenTimeService.shared
+    @State private var isLoading = false
+    @State private var showingAlert = false
+    @State private var alertMessage = ""
+
     var body: some View {
         VStack(spacing: 30) {
             Spacer()
@@ -324,12 +369,67 @@ struct CompletionView: View {
 
             Spacer()
 
-            Button("Start Using ScreenGate") {
-                onFinish()
+            VStack(spacing: 16) {
+                if !screenTimeService.isAuthorized {
+                    Text("⚠️ Screen Time Access Required")
+                        .font(.subheadline)
+                        .foregroundColor(.orange)
+                        .multilineTextAlignment(.center)
+
+                    Button("Grant Screen Time Access") {
+                        requestScreenTimeAccess()
+                    }
+                    .buttonStyle(SecondaryButtonStyle())
+                }
+
+                Button("Start Using ScreenGate") {
+                    if screenTimeService.isAuthorized {
+                        onFinish()
+                    } else {
+                        alertMessage = "Please grant Screen Time access to use ScreenGate's full features."
+                        showingAlert = true
+                    }
+                }
+                .buttonStyle(PrimaryButtonStyle())
+                .disabled(isLoading && !screenTimeService.isAuthorized)
             }
-            .buttonStyle(PrimaryButtonStyle())
             .padding(.horizontal)
         }
         .padding()
+        .alert("Screen Time Access", isPresented: $showingAlert) {
+            Button("OK") { }
+        } message: {
+            Text(alertMessage)
+        }
+        .onAppear {
+            // Check authorization status when view appears
+            screenTimeService.checkAuthorizationStatus()
+        }
+    }
+
+    private func requestScreenTimeAccess() {
+        isLoading = true
+
+        Task {
+            do {
+                try await screenTimeService.requestAuthorization()
+                await MainActor.run {
+                    isLoading = false
+                    if screenTimeService.isAuthorized {
+                        alertMessage = "Screen Time access granted successfully!"
+                        showingAlert = true
+                    } else {
+                        alertMessage = "Screen Time access was denied. You can enable it later in Settings."
+                        showingAlert = true
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    isLoading = false
+                    alertMessage = "Failed to request Screen Time access: \(error.localizedDescription)"
+                    showingAlert = true
+                }
+            }
+        }
     }
 }

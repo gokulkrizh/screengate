@@ -38,19 +38,17 @@ class ScreenTimeService: ObservableObject {
         isLoading = true
         defer { isLoading = false }
 
-        return try await withCheckedThrowingContinuation { continuation in
-            authorizationCenter.requestAuthorization { result in
-                Task { @MainActor in
-                    self.checkAuthorizationStatus() // Update status from authorization center
-                    self.isAuthorized = (self.authorizationStatus == .approved)
-
-                    if self.authorizationStatus == .approved {
-                        continuation.resume()
-                    } else {
-                        continuation.resume(throwing: ScreenTimeError.authorizationDenied)
-                    }
-                }
+        do {
+            // Use the modern requestAuthorization(for:) API
+            try await authorizationCenter.requestAuthorization(for: .individual)
+            Task { @MainActor in
+                self.checkAuthorizationStatus() // Update status from authorization center
             }
+        } catch {
+            Task { @MainActor in
+                self.checkAuthorizationStatus() // Update status even on failure
+            }
+            throw ScreenTimeError.authorizationFailed(error)
         }
     }
 
@@ -343,6 +341,7 @@ class ScreenTimeService: ObservableObject {
 
 enum ScreenTimeError: LocalizedError {
     case authorizationDenied
+    case authorizationFailed(Error)
     case invalidSelection
     case configurationFailed
 
@@ -350,6 +349,8 @@ enum ScreenTimeError: LocalizedError {
         switch self {
         case .authorizationDenied:
             return "Screen Time authorization was denied. Please enable Screen Time permissions in Settings."
+        case .authorizationFailed(let error):
+            return "Failed to request Screen Time authorization: \(error.localizedDescription)"
         case .invalidSelection:
             return "Invalid app or category selection."
         case .configurationFailed:
