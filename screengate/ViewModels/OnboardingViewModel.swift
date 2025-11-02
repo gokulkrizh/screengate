@@ -6,6 +6,12 @@
 //
 
 import SwiftUI
+import Foundation
+
+// MARK: - Notification Extension
+extension Notification.Name {
+    static let onboardingCompleted = Notification.Name("onboardingCompleted")
+}
 
 @MainActor
 @Observable
@@ -48,9 +54,12 @@ class OnboardingViewModel {
         updateProgress()
     }
 
-    private func completeOnboarding() {
+    func completeOnboarding() {
         isCompleted = true
         saveOnboardingData()
+
+        // Post notification that onboarding is completed
+        NotificationCenter.default.post(name: .onboardingCompleted, object: nil)
     }
 
     // MARK: - Progress

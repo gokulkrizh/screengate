@@ -341,6 +341,7 @@ struct PersonalizedProjectionView: View {
 // MARK: - Completion View
 struct CompletionView: View {
     let onFinish: () -> Void
+    let completeOnboarding: () -> Void
 
     @StateObject private var screenTimeService = ScreenTimeService.shared
     @State private var isLoading = false
@@ -384,6 +385,7 @@ struct CompletionView: View {
 
                 Button("Start Using ScreenGate") {
                     if screenTimeService.isAuthorized {
+                        completeOnboarding()
                         onFinish()
                     } else {
                         alertMessage = "Please grant Screen Time access to use ScreenGate's full features."

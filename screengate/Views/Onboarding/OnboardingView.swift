@@ -371,7 +371,7 @@ struct OnboardingView: View {
                     }
 
                 case .completion:
-                    CompletionView(onFinish: onComplete)
+                    CompletionView(onFinish: onComplete, completeOnboarding: viewModel.completeOnboarding)
                 }
             }
         }
