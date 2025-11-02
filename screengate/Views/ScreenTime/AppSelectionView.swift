@@ -29,9 +29,26 @@ struct AppSelectionView: View {
             .padding()
         }
         .sheet(isPresented: $showFamilyActivityPicker) {
-            FamilyActivityPicker(
-                selection: $selectedApps
-            )
+            NavigationView {
+                FamilyActivityPicker(
+                    selection: $selectedApps
+                )
+                .navigationTitle("Select Apps & Categories")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Cancel") {
+                            showFamilyActivityPicker = false
+                        }
+                    }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Done") {
+                            showFamilyActivityPicker = false
+                        }
+                        .fontWeight(.semibold)
+                    }
+                }
+            }
         }
         .alert("Confirm App Selection", isPresented: $showingConfirmation) {
             Button("Cancel", role: .cancel) {

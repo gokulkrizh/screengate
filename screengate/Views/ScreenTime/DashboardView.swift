@@ -7,6 +7,16 @@ struct DashboardView: View {
     @StateObject private var intentionViewModel = IntentionViewModel()
     @StateObject private var notificationViewModel = NotificationViewModel()
 
+    // Tab navigation control
+    @Binding var selectedTab: Int
+
+    // Analytics sheet state
+    @State private var showAnalytics = false
+
+    init(selectedTab: Binding<Int> = .constant(0)) {
+        self._selectedTab = selectedTab
+    }
+
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -31,6 +41,9 @@ struct DashboardView: View {
         }
         .onAppear {
             loadData()
+        }
+        .sheet(isPresented: $showAnalytics) {
+            AnalyticsView()
         }
     }
 
@@ -114,7 +127,7 @@ struct DashboardView: View {
                 Spacer()
 
                 Button("Manage") {
-                    // Navigate to restrictions management
+                    selectedTab = 1 // Navigate to Restrictions tab
                 }
                 .font(.caption)
                 .foregroundColor(.blue)
@@ -182,7 +195,7 @@ struct DashboardView: View {
                     icon: "plus.app.fill",
                     color: .blue
                 ) {
-                    // Navigate to app selection
+                    selectedTab = 1 // Navigate to Restrictions tab
                 }
 
                 QuickActionCard(
@@ -191,7 +204,7 @@ struct DashboardView: View {
                     icon: "brain.head.profile",
                     color: .purple
                 ) {
-                    // Start quick intention
+                    selectedTab = 2 // Navigate to Intentions tab
                 }
 
                 QuickActionCard(
@@ -200,7 +213,7 @@ struct DashboardView: View {
                     icon: "chart.bar.fill",
                     color: .green
                 ) {
-                    // Navigate to analytics
+                    showAnalytics = true // Show analytics sheet
                 }
 
                 QuickActionCard(
@@ -209,7 +222,7 @@ struct DashboardView: View {
                     icon: "gearshape.fill",
                     color: .gray
                 ) {
-                    // Navigate to settings
+                    selectedTab = 3 // Navigate to Settings tab
                 }
             }
         }
