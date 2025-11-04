@@ -170,10 +170,15 @@ class RestrictionViewModel: ObservableObject {
 
         // Apply through screen time service
         screenTimeService.applyRestrictions()
+
+        // Note: Shield data will be saved by ShieldConfigurationExtension when shields are created
+        // This ensures we use real bundle identifiers from the Application objects
+
         isRestrictionsActive = true
 
         isLoading = false
         print("🔒 Applied restrictions to \(totalRestrictedItems) items")
+        print("📝 Shield data will be saved by ShieldConfigurationExtension with real bundle IDs")
     }
 
     /// Remove all restrictions

@@ -9,6 +9,12 @@ import ManagedSettings
 import ManagedSettingsUI
 import UIKit
 import FamilyControls
+import Foundation
+
+// Use NSLog for shield configuration logging
+func shieldConfigLog(_ message: String) {
+    NSLog("[ShieldConfig] \(message)")
+}
 
 // MARK: - Shield Configuration Data Manager
 class ShieldDataManager {
@@ -18,6 +24,11 @@ class ShieldDataManager {
     private let metadataKey = "ShieldMetadata"
 
     private init() {}
+
+    // Make sharedDefaults accessible to ShieldConfigurationExtension
+    var appGroupDefaults: UserDefaults? {
+        return sharedDefaults
+    }
 
     // MARK: - Metadata Storage
     func saveShieldMetadata(bundleIdentifier: String, metadata: ShieldMetadata) {
@@ -128,6 +139,12 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
 
     override func configuration(shielding application: Application) -> ShieldConfiguration {
         let bundleIdentifier = String(describing: application)
+
+        shieldConfigLog("🛡️ SHIELD CONFIGURATION CALLED")
+        shieldConfigLog("🛡️ App bundle ID: \(bundleIdentifier)")
+        shieldConfigLog("🛡️ App name: \(self.getAppName(from: bundleIdentifier))")
+        shieldConfigLog("🛡️ Timestamp: \(Date())")
+
         return createCustomShield(
             bundleIdentifier: bundleIdentifier,
             appName: getAppName(from: bundleIdentifier),
@@ -190,6 +207,15 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         // Save metadata for the shield action extension to use
         dataManager.saveShieldMetadata(bundleIdentifier: bundleIdentifier, metadata: metadata)
 
+        // ALSO save as SimpleRestriction for easier lookup in ShieldActionExtension
+        if let intention = selectedIntention, let appDisplayName = appName {
+            saveSimpleRestriction(
+                bundleIdentifier: bundleIdentifier,
+                appName: appDisplayName,
+                intention: intention
+            )
+        }
+
         // Create dynamic title and subtitle
         let title = getShieldTitle(appName: appName, isWebDomain: isWebDomain)
         let subtitle = getShieldSubtitle(
@@ -208,12 +234,44 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         )
 
         // Log shield configuration details for debugging
-        print("🛡️ Shield configuration created for \(bundleIdentifier)")
-        print("🛡️ Title: \(title)")
-        print("🛡️ Subtitle: \(subtitle)")
-        print("🛡️ Selected intention: \(selectedIntention?.name ?? "None")")
+        shieldConfigLog("🛡️ Shield configuration created for \(bundleIdentifier)")
+        shieldConfigLog("🛡️ Title: \(title)")
+        shieldConfigLog("🛡️ Subtitle: \(subtitle)")
+        shieldConfigLog("🛡️ Selected intention: \(selectedIntention?.name ?? "None")")
 
         return config
+    }
+
+    // MARK: - SimpleRestriction Saving
+    private func saveSimpleRestriction(bundleIdentifier: String, appName: String, intention: IntentionInfo) {
+        let simpleRestriction = SimpleRestriction(
+            bundleIdentifier: bundleIdentifier,
+            appName: appName,
+            intentionId: intention.id,
+            intentionName: intention.name,
+            intentionCategory: intention.category,
+            intentionDuration: intention.duration
+        )
+
+        // Get existing restrictions or create new array
+        var existingRestrictions: [SimpleRestriction] = []
+        if let data = dataManager.appGroupDefaults?.data(forKey: "SavedRestrictions"),
+           let restrictions = try? JSONDecoder().decode([SimpleRestriction].self, from: data) {
+            existingRestrictions = restrictions
+        }
+
+        // Add or update restriction for this app
+        if let index = existingRestrictions.firstIndex(where: { $0.bundleIdentifier == bundleIdentifier }) {
+            existingRestrictions[index] = simpleRestriction
+        } else {
+            existingRestrictions.append(simpleRestriction)
+        }
+
+        // Save back to UserDefaults
+        if let data = try? JSONEncoder().encode(existingRestrictions) {
+            dataManager.appGroupDefaults?.set(data, forKey: "SavedRestrictions")
+            shieldConfigLog("💾 Saved SimpleRestriction for \(bundleIdentifier) with intention: \(intention.name)")
+        }
     }
 
     // MARK: - Dynamic Content Generation

@@ -157,6 +157,12 @@ struct SettingsView: View {
 
                     // Progress Notifications
                     makeProgressNotificationsRow()
+
+                    Divider()
+                        .padding(.horizontal, 16)
+
+                    // Test Notification
+                    makeTestNotificationRow()
                 }
                 .background(Color(UIColor.systemBackground))
                 .cornerRadius(12)
@@ -287,6 +293,39 @@ struct SettingsView: View {
                 set: { _ in notificationViewModel.progressNotificationsEnabled.toggle() }
             ))
             .labelsHidden()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
+
+    private func makeTestNotificationRow() -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: "bell.badge")
+                .font(.title3)
+                .foregroundColor(.blue)
+                .frame(width: 24)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Test Notification")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+
+                Text("Send a test notification to verify the system is working")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            Button("Test") {
+                sendTestNotification()
+            }
+            .font(.caption)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Color.blue)
+            .foregroundColor(.white)
+            .cornerRadius(6)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
@@ -500,6 +539,19 @@ struct SettingsView: View {
         // Open support interface
         alertMessage = "Support interface would open here"
         showingAlert = true
+    }
+
+    private func sendTestNotification() {
+        Task {
+            await notificationViewModel.requestNotificationAuthorization()
+            if notificationViewModel.isNotificationEnabled {
+                notificationViewModel.sendTestNotification()
+                alertMessage = "Test notification sent! Check your notification center."
+            } else {
+                alertMessage = "Please enable notification access first."
+            }
+            showingAlert = true
+        }
     }
 }
 

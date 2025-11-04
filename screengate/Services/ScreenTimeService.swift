@@ -114,22 +114,23 @@ class ScreenTimeService: ObservableObject {
         // Clear existing restrictions
         clearRestrictions()
 
-        // Apply app restrictions using ManagedSettings
+        // Apply app restrictions using shield (keeps apps visible but shows intervention)
         if !selectedApps.applicationTokens.isEmpty {
-            // Convert ApplicationToken to Application and block the applications
-            let applicationsToBlock = selectedApps.applicationTokens.map { token in
-                Application(token: token) // Convert token to Application with proper label
-            }
-            managedSettingsStore.application.blockedApplications = Set(applicationsToBlock)
-            print("🛡️ Applied app restrictions for \(selectedApps.applicationTokens.count) apps")
+            // Use shield instead of block to keep apps visible in drawer
+            managedSettingsStore.shield.applications = selectedApps.applicationTokens
+            print("🛡️ Applied app shields for \(selectedApps.applicationTokens.count) apps")
         }
 
-        // Apply category restrictions using ManagedSettings
+        // Apply category restrictions using shield
         if !selectedApps.categoryTokens.isEmpty {
-            // Note: Category blocking API may not be available in current iOS version
-            // Categories will be handled by individual app blocking for now
-            print("⚠️ Category restrictions selected (\(selectedApps.categoryTokens.count) categories) but not directly blocked via API")
-            print("📝 Categories will be handled through shield configuration")
+            managedSettingsStore.shield.applicationCategories = .specific(selectedApps.categoryTokens)
+            print("🛡️ Applied category shields for \(selectedApps.categoryTokens.count) categories")
+        }
+
+        // Apply web domain restrictions using shield
+        if !selectedApps.webDomainTokens.isEmpty {
+            managedSettingsStore.shield.webDomains = selectedApps.webDomainTokens
+            print("🛡️ Applied web domain shields for \(selectedApps.webDomainTokens.count) domains")
         }
 
         // Mark that restrictions are applied
@@ -143,8 +144,10 @@ class ScreenTimeService: ObservableObject {
 
     /// Clear all restrictions
     func clearRestrictions() {
-        // Explicitly clear blocked applications
-        managedSettingsStore.application.blockedApplications = Set<Application>()
+        // Clear shields instead of blocks (keeps apps visible but removes intervention)
+        managedSettingsStore.shield.applications = nil
+        managedSettingsStore.shield.applicationCategories = nil
+        managedSettingsStore.shield.webDomains = nil
 
         // Clear all other settings
         managedSettingsStore.clearAllSettings()
@@ -152,7 +155,7 @@ class ScreenTimeService: ObservableObject {
         // Mark restrictions as not applied
         UserDefaults.standard.set(false, forKey: "RestrictionsApplied")
 
-        print("🗑️ All restrictions cleared - blocked apps removed")
+        print("🗑️ All shields cleared - apps now accessible without restrictions")
     }
 
     // MARK: - Device Activity Scheduling

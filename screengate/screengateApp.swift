@@ -30,6 +30,8 @@ struct screengateApp: App {
 
 // MARK: - App Delegate for Notification Handling
 class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
+    private var shieldInteractionMonitor: ShieldInteractionMonitor?
+
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
 
         // Configure notification center
@@ -43,6 +45,10 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                 print("Notification authorization error: \(error)")
             }
         }
+
+        // Start shield interaction monitor
+        shieldInteractionMonitor = ShieldInteractionMonitor()
+        shieldInteractionMonitor?.startMonitoring()
 
         return true
     }
@@ -70,10 +76,48 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
     private func handleNotificationResponse(_ response: UNNotificationResponse) {
         let userInfo = response.notification.request.content.userInfo
 
-        // Check if this is an intention notification
-        if userInfo["intentionId"] != nil {
-            handleIntentionNotification(userInfo)
+        print("🔔 Notification response received: \(response.actionIdentifier)")
+        print("🔔 User info: \(userInfo)")
+
+        // Handle CTA actions for intention notifications
+        switch response.actionIdentifier {
+        case "START_INTENTION", "START_INTENTION_NOW":
+            print("🧘 User tapped 'Start Intention' - opening intention activity")
+
+            // First check if deep link URL is available in notification userInfo
+            if let deepLinkString = userInfo["deepLinkURL"] as? String,
+               let deepLinkURL = URL(string: deepLinkString) {
+                print("🔗 Found deep link in notification: \(deepLinkURL)")
+                // Post notification to handle deep link
+                NotificationCenter.default.post(
+                    name: .deepLinkReceived,
+                    object: deepLinkURL
+                )
+            } else {
+                print("⚠️ No deep link found, falling back to intention notification handler")
+                handleIntentionNotification(userInfo)
+            }
             return
+
+        case "START_INTENTION_LATER":
+            print("⏰ User tapped 'Start Later' - scheduling reminder")
+            scheduleIntentionReminder(userInfo)
+            return
+
+        case UNNotificationDefaultActionIdentifier:
+            print("👆 User tapped the notification itself")
+            // Check if this is an intention notification from tap
+            if userInfo["intentionId"] != nil {
+                handleIntentionNotification(userInfo)
+                return
+            }
+
+        case UNNotificationDismissActionIdentifier:
+            print("❌ User dismissed the notification")
+            return
+
+        default:
+            print("🔔 Unknown action identifier: \(response.actionIdentifier)")
         }
 
         // Handle deep link from notification
@@ -84,6 +128,39 @@ class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDele
                 name: .deepLinkReceived,
                 object: deepLinkURL
             )
+        }
+    }
+
+    private func scheduleIntentionReminder(_ userInfo: [AnyHashable: Any]) {
+        guard let intentionName = userInfo["intentionName"] as? String,
+              let appName = userInfo["appName"] as? String else {
+            print("❌ Missing required info for intention reminder")
+            return
+        }
+
+        print("⏰ Scheduling intention reminder for '\(intentionName)'")
+
+        let content = UNMutableNotificationContent()
+        content.title = "Intention Reminder"
+        content.body = "Ready to start '\(intentionName)' for \(appName)?"
+        content.sound = .default
+        content.userInfo = userInfo
+        content.categoryIdentifier = "INTENTION_NOTIFICATION"
+
+        // Schedule reminder for 5 minutes from now
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 300, repeats: false)
+        let request = UNNotificationRequest(
+            identifier: "intention-reminder-\(UUID().uuidString)",
+            content: content,
+            trigger: trigger
+        )
+
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("❌ Failed to schedule intention reminder: \(error)")
+            } else {
+                print("✅ Intention reminder scheduled successfully!")
+            }
         }
     }
 
@@ -325,6 +402,154 @@ struct SourceAppInfo: Codable {
 
 extension Notification.Name {
     static let deepLinkReceived = Notification.Name("deepLinkReceived")
+}
+
+// MARK: - Shield Interaction Monitor
+
+class ShieldInteractionMonitor {
+    private let sharedDefaults = UserDefaults(suiteName: "group.com.gia.screengate")
+    private var checkTimer: Timer?
+    private let notificationCenter = UNUserNotificationCenter.current()
+
+    init() {}
+
+    func startMonitoring() {
+        print("📱 Starting shield interaction monitor...")
+
+        // Check for shield interactions every 1 second
+        checkTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            self.checkForShieldInteractions()
+        }
+    }
+
+    func stopMonitoring() {
+        print("⏹️ Stopping shield interaction monitor")
+        checkTimer?.invalidate()
+        checkTimer = nil
+    }
+
+    private func checkForShieldInteractions() {
+        guard let interactionData = sharedDefaults?.dictionary(forKey: "PendingShieldInteraction") else {
+            return
+        }
+
+        print("🔄 Found shield interaction to process: \(interactionData)")
+
+        // Process the interaction
+        if let action = interactionData["action"] as? String,
+           let appBundleId = interactionData["appBundleId"] as? String,
+           let appName = interactionData["appName"] as? String {
+
+            sendNotificationForShieldInteraction(
+                action: action,
+                appBundleId: appBundleId,
+                appName: appName,
+                intentionName: interactionData["intentionName"] as? String
+            )
+
+            // Clear the processed interaction
+            sharedDefaults?.removeObject(forKey: "PendingShieldInteraction")
+            print("✅ Shield interaction processed and cleared")
+        }
+    }
+
+    private func sendNotificationForShieldInteraction(
+        action: String,
+        appBundleId: String,
+        appName: String,
+        intentionName: String?
+    ) {
+        print("🔔 Sending shield interaction notification...")
+
+        let content = UNMutableNotificationContent()
+
+        switch action {
+        case "start_intention":
+            content.title = "ScreenGate Intention Started"
+            if let intentionName = intentionName {
+                content.body = "Starting '\(intentionName)' to continue to \(appName)"
+            } else {
+                content.body = "Starting your mindfulness exercise for \(appName)"
+            }
+            content.userInfo = [
+                "type": "shield_intention_started",
+                "appBundleId": appBundleId,
+                "appName": appName,
+                "action": action,
+                "intentionId": intentionName?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "",
+                "intentionName": intentionName?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "",
+                "intentionCategory": "mindfulness",
+                "intentionDuration": "60",
+                "deepLinkURL": "screengate://intention/\(intentionName?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")?intentionId=\(intentionName?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")&intentionName=\(intentionName?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")&category=mindfulness&sourceApp=\(appBundleId)&sourceAppName=\(appName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")&isFromCategory=false&duration=60"
+            ]
+
+            // Add CTA actions for intention notifications
+            let startAction = UNNotificationAction(
+                identifier: "START_INTENTION_NOW",
+                title: "Start Intention Now",
+                options: [.foreground]
+            )
+
+            let laterAction = UNNotificationAction(
+                identifier: "START_INTENTION_LATER",
+                title: "Start Later",
+                options: []
+            )
+
+            let category = UNNotificationCategory(
+                identifier: "INTENTION_NOTIFICATION",
+                actions: [startAction, laterAction],
+                intentIdentifiers: [],
+                options: .customDismissAction
+            )
+
+            content.categoryIdentifier = "INTENTION_NOTIFICATION"
+            UNUserNotificationCenter.current().setNotificationCategories([category])
+
+        case "continue_to_app":
+            content.title = "ScreenGate Focus Mode"
+            content.body = "You stayed strong! Continuing to \(appName)"
+            content.userInfo = [
+                "type": "shield_continue_to_app",
+                "appBundleId": appBundleId,
+                "appName": appName,
+                "action": action
+            ]
+            content.categoryIdentifier = "SHIELD_INTERACTION"
+
+        default:
+            content.title = "ScreenGate Shield Interaction"
+            content.body = "Shield action completed for \(appName)"
+            content.userInfo = [
+                "type": "shield_interaction",
+                "appBundleId": appBundleId,
+                "appName": appName,
+                "action": action
+            ]
+            content.categoryIdentifier = "SHIELD_INTERACTION"
+        }
+
+        content.sound = .default
+
+        // Schedule immediately
+        let request = UNNotificationRequest(
+            identifier: "shield-interaction-\(UUID().uuidString)",
+            content: content,
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
+        )
+
+        notificationCenter.add(request) { error in
+            if let error = error {
+                print("❌ Failed to send shield interaction notification: \(error)")
+            } else {
+                print("✅ Shield interaction notification sent successfully!")
+            }
+        }
+    }
+
+    deinit {
+        stopMonitoring()
+    }
 }
 
 // MARK: - Required Imports

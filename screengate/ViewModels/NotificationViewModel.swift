@@ -244,6 +244,41 @@ class NotificationViewModel: NSObject, ObservableObject, UNUserNotificationCente
         }
     }
 
+    /// Send test notification (for testing notification functionality)
+    func sendTestNotification() {
+        print("🧪 Sending test notification...")
+
+        let content = UNMutableNotificationContent()
+        content.title = "ScreenGate Test Notification"
+        content.body = "This is a test notification to verify the notification system is working properly! 🧪"
+        content.sound = .default
+        content.categoryIdentifier = "TEST_NOTIFICATION"
+        content.userInfo = [
+            "type": "test",
+            "timestamp": Date().timeIntervalSince1970
+        ]
+
+        // Schedule immediately
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.5, repeats: false)
+        let request = UNNotificationRequest(
+            identifier: "test-notification-\(Date().timeIntervalSince1970)",
+            content: content,
+            trigger: trigger
+        )
+
+        notificationCenter.add(request) { [weak self] error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    self?.errorMessage = "Failed to send test notification: \(error.localizedDescription)"
+                    print("❌ Failed to send test notification: \(error)")
+                } else {
+                    print("✅ Test notification sent successfully!")
+                    self?.errorMessage = nil
+                }
+            }
+        }
+    }
+
     // MARK: - Daily Digest and Insights
 
     /// Schedule daily digest notification
