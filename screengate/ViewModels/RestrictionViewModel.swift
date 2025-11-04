@@ -377,7 +377,7 @@ class RestrictionViewModel: ObservableObject {
         print("🔍 [DEBUG] Total restrictions created: \(restrictions.count)")
     }
 
-    private func saveRestrictionsToSharedDefaults() {
+    func saveRestrictionsToSharedDefaults() {
         // Convert AppRestriction objects to SimpleRestriction objects for shield extension
         let simpleRestrictions = restrictions.map { SimpleRestriction(from: $0) }
 

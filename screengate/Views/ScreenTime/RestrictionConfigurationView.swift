@@ -4,7 +4,8 @@ import FamilyControls
 // MARK: - Restriction Configuration View
 
 struct RestrictionConfigurationView: View {
-    @StateObject private var viewModel = RestrictionConfigurationViewModel()
+    // Use the same RestrictionViewModel from app selection
+    @ObservedObject var viewModel: RestrictionViewModel
     @State private var selectedApp: String?
     @State private var showingIntentionSelector = false
     @State private var showingScheduleConfig = false
@@ -18,14 +19,11 @@ struct RestrictionConfigurationView: View {
                     headerView
 
                     // Apps List
-                    if !viewModel.restrictedApps.isEmpty {
+                    if !viewModel.restrictions.isEmpty {
                         appsConfigurationView
                     } else {
                         emptyStateView
                     }
-
-                    // Add App Button
-                    addAppButton
 
                     Spacer(minLength: 50)
                 }
@@ -41,32 +39,25 @@ struct RestrictionConfigurationView: View {
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        saveConfiguration()
+                    Button("Done") {
+                        dismiss()
                     }
                     .fontWeight(.semibold)
                 }
-            }
-            .onAppear {
-                loadConfiguration()
             }
             .sheet(isPresented: $showingIntentionSelector) {
                 if let selectedApp = selectedApp {
                     IntentionSelectionView(
                         selectedAppIdentifier: selectedApp,
-                        currentIntention: viewModel.getIntention(for: selectedApp)
+                        currentIntention: viewModel.restrictions.first { $0.bundleIdentifier == selectedApp }?.intentionAssignments.first
                     ) { intention in
-                        viewModel.setIntention(intention, for: selectedApp)
-                    }
-                }
-            }
-            .sheet(isPresented: $showingScheduleConfig) {
-                if let selectedApp = selectedApp {
-                    ScheduleConfigurationView(
-                        selectedAppIdentifier: selectedApp,
-                        currentScheduleId: viewModel.getScheduleId(for: selectedApp)
-                    ) { scheduleId in
-                        viewModel.setSchedule(scheduleId, for: selectedApp)
+                        // Update the intention for the selected app
+                        if let index = viewModel.restrictions.firstIndex(where: { $0.bundleIdentifier == selectedApp }) {
+                            if let intention = intention {
+                                viewModel.restrictions[index].intentionAssignments = [intention]
+                                viewModel.saveRestrictionsToSharedDefaults()
+                            }
+                        }
                     }
                 }
             }
@@ -101,30 +92,23 @@ struct RestrictionConfigurationView: View {
 
                 Spacer()
 
-                Text("\(viewModel.restrictedApps.count) apps")
+                Text("\(viewModel.restrictions.count) apps")
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
 
             LazyVStack(spacing: 12) {
-                ForEach(viewModel.restrictedApps, id: \.self) { appIdentifier in
+                ForEach(viewModel.restrictions, id: \.id) { restriction in
                     AppRestrictionCard(
-                        appIdentifier: appIdentifier,
-                        intention: viewModel.getIntention(for: appIdentifier),
-                        scheduleId: viewModel.getConfiguration(for: appIdentifier)?.scheduleId,
+                        appIdentifier: restriction.bundleIdentifier,
+                        appName: restriction.name,
+                        intention: restriction.intentionAssignments.first,
                         onTap: {
-                            selectedApp = appIdentifier
+                            selectedApp = restriction.bundleIdentifier
                         },
                         onIntentionChange: {
-                            selectedApp = appIdentifier
+                            selectedApp = restriction.bundleIdentifier
                             showingIntentionSelector = true
-                        },
-                        onScheduleChange: {
-                            selectedApp = appIdentifier
-                            showingScheduleConfig = true
-                        },
-                        onRemove: {
-                            viewModel.removeRestriction(for: appIdentifier)
                         }
                     )
                 }
@@ -184,31 +168,18 @@ struct RestrictionConfigurationView: View {
 
     // MARK: - Helper Methods
 
-    private func loadConfiguration() {
-        viewModel.loadConfiguration()
     }
-
-    private func saveConfiguration() {
-        Task {
-            await viewModel.saveConfiguration()
-            dismiss()
-        }
-    }
-}
 
 // MARK: - App Restriction Card
 
 struct AppRestrictionCard: View {
     let appIdentifier: String
+    let appName: String
     let intention: IntentionActivity?
-    let scheduleId: String?
     let onTap: () -> Void
     let onIntentionChange: () -> Void
-    let onScheduleChange: () -> Void
-    let onRemove: () -> Void
 
-    @State private var appName: String = "Unknown App"
-
+    
     var body: some View {
         VStack(spacing: 16) {
             // App Header
@@ -222,117 +193,67 @@ struct AppRestrictionCard: View {
                         Text(intention.title)
                             .font(.caption)
                             .foregroundColor(intention.category.swiftUIColor)
+                    } else {
+                        Text("No intention configured")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
                 }
 
                 Spacer()
 
-                Button(action: onRemove) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.red)
-                        .font(.title3)
-                }
-            }
-
-            // Configuration Buttons
-            HStack(spacing: 12) {
-                // Intention Button
-                Button(action: onIntentionChange) {
-                    HStack(spacing: 6) {
-                        Image(systemName: intention?.category.iconName ?? "brain.head.profile")
-                            .font(.caption)
-
-                        Text(intention?.title ?? "Assign Intention")
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .lineLimit(1)
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background((intention?.category.swiftUIColor ?? .gray).opacity(0.1))
-                    .foregroundColor(intention?.category.swiftUIColor ?? .gray)
-                    .cornerRadius(6)
-                }
-
-                Spacer()
-
-                // Schedule Button
-                Button(action: onScheduleChange) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "clock")
-                            .font(.caption)
-
-                        Text(scheduleText)
-                            .font(.caption)
-                            .fontWeight(.medium)
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.orange.opacity(0.1))
-                    .foregroundColor(.orange)
-                    .cornerRadius(6)
-                }
-            }
-
-            // Status Indicator
-            HStack {
-                Circle()
-                    .fill(statusColor)
-                    .frame(width: 8, height: 8)
-
-                Text(statusText)
+                Image(systemName: "chevron.right")
                     .font(.caption)
                     .foregroundColor(.secondary)
+            }
 
-                Spacer()
+            // Intention Configuration Button
+            Button(action: onIntentionChange) {
+                HStack {
+                    Image(systemName: intention?.category.iconName ?? "brain.head.profile")
+                        .font(.caption)
+                        .foregroundColor(intention?.category.swiftUIColor ?? .gray)
 
-                if scheduleId != nil {
-                    Text("Scheduled")
+                    Text(intention?.title ?? "Configure Intention")
+                        .font(.subheadline)
+                        .foregroundColor(intention != nil ? .primary : .secondary)
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(8)
             }
+            .buttonStyle(PlainButtonStyle())
         }
         .padding()
         .background(Color(UIColor.systemBackground))
         .cornerRadius(12)
         .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
-        .onAppear {
-            loadAppName()
+        .onTapGesture {
+            onTap()
         }
-    }
-
-    private var scheduleText: String {
-        guard scheduleId != nil else {
-            return "Always"
-        }
-        return "Scheduled"
     }
 
     private var statusColor: Color {
         if intention == nil {
             return .orange
-        } else if scheduleId != nil {
-            return .green
         } else {
-            return .blue
+            return .green
         }
     }
 
     private var statusText: String {
         if intention == nil {
-            return "Intention required"
-        } else if scheduleId != nil {
-            return "Restriction active"
+            return "Configure intention"
         } else {
-            return "Configured"
+            return "Intention configured"
         }
-    }
-
-    private func loadAppName() {
-        // In a real implementation, this would load the app name from the identifier
-        // For now, we'll use a placeholder or extract from identifier
-        appName = appIdentifier.isEmpty ? "Unknown App" : appIdentifier
     }
 }
 
@@ -526,5 +447,5 @@ struct IntentionSelectionRow: View {
 }
 
 #Preview {
-    RestrictionConfigurationView()
+    RestrictionConfigurationView(viewModel: RestrictionViewModel())
 }

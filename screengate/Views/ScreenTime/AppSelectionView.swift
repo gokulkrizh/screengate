@@ -9,6 +9,7 @@ struct AppSelectionView: View {
     @State private var selectedApps = FamilyActivitySelection()
     @State private var showingConfirmation = false
     @State private var isSaving = false
+    @State private var showConfigurationScreen = false
 
     var body: some View {
         ScrollView {
@@ -55,15 +56,32 @@ struct AppSelectionView: View {
             Button("Cancel", role: .cancel) {
                 showingConfirmation = false
             }
-            Button("Save Selection") {
+            Button("Save & Configure") {
                 saveSelection()
                 showingConfirmation = false
+                // Navigate to configuration screen after saving
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    showConfigurationScreen = true
+                }
             }
         } message: {
             Text("Are you sure you want to restrict \(selectedApps.applicationTokens.count + selectedApps.categoryTokens.count) selected apps/categories?")
         }
         .onAppear {
             loadCurrentSelection()
+        }
+        .sheet(isPresented: $showConfigurationScreen) {
+            NavigationView {
+                RestrictionConfigurationView(viewModel: viewModel)
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Done") {
+                                showConfigurationScreen = false
+                            }
+                        }
+                    }
+            }
         }
     }
 
