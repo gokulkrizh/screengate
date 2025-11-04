@@ -70,7 +70,20 @@ class ScreenTimeService: ObservableObject {
         selectedApps = selection
         selectedCategories = selection
 
-        // Save to UserDefaults for persistence (simplified for now)
+        // Check if selection is empty
+        if selection.applicationTokens.isEmpty && selection.categoryTokens.isEmpty {
+            print("📝 Empty selection received, clearing restrictions")
+            // Clear UserDefaults flag
+            UserDefaults.standard.set(false, forKey: "HasSelectedApps")
+
+            // Clear restrictions if authorized
+            if isAuthorized {
+                clearRestrictions()
+            }
+            return
+        }
+
+        // Save to UserDefaults for persistence
         UserDefaults.standard.set(true, forKey: "HasSelectedApps")
 
         // Apply restrictions if authorized
@@ -130,8 +143,16 @@ class ScreenTimeService: ObservableObject {
 
     /// Clear all restrictions
     func clearRestrictions() {
+        // Explicitly clear blocked applications
+        managedSettingsStore.application.blockedApplications = Set<Application>()
+
+        // Clear all other settings
         managedSettingsStore.clearAllSettings()
-        print("All restrictions cleared")
+
+        // Mark restrictions as not applied
+        UserDefaults.standard.set(false, forKey: "RestrictionsApplied")
+
+        print("🗑️ All restrictions cleared - blocked apps removed")
     }
 
     // MARK: - Device Activity Scheduling

@@ -333,7 +333,13 @@ struct AppSelectionView: View {
     }
 
     private func clearSelection() {
+        print("🗑️ Clear selection button tapped")
         selectedApps = FamilyActivitySelection()
+
+        // Also clear the restrictions in the ViewModel
+        viewModel.clearSelection()
+
+        print("🗑️ Selection and restrictions cleared")
     }
 }
 
