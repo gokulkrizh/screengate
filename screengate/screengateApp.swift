@@ -459,92 +459,13 @@ class ShieldInteractionMonitor {
         appName: String,
         intentionName: String?
     ) {
-        print("🔔 Sending shield interaction notification...")
+        // Shield extension already sends notifications, so just log the interaction
+        print("🔄 Shield interaction processed: \(action) for \(appName)")
+        print("🔄 Shield extension is handling notifications - no duplicate notification sent")
 
-        let content = UNMutableNotificationContent()
-
-        switch action {
-        case "start_intention":
-            content.title = "ScreenGate Intention Started"
-            if let intentionName = intentionName {
-                content.body = "Starting '\(intentionName)' to continue to \(appName)"
-            } else {
-                content.body = "Starting your mindfulness exercise for \(appName)"
-            }
-            content.userInfo = [
-                "type": "shield_intention_started",
-                "appBundleId": appBundleId,
-                "appName": appName,
-                "action": action,
-                "intentionId": intentionName?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "",
-                "intentionName": intentionName?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "",
-                "intentionCategory": "mindfulness",
-                "intentionDuration": "60",
-                "deepLinkURL": "screengate://intention/\(intentionName?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")?intentionId=\(intentionName?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")&intentionName=\(intentionName?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")&category=mindfulness&sourceApp=\(appBundleId)&sourceAppName=\(appName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")&isFromCategory=false&duration=60"
-            ]
-
-            // Add CTA actions for intention notifications
-            let startAction = UNNotificationAction(
-                identifier: "START_INTENTION_NOW",
-                title: "Start Intention Now",
-                options: [.foreground]
-            )
-
-            let laterAction = UNNotificationAction(
-                identifier: "START_INTENTION_LATER",
-                title: "Start Later",
-                options: []
-            )
-
-            let category = UNNotificationCategory(
-                identifier: "INTENTION_NOTIFICATION",
-                actions: [startAction, laterAction],
-                intentIdentifiers: [],
-                options: .customDismissAction
-            )
-
-            content.categoryIdentifier = "INTENTION_NOTIFICATION"
-            UNUserNotificationCenter.current().setNotificationCategories([category])
-
-        case "continue_to_app":
-            content.title = "ScreenGate Focus Mode"
-            content.body = "You stayed strong! Continuing to \(appName)"
-            content.userInfo = [
-                "type": "shield_continue_to_app",
-                "appBundleId": appBundleId,
-                "appName": appName,
-                "action": action
-            ]
-            content.categoryIdentifier = "SHIELD_INTERACTION"
-
-        default:
-            content.title = "ScreenGate Shield Interaction"
-            content.body = "Shield action completed for \(appName)"
-            content.userInfo = [
-                "type": "shield_interaction",
-                "appBundleId": appBundleId,
-                "appName": appName,
-                "action": action
-            ]
-            content.categoryIdentifier = "SHIELD_INTERACTION"
-        }
-
-        content.sound = .default
-
-        // Schedule immediately
-        let request = UNNotificationRequest(
-            identifier: "shield-interaction-\(UUID().uuidString)",
-            content: content,
-            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
-        )
-
-        notificationCenter.add(request) { error in
-            if let error = error {
-                print("❌ Failed to send shield interaction notification: \(error)")
-            } else {
-                print("✅ Shield interaction notification sent successfully!")
-            }
-        }
+        // Clear the processed interaction (main responsibility of this monitor)
+        sharedDefaults?.removeObject(forKey: "PendingShieldInteraction")
+        print("✅ Shield interaction processed and cleared")
     }
 
     deinit {

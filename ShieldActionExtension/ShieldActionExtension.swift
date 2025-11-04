@@ -210,7 +210,7 @@ class ShieldActionExtension: ShieldActionDelegate {
             content.userInfo["sourceApp"] = bundleId
             content.userInfo["sourceAppName"] = getAppName(from: bundleId)
             content.userInfo["isFromCategory"] = "false"
-            content.userInfo["deepLinkURL"] = "screengate://intention/\(intention.id)?intentionId=\(intention.id)&intentionName=\(intention.name)&category=\(intention.category)&sourceApp=\(bundleId)&sourceAppName=\(getAppName(from: bundleId))&isFromCategory=false&duration=\(String(intention.duration))"
+            content.userInfo["deepLinkURL"] = "screengate://intention/\(intention.id)?intentionId=\(intention.id)&intentionName=\(intention.name)&category=\(intention.category)&sourceApp=\(bundleId)&sourceAppName=\(getAppName(from: bundleId))&isFromCategory=false&duration=\(Int(intention.duration))"
 
             // Add CTA actions for intention notifications
             let startAction = UNNotificationAction(

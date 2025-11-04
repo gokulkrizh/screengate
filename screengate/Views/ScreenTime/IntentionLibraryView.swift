@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 // MARK: - Intention Library View
 
@@ -6,6 +7,10 @@ struct IntentionLibraryView: View {
     @StateObject private var viewModel = IntentionLibraryViewModel()
     @State private var selectedCategory: IntentionCategory?
     @State private var searchText: String = ""
+    @State private var showIntention = false
+    @State private var selectedIntention: IntentionActivity?
+    @State private var showConfiguration = false
+    @State private var configurationIntention: IntentionActivity?
 
     var body: some View {
         ScrollView {
@@ -28,6 +33,22 @@ struct IntentionLibraryView: View {
         }
         .onAppear {
             loadIntentions()
+        }
+        .fullScreenCover(isPresented: $showIntention) {
+            if let intention = selectedIntention {
+                SimpleIntentionView(intention: intention) {
+                    showIntention = false
+                }
+            } else {
+                // Fallback view in case intention is nil
+                Text("No intention selected")
+                    .padding()
+            }
+        }
+        .sheet(isPresented: $showConfiguration) {
+            if let intention = configurationIntention {
+                IntentionConfigurationView(intention: intention)
+            }
         }
     }
 
@@ -145,7 +166,9 @@ struct IntentionLibraryView: View {
                         ) {
                             toggleFavorite(intention)
                         } onConfigure: {
-                            // Navigate to configuration
+                            configureIntention(intention)
+                        } onStart: {
+                            startIntention(intention)
                         }
                     }
                 }
@@ -184,6 +207,22 @@ struct IntentionLibraryView: View {
     private func toggleFavorite(_ intention: IntentionActivity) {
         viewModel.toggleFavorite(intention)
     }
+
+    private func startIntention(_ intention: IntentionActivity) {
+        print("🧘 Starting intention: \(intention.title)")
+        print("🧘 Intention ID: \(intention.id)")
+        print("🧘 Intention category: \(intention.category)")
+        print("🧘 Intention duration: \(intention.duration)")
+        selectedIntention = intention
+        showIntention = true
+        print("🧘 Show intention set to: \(showIntention)")
+    }
+
+    private func configureIntention(_ intention: IntentionActivity) {
+        print("⚙️ Configuring intention: \(intention.title)")
+        configurationIntention = intention
+        showConfiguration = true
+    }
 }
 
 // MARK: - Supporting Views
@@ -220,6 +259,7 @@ struct IntentionCard: View {
     let isFavorite: Bool
     let onFavorite: () -> Void
     let onConfigure: () -> Void
+    let onStart: () -> Void
 
     var body: some View {
         VStack(spacing: 12) {
@@ -279,22 +319,42 @@ struct IntentionCard: View {
                 }
             }
 
-            // Configure Button
-            Button(action: onConfigure) {
-                HStack {
-                    Text("Configure")
-                        .fontWeight(.medium)
+            // Action Buttons
+            HStack(spacing: 12) {
+                // Start Now Button
+                Button(action: onStart) {
+                    HStack {
+                        Image(systemName: "play.circle.fill")
+                            .font(.caption)
 
-                    Image(systemName: "chevron.right")
-                        .font(.caption)
+                        Text("Start Now")
+                            .fontWeight(.medium)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .background(intention.category.swiftUIColor)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-                .background(intention.category.swiftUIColor.opacity(0.1))
-                .foregroundColor(intention.category.swiftUIColor)
-                .cornerRadius(8)
+                .buttonStyle(PlainButtonStyle())
+
+                // Configure Button
+                Button(action: onConfigure) {
+                    HStack {
+                        Text("Configure")
+                            .fontWeight(.medium)
+
+                        Image(systemName: "chevron.right")
+                            .font(.caption)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .background(intention.category.swiftUIColor.opacity(0.1))
+                    .foregroundColor(intention.category.swiftUIColor)
+                    .cornerRadius(8)
+                }
+                .buttonStyle(PlainButtonStyle())
             }
-            .buttonStyle(PlainButtonStyle())
         }
         .padding()
         .background(Color(UIColor.systemGray6))
@@ -313,6 +373,312 @@ struct IntentionCard: View {
     }
 }
 
+// MARK: - Intention Configuration View
+
+struct IntentionConfigurationView: View {
+    let intention: IntentionActivity
+    @Environment(\.dismiss) private var dismiss
+    @State private var customDuration: Double = 300 // Default 5 minutes
+    @State private var customInstructions: String = ""
+
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Header
+                    VStack(spacing: 8) {
+                        Image(systemName: intention.category.iconName)
+                            .font(.system(size: 50))
+                            .foregroundColor(intention.category.swiftUIColor)
+
+                        Text(intention.title)
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .multilineTextAlignment(.center)
+
+                        Text(intention.description)
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding()
+
+                    // Configuration Options
+                    VStack(spacing: 20) {
+                        // Duration Configuration
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Duration")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+
+                            HStack {
+                                Text("\(Int(customDuration / 60)) minutes")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+
+                                Spacer()
+
+                                Slider(value: $customDuration, in: 60...1800, step: 60)
+                                    .frame(maxWidth: 150)
+                            }
+                        }
+                        .padding()
+                        .background(Color(UIColor.systemGray6))
+                        .cornerRadius(12)
+
+                        // Custom Instructions
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Custom Instructions (Optional)")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+
+                            TextField("Add your own focus message...", text: $customInstructions, axis: .vertical)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .lineLimit(3, reservesSpace: true)
+                        }
+                        .padding()
+                        .background(Color(UIColor.systemGray6))
+                        .cornerRadius(12)
+
+                        // Current Settings
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Current Settings")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+
+                            HStack {
+                                Image(systemName: "clock")
+                                    .foregroundColor(.secondary)
+
+                                Text("Default: \(formatDuration(intention.duration))")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+
+                                Spacer()
+                            }
+
+                            if !intention.tags.isEmpty {
+                                HStack {
+                                    Image(systemName: "tag")
+                                        .foregroundColor(.secondary)
+
+                                    Text("Tags: \(intention.tags.joined(separator: ", "))")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+
+                                    Spacer()
+                                }
+                            }
+                        }
+                        .padding()
+                        .background(Color(UIColor.systemGray6))
+                        .cornerRadius(12)
+                    }
+
+                    Spacer()
+                }
+            }
+            .navigationTitle("Configure Intention")
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                    .foregroundColor(.secondary)
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        saveConfiguration()
+                        dismiss()
+                    }
+                    .fontWeight(.semibold)
+                    .foregroundColor(intention.category.swiftUIColor)
+                }
+            }
+        }
+    }
+
+    private func formatDuration(_ duration: TimeInterval) -> String {
+        let minutes = Int(duration) / 60
+        if minutes >= 60 {
+            let hours = minutes / 60
+            let remainingMinutes = minutes % 60
+            return "\(hours)h \(remainingMinutes)m"
+        } else {
+            return "\(minutes)m"
+        }
+    }
+
+    private func saveConfiguration() {
+        // TODO: Save custom configuration to UserDefaults or Core Data
+        print("💾 Saving configuration for \(intention.title):")
+        print("   - Duration: \(customDuration) seconds")
+        print("   - Custom Instructions: '\(customInstructions)'")
+    }
+}
+
+// MARK: - Simple Intention View
+
+struct SimpleIntentionView: View {
+    let intention: IntentionActivity
+    let onClose: () -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 30) {
+                // Header
+                VStack(spacing: 16) {
+                    Image(systemName: intention.category.iconName)
+                        .font(.system(size: 60))
+                        .foregroundColor(intention.category.swiftUIColor)
+
+                    Text(intention.title)
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .multilineTextAlignment(.center)
+
+                    Text(intention.description)
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+
+                // Duration info
+                HStack {
+                    Image(systemName: "clock")
+                        .foregroundColor(.secondary)
+                    Text("Duration: \(formatDuration(intention.duration))")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+
+                // Content based on category
+                intentionContentView
+
+                Spacer()
+
+                // Start button
+                Button(action: {
+                    print("🧘 Starting simple intention exercise")
+                    onClose()
+                    dismiss()
+                }) {
+                    HStack {
+                        Image(systemName: "play.circle.fill")
+                            .font(.title2)
+                        Text("Start Exercise")
+                            .fontWeight(.semibold)
+                            .font(.title2)
+                    }
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(intention.category.swiftUIColor)
+                    .cornerRadius(16)
+                }
+                .padding(.horizontal)
+
+                // Close button
+                Button("Close") {
+                    onClose()
+                    dismiss()
+                }
+                .foregroundColor(.secondary)
+                .padding()
+            }
+            .navigationTitle("Intention")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        onClose()
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+
+    private var intentionContentView: some View {
+        VStack(spacing: 16) {
+            Text("Instructions")
+                .font(.headline)
+                .foregroundColor(.primary)
+
+            switch intention.content {
+            case .breathing(let content):
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("• Find a comfortable position")
+                    Text("• Follow the breathing pattern")
+                    Text("• Focus on your breath")
+                    Text("• Complete \(content.cycles) cycles")
+                }
+                .font(.body)
+                .foregroundColor(.secondary)
+
+            case .mindfulness(let content):
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("• Sit comfortably and close your eyes")
+                    Text("• Focus on the present moment")
+                    Text("• Notice your thoughts without judgment")
+                    Text("• Return to your breath when distracted")
+                }
+                .font(.body)
+                .foregroundColor(.secondary)
+
+            case .reflection(let content):
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("• Take a moment to reflect")
+                    Text("• Consider the prompts provided")
+                    Text("• Write down your thoughts")
+                    Text("• Be honest and compassionate with yourself")
+                }
+                .font(.body)
+                .foregroundColor(.secondary)
+
+            case .movement(let content):
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("• Find a safe space to move")
+                    Text("• Follow the guided movements")
+                    Text("• Listen to your body")
+                    Text("• Move at your own pace")
+                }
+                .font(.body)
+                .foregroundColor(.secondary)
+
+            case .quickBreak(let content):
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("• Step away from your current activity")
+                    Text("• Take a moment to rest")
+                    Text("• Refresh your mind and body")
+                    Text("• Return with renewed focus")
+                }
+                .font(.body)
+                .foregroundColor(.secondary)
+            }
+        }
+        .padding()
+        .background(Color(UIColor.systemGray6))
+        .cornerRadius(12)
+        .padding(.horizontal)
+    }
+
+    private func formatDuration(_ duration: TimeInterval) -> String {
+        let minutes = Int(duration) / 60
+        if minutes >= 60 {
+            let hours = minutes / 60
+            let remainingMinutes = minutes % 60
+            return "\(hours)h \(remainingMinutes)m"
+        } else {
+            return "\(minutes)m"
+        }
+    }
+}
 
 #Preview {
     NavigationView {
