@@ -181,15 +181,19 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
             categoryName: categoryName
         )
 
-        // Create basic shield configuration
-        // Note: Using minimal configuration to ensure compatibility
-        let config = ShieldConfiguration()
+        // Create a proper shield configuration with ShieldConfiguration.Label
+        let config = ShieldConfiguration(
+            title: ShieldConfiguration.Label(text: title, color: .label),
+            subtitle: ShieldConfiguration.Label(text: subtitle, color: .secondaryLabel),
+            primaryButtonLabel: ShieldConfiguration.Label(text: "Continue to App", color: .systemBlue),
+            secondaryButtonLabel: ShieldConfiguration.Label(text: "Start Intention", color: .systemGreen)
+        )
 
         // Log shield configuration details for debugging
-        print("Shield configuration created for \(bundleIdentifier)")
-        print("Title: \(title)")
-        print("Subtitle: \(subtitle)")
-        print("Selected intention: \(selectedIntention?.name ?? "None")")
+        print("🛡️ Shield configuration created for \(bundleIdentifier)")
+        print("🛡️ Title: \(title)")
+        print("🛡️ Subtitle: \(subtitle)")
+        print("🛡️ Selected intention: \(selectedIntention?.name ?? "None")")
 
         return config
     }

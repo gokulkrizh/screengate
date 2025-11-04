@@ -8,6 +8,7 @@ struct AppSelectionView: View {
     @State private var showFamilyActivityPicker = false
     @State private var selectedApps = FamilyActivitySelection()
     @State private var showingConfirmation = false
+    @State private var isSaving = false
 
     var body: some View {
         ScrollView {
@@ -94,7 +95,7 @@ struct AppSelectionView: View {
 
             if hasNoSelection {
                 EmptyStateView(
-                    icon: "app.badge.plus",
+                    icon: "plus.circle",
                     title: "No Apps Selected",
                     subtitle: "Tap 'Browse Apps' to start selecting apps and categories"
                 )
@@ -209,10 +210,16 @@ struct AppSelectionView: View {
                     showingConfirmation = true
                 }) {
                     HStack {
-                        Image(systemName: "checkmark.shield")
-                            .font(.title3)
+                        if isSaving {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                                .frame(width: 16, height: 16)
+                        } else {
+                            Image(systemName: "checkmark.shield")
+                                .font(.title3)
+                        }
 
-                        Text("Save & Configure Restrictions")
+                        Text(isSaving ? "Saving..." : "Save & Configure Restrictions")
                             .fontWeight(.medium)
 
                         Spacer()
@@ -220,14 +227,15 @@ struct AppSelectionView: View {
                         Image(systemName: "chevron.right")
                             .font(.caption)
                             .foregroundColor(.secondary)
+                            .opacity(isSaving ? 0.5 : 1.0)
                     }
                     .padding()
-                    .background(Color.green.opacity(0.1))
-                    .foregroundColor(.green)
+                    .background(Color.green.opacity(isSaving ? 0.05 : 0.1))
+                    .foregroundColor(isSaving ? .gray : .green)
                     .cornerRadius(12)
                 }
                 .buttonStyle(PlainButtonStyle())
-                .disabled(hasNoSelection)
+                .disabled(hasNoSelection || isSaving)
             }
         }
     }
@@ -291,9 +299,36 @@ struct AppSelectionView: View {
     }
 
     private func saveSelection() {
-        Task {
+        print("🔍 [DEBUG] Save Selection method called")
+        isSaving = true
+
+        Task { @MainActor in
+            defer { isSaving = false }
+
+            print("🔍 [DEBUG] Starting save selection process...")
+            print("🔍 [DEBUG] Current authorization status: \(viewModel.isAuthorized)")
+
+            // Check if already authorized first
+            if !viewModel.isAuthorized {
+                print("🔍 [DEBUG] Not authorized, requesting authorization...")
+                do {
+                    try await viewModel.requestAuthorization()
+                    print("🔍 [DEBUG] Authorization granted successfully")
+                } catch {
+                    print("🔍 [DEBUG] Authorization failed: \(error)")
+                    return
+                }
+            } else {
+                print("🔍 [DEBUG] Already authorized")
+            }
+
+            print("🔍 [DEBUG] About to call viewModel.saveSelection...")
+            print("🔍 [DEBUG] selectedApps - Apps: \(selectedApps.applicationTokens.count), Categories: \(selectedApps.categoryTokens.count)")
+
+            // Save the selection
             viewModel.saveSelection(selectedApps)
-            print("✅ Saved app selection with \(selectedApps.applicationTokens.count) apps and \(selectedApps.categoryTokens.count) categories")
+
+            print("🔍 [DEBUG] viewModel.saveSelection completed successfully")
         }
     }
 

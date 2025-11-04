@@ -20,7 +20,8 @@ class RestrictionViewModel: ObservableObject {
 
     // MARK: - Private Properties
     private let screenTimeService = ScreenTimeService.shared
-    private let appRestrictionManager = AppRestrictionManager()
+    // NOTE: AppRestrictionManager was not implemented, so functionality is moved to this ViewModel
+    // private let appRestrictionManager = AppRestrictionManager()
     private let websiteRestrictionManager = WebsiteRestrictionManager()
     private var cancellables = Set<AnyCancellable>()
 
@@ -109,14 +110,19 @@ class RestrictionViewModel: ObservableObject {
 
     /// Save selected apps and categories
     func saveSelection(_ selection: FamilyActivitySelection) {
+        print("🔍 [DEBUG] RestrictionViewModel.saveSelection called")
+        print("🔍 [DEBUG] Selection - Apps: \(selection.applicationTokens.count), Categories: \(selection.categoryTokens.count)")
+
         selectedApps = selection
         screenTimeService.saveSelection(selection)
 
+        print("🔍 [DEBUG] About to create restrictions from selection...")
         // Convert selection to restrictions
         createRestrictionsFromSelection(selection)
 
         showFamilyActivityPicker = false
         print("💾 Saved app selection with \(selection.totalCount) items")
+        print("🔍 [DEBUG] Total restrictions in ViewModel: \(restrictions.count)")
     }
 
     /// Clear current selection
@@ -262,7 +268,14 @@ class RestrictionViewModel: ObservableObject {
 
     /// Get restriction analytics
     func getRestrictionAnalytics() -> RestrictionAnalytics {
-        return appRestrictionManager.getRestrictionAnalytics()
+        // Since AppRestrictionManager doesn't exist, create analytics from our local data
+        return RestrictionAnalytics(
+            totalRestrictions: restrictions.count,
+            activeRestrictions: restrictions.filter { $0.isEnabled }.count,
+            totalTriggers: 0, // Placeholder - would need tracking
+            mostTriggeredApp: nil, // Placeholder - would need tracking
+            averageDailyTriggers: 0.0 // Placeholder - would need tracking
+        )
     }
 
     /// Get shield analytics from screen time service
@@ -297,8 +310,9 @@ class RestrictionViewModel: ObservableObject {
     }
 
     func loadRestrictions() {
-        restrictions = appRestrictionManager.getActiveRestrictions()
-        print("📂 Loaded \(restrictions.count) app restrictions")
+        // Since AppRestrictionManager doesn't exist, restrictions are managed locally
+        // The restrictions array is already populated by createRestrictionsFromSelection
+        print("📂 Loaded \(restrictions.count) app restrictions (local data)")
     }
 
     private func loadWebsiteRestrictions() {
@@ -318,18 +332,42 @@ class RestrictionViewModel: ObservableObject {
     }
 
     private func createRestrictionsFromSelection(_ selection: FamilyActivitySelection) {
+        print("🔍 [DEBUG] Creating restrictions from selection...")
+        print("🔍 [DEBUG] Apps in selection: \(selection.applicationTokens.count)")
+        print("🔍 [DEBUG] Categories in selection: \(selection.categoryTokens.count)")
+
         // Clear existing restrictions
         restrictions.removeAll()
 
-        // Create restrictions from selection
-        appRestrictionManager.createRestrictionFromSelection(
-            selection: selection,
-            intentionAssignments: getDefaultIntentions(),
-            schedules: []
-        )
+        // Create restrictions from selection directly in this ViewModel
+        // since AppRestrictionManager doesn't exist
+        let defaultIntentions = getDefaultIntentions()
 
-        // Reload restrictions
-        loadRestrictions()
+        // Create app restrictions from application tokens
+        for (index, appToken) in selection.applicationTokens.enumerated() {
+            let restriction = AppRestriction(
+                name: "App \(index + 1)", // Placeholder name
+                bundleIdentifier: "app.\(index)", // Simplified identifier
+                appToken: try? JSONEncoder().encode(appToken), // Store token as data
+                intentionAssignments: [defaultIntentions[index % defaultIntentions.count]]
+            )
+            restrictions.append(restriction)
+            print("�� [DEBUG] Created app restriction: \(restriction.bundleIdentifier)")
+        }
+
+        // Create restrictions from category tokens
+        for (index, categoryToken) in selection.categoryTokens.enumerated() {
+            let restriction = AppRestriction(
+                name: "Category \(index + 1)", // Placeholder name
+                bundleIdentifier: "category.\(index)", // Simplified identifier
+                categoryToken: try? JSONEncoder().encode(categoryToken), // Store token as data
+                intentionAssignments: [defaultIntentions[index % defaultIntentions.count]]
+            )
+            restrictions.append(restriction)
+            print("🔍 [DEBUG] Created category restriction: \(restriction.bundleIdentifier)")
+        }
+
+        print("🔍 [DEBUG] Total restrictions created: \(restrictions.count)")
     }
 
     private func getDefaultIntentions() -> [IntentionActivity] {
