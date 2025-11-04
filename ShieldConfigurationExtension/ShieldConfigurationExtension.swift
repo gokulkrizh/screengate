@@ -43,31 +43,39 @@ class ShieldDataManager {
     }
 
     // MARK: - Intention Selection
-    func getRandomIntention() -> IntentionInfo? {
-        // Return a simple intention for the shield
-        return availableIntentions.randomElement()
+    func getIntentionForApp(bundleIdentifier: String) -> IntentionInfo? {
+        // Try to get the configured intention for this specific app
+        if let restriction = getRestriction(for: bundleIdentifier) {
+            // Convert the configured intention to IntentionInfo
+            return IntentionInfo(
+                id: restriction.intentionId,
+                name: restriction.intentionName,
+                category: restriction.intentionCategory,
+                duration: restriction.intentionDuration
+            )
+        }
+
+        // Fallback to default intention if no specific configuration found
+        return getDefaultIntention()
     }
 
-    private let availableIntentions: [IntentionInfo] = [
-        IntentionInfo(
-            id: "breathing-box",
-            name: "Box Breathing",
-            category: "Breathing",
-            duration: 120
-        ),
-        IntentionInfo(
+    private func getRestriction(for bundleIdentifier: String) -> SimpleRestriction? {
+        guard let data = sharedDefaults?.data(forKey: "SavedRestrictions"),
+              let restrictions = try? JSONDecoder().decode([SimpleRestriction].self, from: data) else {
+            return nil
+        }
+
+        return restrictions.first { $0.bundleIdentifier == bundleIdentifier }
+    }
+
+    private func getDefaultIntention() -> IntentionInfo {
+        return IntentionInfo(
             id: "mindful-pause",
             name: "Mindful Pause",
             category: "Mindfulness",
             duration: 60
-        ),
-        IntentionInfo(
-            id: "quick-stretch",
-            name: "Quick Stretch",
-            category: "Movement",
-            duration: 60
         )
-    ]
+    }
 }
 
 // MARK: - Shield Metadata Models
@@ -101,6 +109,16 @@ struct IntentionInfo: Codable {
     let name: String
     let category: String
     let duration: TimeInterval
+}
+
+// MARK: - Simplified Restriction Model for Shield Extension
+struct SimpleRestriction: Codable {
+    let bundleIdentifier: String
+    let appName: String
+    let intentionId: String
+    let intentionName: String
+    let intentionCategory: String
+    let intentionDuration: TimeInterval
 }
 
 // MARK: - Enhanced Shield Configuration Extension
@@ -157,8 +175,8 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         isWebDomain: Bool = false
     ) -> ShieldConfiguration {
 
-        // Select a random intention for this shield
-        let selectedIntention = dataManager.getRandomIntention()
+        // Get the configured intention for this specific app
+        let selectedIntention = dataManager.getIntentionForApp(bundleIdentifier: bundleIdentifier)
 
         // Create metadata for the shield action extension
         let metadata = ShieldMetadata(

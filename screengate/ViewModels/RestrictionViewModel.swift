@@ -135,7 +135,11 @@ class RestrictionViewModel: ObservableObject {
         // Clear screen time service selection
         screenTimeService.saveSelection(FamilyActivitySelection())
 
-        print("🗑️ Cleared all selections and restrictions")
+        // Clear shared defaults for shield extension
+        let sharedDefaults = UserDefaults(suiteName: "group.com.gia.screengate")
+        sharedDefaults?.removeObject(forKey: "SavedRestrictions")
+
+        print("🗑️ Cleared all selections and restrictions (including shared defaults)")
     }
 
     // MARK: - Restriction Management
@@ -367,7 +371,24 @@ class RestrictionViewModel: ObservableObject {
             print("🔍 [DEBUG] Created category restriction: \(restriction.bundleIdentifier)")
         }
 
+        // Save restrictions to shared UserDefaults for shield extension
+        saveRestrictionsToSharedDefaults()
+
         print("🔍 [DEBUG] Total restrictions created: \(restrictions.count)")
+    }
+
+    private func saveRestrictionsToSharedDefaults() {
+        // Convert AppRestriction objects to SimpleRestriction objects for shield extension
+        let simpleRestrictions = restrictions.map { SimpleRestriction(from: $0) }
+
+        guard let data = try? JSONEncoder().encode(simpleRestrictions) else {
+            print("❌ Failed to encode restrictions for sharing")
+            return
+        }
+
+        let sharedDefaults = UserDefaults(suiteName: "group.com.gia.screengate")
+        sharedDefaults?.set(data, forKey: "SavedRestrictions")
+        print("💾 Saved \(simpleRestrictions.count) restrictions to shared defaults for shield extension")
     }
 
     private func getDefaultIntentions() -> [IntentionActivity] {
