@@ -4,156 +4,140 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ScreenGate is an iOS SwiftUI application that implements a digital wellness and screen time management system. The app features a comprehensive 19-step onboarding flow, personalized insights, and tools to help users develop healthier phone usage habits. It serves as a screening/filtering tool with a clean MVVM architecture.
-
-## Architecture
-
-The project follows **MVVM (Model-View-ViewModel)** architecture:
-
-- **Models** (`screengate/Models/`): Data structures following Swift best practices
-- **ViewModels** (`screengate/ViewModels/`): Business logic with `@MainActor` and `@Published` properties for reactive UI updates
-- **Views** (`screengate/Views/`): SwiftUI views with clear separation of concerns
-  - **Onboarding Views** (`Views/Onboarding/`): Comprehensive 19-step guided setup flow
-  - **Main Views**: Splash screen, main navigation, and content views
-- **Main App**: Entry point in `screengateApp.swift` using SwiftUI's `@main` attribute
-
-### Key Architectural Patterns
-- SwiftUI navigation with progressive onboarding flow
-- Reactive state management using Combine framework
-- Thread safety with `@MainActor` annotation on ViewModels
-- Component-based UI with reusable onboarding components
-- Persistent onboarding state tracking with UserDefaults
-- Animated splash screen with smooth transitions
+ScreenGate is an iOS digital wellness application built with SwiftUI that implements comprehensive screen time management and device monitoring capabilities. The app leverages Apple's Family Controls framework to create a sophisticated content filtering and time management system with automated device activity monitoring and restriction capabilities.
 
 ## Build and Development Commands
 
 ### Building the Project
 ```bash
-# Build for iOS Simulator (recommended for development)
+# Build main app for iOS Simulator (recommended for development)
 xcodebuild -scheme screengate -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
 
-# Build for device
+# Build main app for device
 xcodebuild -scheme screengate -configuration Debug
+
+# Build all targets (main app + extensions)
+xcodebuild -scheme screengate -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
 ```
 
 ### Running the Application
 ```bash
-# Install and run on simulator
-xcodebuild -scheme screengate -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
+# Install and launch on simulator
 xcrun simctl install booted ./DerivedData/Build/Products/Debug-iphonesimulator/screengate.app
 xcrun simctl launch booted com.gia.screengate
 ```
 
-### Available Schemes and Configurations
-- **Scheme**: `screengate`
-- **Configurations**: `Debug`, `Release`
-- **Target**: `screengate`
-- **Bundle Identifier**: `com.gia.screengate`
+### Testing Infrastructure
+Currently **no test infrastructure is configured**. The project lacks test targets and test schemes.
 
-## Project Structure
+## Architecture Overview
 
+### Multi-Target Structure
+The project consists of **4 main targets** that work together:
+
+1. **screengate** (Main App)
+   - Bundle ID: `com.gia.screengate`
+   - Entry point: `screengateApp.swift`
+   - Primary user interface and monitor management
+
+2. **DeviceActivityMonitorExtension**
+   - Handles background device activity monitoring
+   - Triggers automatic restrictions when thresholds are reached
+   - Runs independently of main app
+
+3. **ShieldActionExtension**
+   - Handles user interactions with app blocking screens
+   - Provides options to acknowledge or remove restrictions
+
+4. **ShieldConfigurationExtension**
+   - Configures visual appearance of blocking screens
+   - Customizes shield messaging and branding
+
+### Shared Components
+- **Shared/DeviceActivityManager.swift**: Central business logic coordinator using `@Observable`
+- **App Group**: `group.com.gia.screengate` for cross-extension data sharing
+
+### Core Architecture Patterns
+
+#### Extension-Based Workflow
+- Main app configures monitoring schedules and restrictions
+- Extensions operate independently in background to enforce rules
+- Shared UserDefaults enables communication between targets
+- DeviceActivityMonitorExtension receives system callbacks and applies shields automatically
+
+#### Family Controls Integration
+- Uses Apple's native Family Controls framework for screen time management
+- ManagedSettings framework applies system-level restrictions
+- DeviceActivity framework monitors usage patterns and thresholds
+- AuthorizationCenter handles permission management
+
+#### Data Persistence
+- Shared UserDefaults with JSON serialization for complex data
+- Activity selections persisted across app launches and extension boundaries
+- Cross-target data synchronization via app groups
+
+## Key Components
+
+### DeviceActivityManager (Shared/DeviceActivityManager.swift)
+Central coordinator for all screen time functionality:
+- Family Controls authorization management
+- Device activity scheduling and monitoring
+- Restriction application via ManagedSettings
+- Cross-extension data persistence
+
+### Main Application Flow
+- **ContentView**: Authorization status handler with three states (notDetermined/denied/approved)
+- **MonitorView**: Main interface when authorized - lists and manages active monitors
+- **AddActivityMonitorView**: Creates new monitoring rules with time thresholds
+- **ActivityDetailView**: Shows monitor details and usage events
+- **FamilyActivitySelectionView**: Native app/category selection interface
+
+### Extension System
+- **DeviceActivityMonitorExtension**: System callback handler for automatic enforcement
+- **ShieldActionExtension**: User interaction handler for blocked content
+- **ShieldConfigurationExtension**: Visual customization for blocking screens
+
+## Required Entitlements
+
+All targets require these entitlements:
+```xml
+<key>com.apple.developer.family-controls</key>
+<true/>
+<key>com.apple.security.application-groups</key>
+<array>
+    <string>group.com.gia.screengate</string>
+</array>
 ```
-screengate/
-├── Models/                    # Data models (ContentModel, OnboardingData)
-├── ViewModels/                # Business logic and state management
-│   ├── ContentViewModel.swift # Main content logic
-│   └── OnboardingViewModel.swift # 19-step onboarding flow management
-├── Views/                     # SwiftUI views and components
-│   ├── SplashView.swift       # Animated splash screen (2.5s duration)
-│   ├── MainView.swift         # Main navigation controller
-│   ├── ContentView.swift      # Primary app content
-│   └── Onboarding/            # Onboarding flow components
-│       ├── OnboardingView.swift          # Main onboarding container
-│       ├── OnboardingComponents.swift    # Reusable UI components
-│       └── OnboardingStepViews.swift     # Individual step implementations
-├── Assets.xcassets/           # App icons, colors, and visual assets
-└── screengateApp.swift        # App entry point
+
+Main app and ShieldActionExtension additionally include:
+```xml
+<key>aps-environment</key>
+<string>development</string>
 ```
 
-## Development Notes
+## Development Considerations
 
-### Data Flow
-- `ContentViewModel` manages `@Published` properties for reactive UI updates
-- `OnboardingViewModel` handles the 19-step onboarding flow with persistent state
-- Views use `@StateObject` to maintain ViewModel lifecycle
-- UI actions call ViewModel methods, which update state and trigger view refreshes
-- Onboarding progress is tracked and persisted using UserDefaults
+### iOS Deployment Target
+- **Minimum**: iOS 26.0 (very recent - ensure simulator compatibility)
+- **Architecture**: arm64 only
+- **Swift Version**: 5.0+
 
-### App Launch Flow
-1. **Splash Screen** (2.5 seconds): Animated ScreenGate logo with door icon
-2. **Onboarding Check**: Determines if user has completed onboarding
-3. **Main Content**: Either shows onboarding flow or main app interface
+### Key Technical Details
+- Uses `@Observable` (iOS 17+) instead of `@ObservableObject` for state management
+- Family Controls framework requires explicit user authorization
+- Extensions use shared app group for data persistence
+- ManagedSettings provides system-level restriction enforcement
+- DeviceActivity thresholds may not work properly on simulator (known limitation)
 
-### Onboarding Flow (19 Steps)
-- Welcome and introduction
-- Daily screen time assessment
-- Problem habits identification
-- Personal goal setting
-- 6-question behavioral survey
-- Age and occupation collection
-- Screen Time permission request
-- Personalized projection display
-- App selection and customization
-- Mindful pause setup
-- Scheduling preferences
-- Gamification options
-- Social connection settings
-- Notification preferences
-- Completion
+### Common Development Patterns
+- SwiftUI views use `@Environment` for shared DeviceActivityManager
+- Authorization flow handled centrally in ContentView
+- Extension communication via UserDefaults app group with JSON serialization
+- Time thresholds converted to DateComponents for DeviceActivity framework
+- All device activity names prefixed with `com.gia.screengate` to avoid conflicts
 
-### Current Limitations
-- No data persistence beyond onboarding state (onboarding data stored in UserDefaults)
-- No networking or external data sources
-- No testing infrastructure implemented
-- Mock Screen Time API integration
-- Simplified app selection (placeholder implementation)
-
-### Code Style Requirements
-- Use `@MainActor` for ViewModels to ensure UI thread safety
-- Follow SwiftUI best practices for view composition
-- Implement proper error handling and loading states
-- Use `@Published` properties for reactive state management
-- Maintain clear separation between onboarding and main app logic
-- Use reusable components for onboarding UI elements
-- Implement smooth animations and transitions between steps
-
-## Dependencies
-
-- **iOS SDK**: 18.0+ (for modern SwiftUI features)
-- **Swift Version**: 5.0
-- **Frameworks**: SwiftUI, Foundation, Combine
-- **No external dependencies**: Uses only native iOS frameworks
-- **Screen Time API**: Integration planned for digital wellness features
-
-## Key Features Implemented
-
-### ✅ Completed Features
-- **Splash Screen**: Animated 2.5-second introduction with door icon
-- **Main Navigation**: Flow control between splash, onboarding, and main app
-- **Comprehensive Onboarding**: 19-step guided setup flow
-- **Progress Tracking**: Visual progress bar and step indicators
-- **Data Collection**: User preferences, habits, and behavioral survey
-- **State Persistence**: Onboarding completion status saved to UserDefaults
-- **Component Architecture**: Reusable onboarding UI components
-
-### 🚧 Planned Features
-- Screen Time API integration
-- App usage tracking and limits
-- Mindful pause interventions
-- Gamification system (XP, streaks, achievements)
-- Social features and progress sharing
-- Analytics and insights dashboard
-- Notification system
-- Data persistence for user settings and progress
-
-## Common Development Patterns
-
-When adding new features:
-1. Define data models in `Models/` directory
-2. Create/extend ViewModels in `ViewModels/` directory with `@MainActor`
-3. Implement UI components in appropriate `Views/` subdirectory
-4. For onboarding features, extend existing flow in `Views/Onboarding/`
-5. Ensure proper error handling and loading states
-6. Maintain MVVM separation (no business logic in Views)
-7. Use `@Published` properties for reactive UI updates
-8. Consider user experience with smooth animations and transitions
+### Known Limitations
+- No test infrastructure currently implemented
+- DeviceActivity threshold events may not trigger reliably on iOS Simulator
+- Limited error handling in some extension methods
+- Hardcoded UI strings in shield configurations
