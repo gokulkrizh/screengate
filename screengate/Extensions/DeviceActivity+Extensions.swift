@@ -1,0 +1,19 @@
+//
+//  DeviceActivity+Extensions.swift
+//  DeviceActivityMonitorDemo
+//
+//  Created by Gokul on 2025/11/05.
+//
+
+import DeviceActivity
+import Foundation
+
+extension DeviceActivityEvent {
+    var activityDescription: String {
+        if self.includesAllActivity {
+            return "All Activities included"
+        }
+        return "\(self.applications.count) applications \n\(self.categories.count) categories \n\(self.webDomains.count) web domains"
+    }
+}
+
