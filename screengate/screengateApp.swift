@@ -9,12 +9,20 @@ import SwiftUI
 import UserNotifications
 
 class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
+    private let manager = DeviceActivityManager()
+
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
 
         let userInfo = response.notification.request.content.userInfo
 
-        if let _ = userInfo["showRestrictionLiftedView"] as? Bool {
+        if let _ = userInfo["removeRestrictionsAndShowView"] as? Bool {
+            // Remove restrictions first
+            manager.removeRestrictions()
+
             // Post notification to app to show the view
+            NotificationCenter.default.post(name: .showRestrictionLiftedView, object: nil)
+        } else if let _ = userInfo["showRestrictionLiftedView"] as? Bool {
+            // Legacy format - just show the view
             NotificationCenter.default.post(name: .showRestrictionLiftedView, object: nil)
         }
 

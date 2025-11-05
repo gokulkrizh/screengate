@@ -34,9 +34,8 @@ class ShieldActionExtension: ShieldActionDelegate {
         case .primaryButtonPressed:
             completionHandler(.close)
         case .secondaryButtonPressed:
-            manager.removeRestrictions()
             sendRestrictionRemovedNotification()
-            completionHandler(.none)
+            completionHandler(.none) // Keep shield open until notification is tapped
         @unknown default:
             fatalError()
         }
@@ -49,14 +48,14 @@ class ShieldActionExtension: ShieldActionDelegate {
             if granted {
                 let content = UNMutableNotificationContent()
                 content.title = "ScreenGate"
-                content.body = "Restrictions have been removed. Tap to view details!"
+                content.body = "Tap to remove restrictions and start your break!"
                 content.sound = .default
-                content.userInfo = ["showRestrictionLiftedView": true]
+                content.userInfo = ["removeRestrictionsAndShowView": true]
 
                 // Set up a custom action button
                 let openAppAction = UNNotificationAction(
-                    identifier: "OPEN_RESTRICTION_LIFTED",
-                    title: "View Break Time",
+                    identifier: "REMOVE_RESTRICTIONS_AND_SHOW",
+                    title: "Remove & Start Break",
                     options: [.foreground]
                 )
 
