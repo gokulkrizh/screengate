@@ -40,30 +40,36 @@ extension Notification.Name {
 
 @main
 struct DeviceActivityMonitorDemoApp: App {
-    @State private var showRestrictionLiftedView = false
+    @State private var showRestrictionLifted = false
     private let notificationDelegate = NotificationDelegate()
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .onOpenURL { url in
-                    handleDeepLink(url)
-                }
-                .onReceive(NotificationCenter.default.publisher(for: .showRestrictionLiftedView)) { _ in
-                    showRestrictionLiftedView = true
-                }
-                .sheet(isPresented: $showRestrictionLiftedView) {
-                    RestrictionLiftedView()
-                }
-                .onAppear {
-                    setupNotificationDelegate()
-                }
+            NavigationStack {
+                ContentView()
+                    .onOpenURL { url in
+                        handleDeepLink(url)
+                    }
+                    .onReceive(NotificationCenter.default.publisher(for: .showRestrictionLiftedView)) { _ in
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            showRestrictionLifted = true
+                        }
+                    }
+                    .fullScreenCover(isPresented: $showRestrictionLifted) {
+                        RestrictionLiftedView()
+                    }
+                    .onAppear {
+                        setupNotificationDelegate()
+                    }
+            }
         }
     }
 
     private func handleDeepLink(_ url: URL) {
         if url.scheme == "screengate" && url.host == "restriction-lifted" {
-            showRestrictionLiftedView = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                showRestrictionLifted = true
+            }
         }
     }
 
