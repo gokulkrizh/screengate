@@ -8,21 +8,44 @@ ScreenGate is an iOS digital wellness application built with SwiftUI that implem
 
 ## Build and Development Commands
 
-### Building the Project
+### Building and Running with XcodeBuildMCP (Recommended)
+The project should always be built and run using the XcodeBuildMCP tools for streamlined development:
+
 ```bash
-# Build main app for iOS Simulator (recommended for development)
-xcodebuild -scheme screengate -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+# Discover project structure
+mcp__XcodeBuildMCP__discover_projs({ workspaceRoot: "/Users/gokul/Work/apps/screengate" })
 
-# Build main app for device
-xcodebuild -scheme screengate -configuration Debug
+# List available schemes
+mcp__XcodeBuildMCP__list_schemes({ projectPath: "/Users/gokul/Work/apps/screengate/screengate.xcodeproj" })
 
-# Build all targets (main app + extensions)
-xcodebuild -scheme screengate -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17 Pro' build
+# Build and run on physical device (first choice)
+mcp__XcodeBuildMCP__build_device({
+    projectPath: "/Users/gokul/Work/apps/screengate/screengate.xcodeproj",
+    scheme: "screengate"
+})
+
+# Alternative: Build and run on simulator if physical device not available
+mcp__XcodeBuildMCP__build_run_sim({
+    projectPath: "/Users/gokul/Work/apps/screengate/screengate.xcodeproj",
+    scheme: "screengate",
+    simulatorName: "iPhone 17 Pro"
+})
+
+# List available physical devices
+mcp__XcodeBuildMCP__list_devices()
+
+# List available simulators
+mcp__XcodeBuildMCP__list_sims({ enabled: true })
 ```
 
-### Running the Application
+### Device Selection Priority
+1. **First Choice**: Physical device (preferred for testing Family Controls functionality)
+2. **Second Choice**: iOS Simulator (note: some DeviceActivity features may not work reliably on simulator)
+
+### Manual Commands (Legacy - Not Recommended)
 ```bash
-# Install and launch on simulator
+# Only use if XcodeBuildMCP is unavailable
+xcodebuild -scheme screengate -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
 xcrun simctl install booted ./DerivedData/Build/Products/Debug-iphonesimulator/screengate.app
 xcrun simctl launch booted com.gia.screengate
 ```
@@ -138,6 +161,7 @@ Main app and ShieldActionExtension additionally include:
 
 ### Known Limitations
 - No test infrastructure currently implemented
-- DeviceActivity threshold events may not trigger reliably on iOS Simulator
+- DeviceActivity threshold events may not trigger reliably on iOS Simulator (use physical device for testing)
 - Limited error handling in some extension methods
 - Hardcoded UI strings in shield configurations
+- Physical device required for full Family Controls functionality testing
