@@ -49,8 +49,26 @@ class ShieldActionExtension: ShieldActionDelegate {
             if granted {
                 let content = UNMutableNotificationContent()
                 content.title = "ScreenGate"
-                content.body = "Restrictions have been removed. Take a mindful break!"
+                content.body = "Restrictions have been removed. Tap to view details!"
                 content.sound = .default
+                content.userInfo = ["showRestrictionLiftedView": true]
+
+                // Set up a custom action button
+                let openAppAction = UNNotificationAction(
+                    identifier: "OPEN_RESTRICTION_LIFTED",
+                    title: "View Break Time",
+                    options: [.foreground]
+                )
+
+                let category = UNNotificationCategory(
+                    identifier: "RESTRICTION_LIFTED_CATEGORY",
+                    actions: [openAppAction],
+                    intentIdentifiers: [],
+                    options: []
+                )
+
+                center.setNotificationCategories([category])
+                content.categoryIdentifier = "RESTRICTION_LIFTED_CATEGORY"
 
                 let request = UNNotificationRequest(
                     identifier: UUID().uuidString,
@@ -61,6 +79,8 @@ class ShieldActionExtension: ShieldActionDelegate {
                 center.add(request) { error in
                     if let error = error {
                         print("Error showing restriction removed notification: \(error)")
+                    } else {
+                        print("Notification sent successfully")
                     }
                 }
             } else if let error = error {
