@@ -6,6 +6,7 @@
 //
 
 import ManagedSettings
+import UserNotifications
 
 // Override the functions below to customize the shield actions used in various situations.
 // The system provides a default response for any functions that your subclass doesn't override.
@@ -34,10 +35,38 @@ class ShieldActionExtension: ShieldActionDelegate {
             completionHandler(.close)
         case .secondaryButtonPressed:
             manager.removeRestrictions()
+            sendRestrictionRemovedNotification()
             completionHandler(.none)
         @unknown default:
             fatalError()
         }
 
     }
+
+    private func sendRestrictionRemovedNotification() {
+        let center = UNUserNotificationCenter.current()
+        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if granted {
+                let content = UNMutableNotificationContent()
+                content.title = "ScreenGate"
+                content.body = "Restrictions have been removed. Take a mindful break!"
+                content.sound = .default
+
+                let request = UNNotificationRequest(
+                    identifier: UUID().uuidString,
+                    content: content,
+                    trigger: nil
+                )
+
+                center.add(request) { error in
+                    if let error = error {
+                        print("Error showing restriction removed notification: \(error)")
+                    }
+                }
+            } else if let error = error {
+                print("Error requesting notification authorization: \(error)")
+            }
+        }
+    }
+
 }
