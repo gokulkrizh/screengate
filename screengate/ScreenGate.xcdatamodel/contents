@@ -41,7 +41,7 @@
         <attribute name="name" attributeType="String" defaultValueString=""/>
         <attribute name="recurringDays" optional="YES" attributeType="String"/>
         <attribute name="scheduledDurationMinutes" attributeType="Integer 32" defaultValueString="60" usesScalarValueType="YES"/>
-        <attribute name="startTime" attributeType="Date" defaultDateTimeInterval="757362600" usesScalarValueType="YES"/>
+        <attribute name="startTime" attributeType="Date" defaultDateTimeInterval="757362600" usesScalarValueType="NO"/>
         <attribute name="status" attributeType="String" defaultValueString="scheduled"/>
         <attribute name="totalBreakTimeSeconds" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="wasSuccessful" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
@@ -65,7 +65,7 @@
         <attribute name="overrideMethod" optional="YES" attributeType="String"/>
         <attribute name="sessionID" optional="YES" attributeType="UUID"/>
         <attribute name="sessionName" optional="YES" attributeType="String"/>
-        <attribute name="timestamp" attributeType="Date" defaultDateTimeInterval="757362600" usesScalarValueType="YES"/>
+        <attribute name="timestamp" attributeType="Date" defaultDateTimeInterval="757362600" usesScalarValueType="NO"/>
         <attribute name="type" attributeType="String" defaultValueString=""/>
         <attribute name="userContinuedAfterDelay" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <relationship name="dailyStat" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DailyStat" inverseName="interventionLogs" inverseEntity="DailyStat"/>
@@ -90,7 +90,7 @@
         <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="milestones" inverseEntity="User"/>
     </entity>
     <entity name="ProtectedApp" representedClassName="ProtectedApp" syncable="YES" codeGenerationType="class">
-        <attribute name="addedAt" attributeType="Date" defaultDateTimeInterval="757362600" usesScalarValueType="YES"/>
+        <attribute name="addedAt" attributeType="Date" defaultDateTimeInterval="757362600" usesScalarValueType="NO"/>
         <attribute name="allowBreakDuring" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="appIconData" optional="YES" attributeType="Binary"/>
         <attribute name="blockedCount" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
@@ -111,13 +111,13 @@
         <attribute name="allowBreaksDuringSession" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="allowEmergencyBypass" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
         <attribute name="analyticsEnabled" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
-        <attribute name="createdAt" attributeType="Date" defaultDateTimeInterval="757362600" usesScalarValueType="YES"/>
+        <attribute name="createdAt" attributeType="Date" defaultDateTimeInterval="757405800" usesScalarValueType="NO"/>
         <attribute name="dailyGoalMinutes" attributeType="Integer 32" defaultValueString="120" usesScalarValueType="YES"/>
         <attribute name="displayName" optional="YES" attributeType="String"/>
         <attribute name="email" optional="YES" attributeType="String"/>
         <attribute name="emergencyBypassCode" optional="YES" attributeType="String"/>
         <attribute name="id" attributeType="UUID" defaultValueString="00000000-0000-0000-0000-000000000000" usesScalarValueType="YES"/>
-        <attribute name="lastActiveAt" attributeType="Date" defaultDateTimeInterval="757362600" usesScalarValueType="YES"/>
+        <attribute name="lastActiveAt" attributeType="Date" defaultDateTimeInterval="757362600" usesScalarValueType="NO"/>
         <attribute name="notificationsEnabled" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
         <attribute name="preferredBreakDurationMinutes" attributeType="Integer 32" defaultValueString="15" usesScalarValueType="YES"/>
         <attribute name="subscriptionEndDate" optional="YES" attributeType="Date"/>
