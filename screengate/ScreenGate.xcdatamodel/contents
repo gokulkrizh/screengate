@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24299" systemVersion="25A362" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="YES" userDefinedModelVersionIdentifier="">
+    <entity name="DailyStat" representedClassName="DailyStat" syncable="YES" codeGenerationType="class">
+        <attribute name="appBlockedCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="appInterventionCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="breakCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="date" attributeType="Date" defaultDateTimeInterval="757362600" usesScalarValueType="NO"/>
+        <attribute name="dayOfWeek" attributeType="String" defaultValueString="monday"/>
+        <attribute name="delayInterventionCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="emergencyBypassCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="energyLevel" optional="YES" attributeType="Integer 32" usesScalarValueType="YES"/>
+        <attribute name="eveningMood" optional="YES" attributeType="String"/>
+        <attribute name="focusGoalAchieved" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="focusGoalMetMinutes" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="focusGoalMetSeconds" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="hardBlockCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="id" attributeType="UUID" defaultValueString="00000000-0000-0000-0000-000000000000" usesScalarValueType="NO"/>
+        <attribute name="interventionSuccessRate" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="morningMood" optional="YES" attributeType="String"/>
+        <attribute name="notes" optional="YES" attributeType="String"/>
+        <attribute name="sessionCompletionRate" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="topDistractionAppBundle" optional="YES" attributeType="String"/>
+        <attribute name="topDistractionAppName" optional="YES" attributeType="String"/>
+        <attribute name="topDistractionCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="totalFocusTimeSeconds" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="totalSessionsCompleted" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="totalSessionsScheduled" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="interventionLogs" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="InterventionLog" inverseName="dailyStat" inverseEntity="InterventionLog"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="dailyStats" inverseEntity="User"/>
+    </entity>
+    <entity name="FocusSession" representedClassName="FocusSession" syncable="YES" codeGenerationType="class">
+        <attribute name="abandonedAt" optional="YES" attributeType="Date"/>
+        <attribute name="actualDurationSeconds" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="allowManualBreaks" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="breakCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="completionPercentage" attributeType="Double" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="desc" optional="YES" attributeType="String"/>
+        <attribute name="endTime" optional="YES" attributeType="Date"/>
+        <attribute name="id" attributeType="UUID" defaultValueString="00000000-0000-0000-0000-000000000000" usesScalarValueType="YES"/>
+        <attribute name="isRecurring" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="name" attributeType="String" defaultValueString=""/>
+        <attribute name="recurringDays" optional="YES" attributeType="String"/>
+        <attribute name="scheduledDurationMinutes" attributeType="Integer 32" defaultValueString="60" usesScalarValueType="YES"/>
+        <attribute name="startTime" attributeType="Date" defaultDateTimeInterval="757362600" usesScalarValueType="YES"/>
+        <attribute name="status" attributeType="String" defaultValueString="scheduled"/>
+        <attribute name="totalBreakTimeSeconds" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="wasSuccessful" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <relationship name="interventionLogs" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="InterventionLog" inverseName="focusSession" inverseEntity="InterventionLog"/>
+        <relationship name="protectedApps" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ProtectedApp" inverseName="focusSessions" inverseEntity="ProtectedApp"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="focusSessions" inverseEntity="User"/>
+    </entity>
+    <entity name="InterventionLog" representedClassName="InterventionLog" syncable="YES" codeGenerationType="class">
+        <attribute name="appBundleID" attributeType="String" defaultValueString=""/>
+        <attribute name="appName" attributeType="String" defaultValueString=""/>
+        <attribute name="askWasApproved" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="blockReason" optional="YES" attributeType="String"/>
+        <attribute name="blockWasOverridden" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="breakDurationMinutes" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="breakWasGranted" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="breathingExerciseCompleted" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="breathingPeakTimeSeconds" optional="YES" attributeType="Integer 32" usesScalarValueType="YES"/>
+        <attribute name="dailyStatID" optional="YES" attributeType="UUID"/>
+        <attribute name="delayDurationSeconds" attributeType="Integer 32" defaultValueString="10" usesScalarValueType="YES"/>
+        <attribute name="id" attributeType="UUID" defaultValueString="00000000-0000-0000-0000-000000000000" usesScalarValueType="YES"/>
+        <attribute name="overrideMethod" optional="YES" attributeType="String"/>
+        <attribute name="sessionID" optional="YES" attributeType="UUID"/>
+        <attribute name="sessionName" optional="YES" attributeType="String"/>
+        <attribute name="timestamp" attributeType="Date" defaultDateTimeInterval="757362600" usesScalarValueType="YES"/>
+        <attribute name="type" attributeType="String" defaultValueString=""/>
+        <attribute name="userContinuedAfterDelay" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <relationship name="dailyStat" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DailyStat" inverseName="interventionLogs" inverseEntity="DailyStat"/>
+        <relationship name="focusSession" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="FocusSession" inverseName="interventionLogs" inverseEntity="FocusSession"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="interventionLogs" inverseEntity="User"/>
+    </entity>
+    <entity name="Milestone" representedClassName="Milestone" syncable="YES" codeGenerationType="class">
+        <attribute name="celebratedByUser" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="currentValue" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="desc" attributeType="String" defaultValueString=""/>
+        <attribute name="icon" attributeType="String" defaultValueString=""/>
+        <attribute name="id" attributeType="UUID" defaultValueString="00000000-0000-0000-0000-000000000000" usesScalarValueType="YES"/>
+        <attribute name="lastActivityDate" optional="YES" attributeType="Date"/>
+        <attribute name="maxStreakCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="notificationSent" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="progress" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="streakCount" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="targetValue" attributeType="Integer 32" defaultValueString="1" usesScalarValueType="YES"/>
+        <attribute name="title" attributeType="String" defaultValueString=""/>
+        <attribute name="type" attributeType="String" defaultValueString=""/>
+        <attribute name="unlockedAt" optional="YES" attributeType="Date"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="milestones" inverseEntity="User"/>
+    </entity>
+    <entity name="ProtectedApp" representedClassName="ProtectedApp" syncable="YES" codeGenerationType="class">
+        <attribute name="addedAt" attributeType="Date" defaultDateTimeInterval="757362600" usesScalarValueType="YES"/>
+        <attribute name="allowBreakDuring" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="appIconData" optional="YES" attributeType="Binary"/>
+        <attribute name="blockedCount" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="blockingMode" attributeType="String" defaultValueString="delay"/>
+        <attribute name="bundleIdentifier" attributeType="String" defaultValueString=""/>
+        <attribute name="category" attributeType="String" defaultValueString=""/>
+        <attribute name="customNotes" optional="YES" attributeType="String"/>
+        <attribute name="delayDurationSeconds" attributeType="Integer 32" defaultValueString="10" usesScalarValueType="YES"/>
+        <attribute name="displayName" attributeType="String" defaultValueString=""/>
+        <attribute name="id" attributeType="UUID" defaultValueString="00000000-0000-0000-0000-000000000000" usesScalarValueType="YES"/>
+        <attribute name="isEnabled" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="lastBlockedAt" optional="YES" attributeType="Date"/>
+        <attribute name="totalTimeBlockedSeconds" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="focusSessions" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="FocusSession" inverseName="protectedApps" inverseEntity="FocusSession"/>
+        <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="protectedApps" inverseEntity="User"/>
+    </entity>
+    <entity name="User" representedClassName="User" syncable="YES" codeGenerationType="class">
+        <attribute name="allowBreaksDuringSession" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="allowEmergencyBypass" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="analyticsEnabled" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="createdAt" attributeType="Date" defaultDateTimeInterval="757362600" usesScalarValueType="YES"/>
+        <attribute name="dailyGoalMinutes" attributeType="Integer 32" defaultValueString="120" usesScalarValueType="YES"/>
+        <attribute name="displayName" optional="YES" attributeType="String"/>
+        <attribute name="email" optional="YES" attributeType="String"/>
+        <attribute name="emergencyBypassCode" optional="YES" attributeType="String"/>
+        <attribute name="id" attributeType="UUID" defaultValueString="00000000-0000-0000-0000-000000000000" usesScalarValueType="YES"/>
+        <attribute name="lastActiveAt" attributeType="Date" defaultDateTimeInterval="757362600" usesScalarValueType="YES"/>
+        <attribute name="notificationsEnabled" attributeType="Boolean" defaultValueString="YES" usesScalarValueType="YES"/>
+        <attribute name="preferredBreakDurationMinutes" attributeType="Integer 32" defaultValueString="15" usesScalarValueType="YES"/>
+        <attribute name="subscriptionEndDate" optional="YES" attributeType="Date"/>
+        <attribute name="subscriptionStartDate" optional="YES" attributeType="Date"/>
+        <attribute name="subscriptionStatus" attributeType="String" defaultValueString="free"/>
+        <attribute name="trialEndDate" optional="YES" attributeType="Date"/>
+        <attribute name="trialStartDate" optional="YES" attributeType="Date"/>
+        <relationship name="dailyStats" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="DailyStat" inverseName="user" inverseEntity="DailyStat"/>
+        <relationship name="focusSessions" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="FocusSession" inverseName="user" inverseEntity="FocusSession"/>
+        <relationship name="interventionLogs" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="InterventionLog" inverseName="user" inverseEntity="InterventionLog"/>
+        <relationship name="milestones" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Milestone" inverseName="user" inverseEntity="Milestone"/>
+        <relationship name="protectedApps" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ProtectedApp" inverseName="user" inverseEntity="ProtectedApp"/>
+    </entity>
+</model>
