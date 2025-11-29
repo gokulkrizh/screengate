@@ -13,11 +13,26 @@ import Foundation
 /// Communicates with main app via shared container
 class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     
+    private var manager = DeviceActivityManager()
+    
     // MARK: - Lifecycle Events
     
     override func intervalDidStart(for activity: DeviceActivityName) {
         super.intervalDidStart(for: activity)
         print("🎬 Focus interval started: \(activity.rawValue)")
+        
+        // Handle the start of the interval.
+        // if the threshold is 0, the eventDidReachThreshold is not be triggered correctly sometimes.
+        let events = manager.getEvents(activityName: activity, details: true)
+        for (_, event) in events {
+            if event.threshold.hour == 0 && event.threshold.minute == 0 {
+                manager.applyImmediateRestrictions(
+                    applicationTokens: event.applications,
+                    categoryTokens: event.categories,
+                    webDomainTokens: event.webDomains
+                )
+            }
+        }
     }
     
     override func intervalDidEnd(for activity: DeviceActivityName) {
@@ -28,6 +43,9 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         let sharedManager = SharedContainerManager.shared
         sharedManager.clearActiveSession()
         sharedManager.clearActiveBreak()
+        
+        // Remove restrictions
+        manager.removeRestrictions()
     }
     
     // MARK: - App Launch Interception
@@ -36,12 +54,21 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
         super.eventDidReachThreshold(event, activity: activity)
         
+        // Handle the event reaching its threshold.
+        let events = manager.getEvents(activityName: activity, details: true)
+        guard let event = events[event] else {
+            return
+        }
+        manager.applyImmediateRestrictions(
+            applicationTokens: event.applications,
+            categoryTokens: event.categories,
+            webDomainTokens: event.webDomains
+        )
+        
         // Log the intervention event
         let timestamp = Date()
-        
         print("🚨 Threshold reached at \(timestamp)")
         
-        // Log intervention via shared container
         let sharedManager = SharedContainerManager.shared
         sharedManager.logIntervention(
             bundleID: "com.unknown.app",
