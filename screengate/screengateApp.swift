@@ -45,22 +45,30 @@ struct DeviceActivityMonitorDemoApp: App {
 
     var body: some Scene {
         WindowGroup {
-            NavigationStack {
+            TabView {
                 ContentView()
-                    .onOpenURL { url in
-                        handleDeepLink(url)
+                    .tabItem {
+                        Label("Shield", systemImage: "shield.fill")
                     }
-                    .onReceive(NotificationCenter.default.publisher(for: .showRestrictionLiftedView)) { _ in
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            showRestrictionLifted = true
-                        }
+                
+                SettingsView()
+                    .tabItem {
+                        Label("Settings", systemImage: "gear")
                     }
-                    .fullScreenCover(isPresented: $showRestrictionLifted) {
-                        RestrictionLiftedView()
-                    }
-                    .onAppear {
-                        setupNotificationDelegate()
-                    }
+            }
+            .onOpenURL { url in
+                handleDeepLink(url)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .showRestrictionLiftedView)) { _ in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    showRestrictionLifted = true
+                }
+            }
+            .fullScreenCover(isPresented: $showRestrictionLifted) {
+                RestrictionLiftedView()
+            }
+            .onAppear {
+                setupNotificationDelegate()
             }
         }
     }
