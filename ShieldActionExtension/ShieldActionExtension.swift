@@ -8,84 +8,96 @@
 import ManagedSettings
 import UserNotifications
 
-// Override the functions below to customize the shield actions used in various situations.
-// The system provides a default response for any functions that your subclass doesn't override.
-// Make sure that your class name matches the NSExtensionPrincipalClass in your Info.plist.
+/// Handles user actions on shield screens (acknowledge, emergency bypass, etc.)
 class ShieldActionExtension: ShieldActionDelegate {
-    private var manager = DeviceActivityManager()
-
+    
+    private let sharedManager = SharedContainerManager.shared
+    
+    // MARK: - Action Handling
+    
     override func handle(action: ShieldAction, for application: ApplicationToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
-        handleAction(action: action, completionHandler: completionHandler)
+        handleShieldAction(action, completionHandler: completionHandler)
     }
     
     override func handle(action: ShieldAction, for webDomain: WebDomainToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
-        // Handle the action as needed.
-        handleAction(action: action, completionHandler: completionHandler)
+        handleShieldAction(action, completionHandler: completionHandler)
     }
     
     override func handle(action: ShieldAction, for category: ActivityCategoryToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
-        // Handle the action as needed.
-        handleAction(action: action, completionHandler: completionHandler)
+        handleShieldAction(action, completionHandler: completionHandler)
     }
     
+    // MARK: - Private Methods
     
-    private func handleAction(action: ShieldAction, completionHandler: @escaping (ShieldActionResponse) -> Void) {
+    private func handleShieldAction(_ action: ShieldAction, completionHandler: @escaping (ShieldActionResponse) -> Void) {
         switch action {
         case .primaryButtonPressed:
+            // User acknowledged the shield
+            print("✓ Shield acknowledged - closing")
             completionHandler(.close)
+            
         case .secondaryButtonPressed:
-            sendRestrictionRemovedNotification()
-            completionHandler(.none) // Keep shield open until notification is tapped
+            // User requested a break
+            print("⏱️ Break requested - showing break timer")
+            sendBreakPermissionNotification()
+            completionHandler(.close)
+            
         @unknown default:
-            fatalError()
+            print("⚠️ Unknown shield action")
+            completionHandler(.close)
         }
-
     }
-
-    private func sendRestrictionRemovedNotification() {
+    
+    /// Send notification allowing user to grant a break from focus session
+    private func sendBreakPermissionNotification() {
         let center = UNUserNotificationCenter.current()
+        
         center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             if granted {
                 let content = UNMutableNotificationContent()
-                content.title = "ScreenGate"
-                content.body = "Tap to remove restrictions and start your break!"
+                content.title = "Focus Club"
+                content.body = "Take a break?"
                 content.sound = .default
-                content.userInfo = ["removeRestrictionsAndShowView": true]
-
-                // Set up a custom action button
-                let openAppAction = UNNotificationAction(
-                    identifier: "REMOVE_RESTRICTIONS_AND_SHOW",
-                    title: "Remove & Start Break",
+                content.badge = NSNumber(value: 1)
+                content.userInfo = ["action": "requestBreak"]
+                
+                // Create action buttons
+                let yesAction = UNNotificationAction(
+                    identifier: "GRANT_BREAK",
+                    title: "Grant Break",
                     options: [.foreground]
                 )
-
+                
+                let noAction = UNNotificationAction(
+                    identifier: "DENY_BREAK",
+                    title: "Stay Focused",
+                    options: .authenticationRequired
+                )
+                
                 let category = UNNotificationCategory(
-                    identifier: "RESTRICTION_LIFTED_CATEGORY",
-                    actions: [openAppAction],
+                    identifier: "BREAK_REQUEST_CATEGORY",
+                    actions: [yesAction, noAction],
                     intentIdentifiers: [],
                     options: []
                 )
-
+                
                 center.setNotificationCategories([category])
-                content.categoryIdentifier = "RESTRICTION_LIFTED_CATEGORY"
-
+                content.categoryIdentifier = "BREAK_REQUEST_CATEGORY"
+                
                 let request = UNNotificationRequest(
                     identifier: UUID().uuidString,
                     content: content,
-                    trigger: nil
+                    trigger: UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
                 )
-
+                
                 center.add(request) { error in
                     if let error = error {
-                        print("Error showing restriction removed notification: \(error)")
+                        print("❌ Error sending break notification: \(error)")
                     } else {
-                        print("Notification sent successfully")
+                        print("✓ Break notification sent")
                     }
                 }
-            } else if let error = error {
-                print("Error requesting notification authorization: \(error)")
             }
         }
     }
-
 }
