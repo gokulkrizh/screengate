@@ -5,7 +5,9 @@ class SharedContainerManager {
     static let shared = SharedContainerManager()
     
     private let appGroupID = "group.com.gia.screengate"
-    private lazy var sharedUserDefaults = UserDefaults(suiteName: appGroupID)
+    private lazy var sharedUserDefaults: UserDefaults? = {
+        UserDefaults(suiteName: appGroupID)
+    }()
     
     // MARK: - Intervention Logging
     
@@ -26,6 +28,7 @@ class SharedContainerManager {
         var interventions = sharedUserDefaults?.array(forKey: "pendingInterventions") as? [[String: Any]] ?? []
         interventions.append(interventionData)
         sharedUserDefaults?.set(interventions, forKey: "pendingInterventions")
+        sharedUserDefaults?.synchronize()
         
         print("✓ Intervention logged: \(appName) (\(type))")
     }

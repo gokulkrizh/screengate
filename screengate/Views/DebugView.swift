@@ -63,6 +63,10 @@ struct DebugView: View {
                     loadSharedData()
                 }
                 
+                Button("Test: Add Fake Intervention") {
+                    testAddIntervention()
+                }
+                
                 Button("Clear All Interventions", role: .destructive) {
                     clearInterventions()
                 }
@@ -86,6 +90,9 @@ struct DebugView: View {
     }
     
     private func loadInterventions() {
+        // First, sync pending interventions from shared container
+        syncPendingInterventions()
+        
         let request = NSFetchRequest<InterventionLog>(entityName: "InterventionLog")
         request.sortDescriptors = [NSSortDescriptor(keyPath: \InterventionLog.timestamp, ascending: false)]
         
@@ -93,6 +100,55 @@ struct DebugView: View {
             interventions = try CoreDataManager.shared.context.fetch(request)
         } catch {
             print("Failed to fetch interventions: \(error)")
+        }
+    }
+    
+    private func syncPendingInterventions() {
+        print("🔄 syncPendingInterventions() called")
+        
+        let sharedManager = SharedContainerManager.shared
+        let pendingInterventions = sharedManager.getPendingInterventions()
+        
+        print("📊 Retrieved \(pendingInterventions.count) pending interventions from shared container")
+        
+        guard !pendingInterventions.isEmpty else {
+            print("⚠️ No pending interventions to sync, returning early")
+            return
+        }
+        
+        print("📥 Syncing \(pendingInterventions.count) pending interventions to Core Data...")
+        
+        let context = CoreDataManager.shared.context
+        
+        for interventionData in pendingInterventions {
+            guard let bundleID = interventionData["bundleID"] as? String,
+                  let appName = interventionData["appName"] as? String,
+                  let type = interventionData["type"] as? String,
+                  let timestamp = interventionData["timestamp"] as? TimeInterval else {
+                print("⚠️ Invalid intervention data: \(interventionData)")
+                continue
+            }
+            
+            // Create InterventionLog entity
+            let log = NSEntityDescription.insertNewObject(forEntityName: "InterventionLog", into: context) as! InterventionLog
+            log.id = UUID()
+            log.appBundleID = bundleID
+            log.appName = appName
+            log.type = type
+            log.timestamp = Date(timeIntervalSince1970: timestamp)
+            
+            print("✓ Created intervention log: \(appName)")
+        }
+        
+        // Save to Core Data
+        do {
+            try CoreDataManager.shared.save()
+            print("✓ Synced \(pendingInterventions.count) interventions to Core Data")
+            
+            // Clear pending interventions after syncing
+            sharedManager.clearPendingInterventions()
+        } catch {
+            print("❌ Failed to save interventions to Core Data: \(error)")
         }
     }
     
@@ -122,6 +178,16 @@ struct DebugView: View {
         // Pending interventions
         let pending = sharedManager.getPendingInterventions()
         info += "Pending Interventions: \(pending.count)\n"
+        
+        // DEBUG: Print actual pending data
+        if pending.count > 0 {
+            print("🔍 DEBUG: Found \(pending.count) pending interventions:")
+            for (index, item) in pending.enumerated() {
+                print("  [\(index)]: \(item)")
+            }
+        } else {
+            print("⚠️ DEBUG: No pending interventions found in shared container")
+        }
         
         // Protected apps
         let protectedApps = sharedManager.getProtectedApps()
@@ -194,6 +260,26 @@ struct DebugView: View {
         print("Active Session: \(sharedManager.getActiveSession() != nil ? "✓" : "✗")")
         print("Active Break: \(sharedManager.getActiveBreak() != nil ? "✓" : "✗")")
         print("===================\n")
+    }
+    
+    private func testAddIntervention() {
+        print("🧪 TEST: Adding fake intervention to shared container...")
+        
+        let sharedManager = SharedContainerManager.shared
+        sharedManager.logIntervention(
+            bundleID: "com.test.app",
+            appName: "Test App",
+            type: "block",
+            timestamp: Date()
+        )
+        
+        print("✓ TEST: Fake intervention added")
+        
+        // Refresh to see if it appears
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            loadSharedData()
+            loadInterventions()
+        }
     }
 }
 

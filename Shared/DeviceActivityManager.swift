@@ -89,19 +89,35 @@ class DeviceActivityManager {
             includesPastActivity: true,
         )
         
-        // If the app already monitored the activity, this method overwrites the previous schedule and events.
+    // If the app already monitored the activity, this method overwrites the previous schedule and events.
         // Attempting to monitor too many activities or activities that are too tightly scheduled can cause this method to throw an error.
         try self.deviceActivityCenter.startMonitoring(
             deviceActivityName,
             during: schedule,
             // If this parameter is empty,
-            // the application extension only receives callbacks for the start and end times of the schedule’s interval.
+            // the application extension only receives callbacks for the start and end times of the schedule's interval.
             events: [
                 eventName : event
             ]
         )
         
         self.monitoringActivities.append(activityName)
+        
+        // IMPORTANT: Save session info to shared container for extensions to access
+        let sessionID = UUID()
+        let sharedContainer = UserDefaults(suiteName: "group.com.gia.screengate") ?? .standard
+        
+        // Save session info - note: we can't serialize ApplicationToken objects,
+        // so extensions will get the protected apps list separately when they read the selection
+        let sessionData: [String: Any] = [
+            "sessionId": sessionID.uuidString,
+            "startTime": start.date ?? Date(),
+            "durationSeconds": Int(shieldThreshold),
+            "protectedAppCount": activitySelection.applicationTokens.count
+        ]
+        sharedContainer.set(sessionData, forKey: "activeSession")
+        sharedContainer.synchronize() // Force sync to disk
+        print("✓ Session saved to shared container with \(activitySelection.applicationTokens.count) protected apps")
     }
     
     func stopMonitor(activityName: String) {

@@ -65,17 +65,34 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             webDomainTokens: event.webDomains
         )
         
-        // Log the intervention event
+        // Log intervention for each protected app - we need to get app info from manager
         let timestamp = Date()
         print("🚨 Threshold reached at \(timestamp)")
         
         let sharedManager = SharedContainerManager.shared
-        sharedManager.logIntervention(
-            bundleID: "com.unknown.app",
-            appName: "App",
-            type: "block",
-            timestamp: timestamp
-        )
+        
+        // Try to get protected apps info from saved selection in UserDefaults
+        if let session = sharedManager.getActiveSession() {
+            for bundleID in session.protectedApps {
+                // Log with bundle ID - app name will be retrieved by main app if needed
+                sharedManager.logIntervention(
+                    bundleID: bundleID,
+                    appName: bundleID, // Use bundle ID as fallback for app name
+                    type: "block",
+                    timestamp: timestamp
+                )
+                print("✓ Logged intervention for \(bundleID)")
+            }
+        } else {
+            // Fallback: log a generic intervention
+            sharedManager.logIntervention(
+                bundleID: "com.unknown.app",
+                appName: "Protected App",
+                type: "block",
+                timestamp: timestamp
+            )
+            print("⚠️ No session info - logged generic intervention")
+        }
     }
     
     // MARK: - Warnings

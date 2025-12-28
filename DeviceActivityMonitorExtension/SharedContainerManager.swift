@@ -5,7 +5,9 @@ class SharedContainerManager {
     static let shared = SharedContainerManager()
     
     private let appGroupID = "group.com.gia.screengate"
-    private lazy var sharedUserDefaults = UserDefaults(suiteName: appGroupID)
+    private lazy var sharedUserDefaults: UserDefaults? = {
+        UserDefaults(suiteName: appGroupID)
+    }()
     
     // MARK: - Intervention Logging
     
@@ -26,6 +28,7 @@ class SharedContainerManager {
         var interventions = sharedUserDefaults?.array(forKey: "pendingInterventions") as? [[String: Any]] ?? []
         interventions.append(interventionData)
         sharedUserDefaults?.set(interventions, forKey: "pendingInterventions")
+        sharedUserDefaults?.synchronize()
         
         print("✓ Intervention logged: \(appName) (\(type))")
     }
@@ -37,16 +40,19 @@ class SharedContainerManager {
               let idString = sessionData["sessionId"] as? String,
               let id = UUID(uuidString: idString),
               let startTime = sessionData["startTime"] as? TimeInterval,
-              let durationSeconds = sessionData["durationSeconds"] as? Int,
-              let protectedApps = sessionData["protectedAppBundles"] as? [String] else {
+              let durationSeconds = sessionData["durationSeconds"] as? Int else {
             return nil
         }
+        
+        // Get protected app count if available
+        let protectedAppCount = sessionData["protectedAppCount"] as? Int ?? 0
+        let protectedApps = sessionData["protectedAppBundles"] as? [String] ?? []
         
         return (
             id: id,
             startTime: Date(timeIntervalSince1970: startTime),
             durationSeconds: durationSeconds,
-            protectedApps: protectedApps
+            protectedApps: protectedApps.isEmpty ? Array(0..<protectedAppCount).map { "app\($0)" } : protectedApps
         )
     }
     

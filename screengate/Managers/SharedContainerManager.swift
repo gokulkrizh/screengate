@@ -8,7 +8,13 @@ class SharedContainerManager {
     // App Group identifier must match entitlements
     private let appGroupID = "group.com.gia.screengate"
     
-    private lazy var sharedUserDefaults = UserDefaults(suiteName: appGroupID)
+    private lazy var sharedUserDefaults: UserDefaults? = {
+        // UserDefaults with suiteName automatically uses the app group container
+        let defaults = UserDefaults(suiteName: appGroupID)
+        // Ensure it's initialized by setting and synchronizing
+        defaults?.synchronize()
+        return defaults
+    }()
     
     // MARK: - Intervention Logging
     
@@ -31,6 +37,7 @@ class SharedContainerManager {
         var interventions = sharedUserDefaults?.array(forKey: "pendingInterventions") as? [[String: Any]] ?? []
         interventions.append(interventionData)
         sharedUserDefaults?.set(interventions, forKey: "pendingInterventions")
+        sharedUserDefaults?.synchronize() // Force sync
         
         print("✓ Intervention logged: \(appName) (\(type))")
     }
@@ -44,6 +51,7 @@ class SharedContainerManager {
     /// Clear pending interventions after syncing to Core Data
     func clearPendingInterventions() {
         sharedUserDefaults?.removeObject(forKey: "pendingInterventions")
+        sharedUserDefaults?.synchronize()
     }
     
     // MARK: - Session State
@@ -64,6 +72,7 @@ class SharedContainerManager {
         ]
         
         sharedUserDefaults?.set(sessionData, forKey: "activeSession")
+        sharedUserDefaults?.synchronize()
         print("✓ Session saved to shared container: \(id.uuidString)")
     }
     
@@ -73,22 +82,26 @@ class SharedContainerManager {
               let idString = sessionData["sessionId"] as? String,
               let id = UUID(uuidString: idString),
               let startTime = sessionData["startTime"] as? TimeInterval,
-              let durationSeconds = sessionData["durationSeconds"] as? Int,
-              let protectedApps = sessionData["protectedAppBundles"] as? [String] else {
+              let durationSeconds = sessionData["durationSeconds"] as? Int else {
             return nil
         }
+        
+        // Get protected app count if available
+        let protectedAppCount = sessionData["protectedAppCount"] as? Int ?? 0
+        let protectedApps = sessionData["protectedAppBundles"] as? [String] ?? []
         
         return (
             id: id,
             startTime: Date(timeIntervalSince1970: startTime),
             durationSeconds: durationSeconds,
-            protectedApps: protectedApps
+            protectedApps: protectedApps.isEmpty ? Array(0..<protectedAppCount).map { "app\($0)" } : protectedApps
         )
     }
     
     /// Clear active session (called when session ends)
     func clearActiveSession() {
         sharedUserDefaults?.removeObject(forKey: "activeSession")
+        sharedUserDefaults?.synchronize()
         print("✓ Active session cleared from shared container")
     }
     
@@ -114,6 +127,7 @@ class SharedContainerManager {
         ]
         
         sharedUserDefaults?.set(breakData, forKey: "activeBreak")
+        sharedUserDefaults?.synchronize()
         print("✓ Break saved: \(durationSeconds)s")
     }
     
@@ -131,6 +145,7 @@ class SharedContainerManager {
     /// Clear active break
     func clearActiveBreak() {
         sharedUserDefaults?.removeObject(forKey: "activeBreak")
+        sharedUserDefaults?.synchronize()
     }
     
     // MARK: - User Preferences
@@ -147,6 +162,7 @@ class SharedContainerManager {
         ]
         
         sharedUserDefaults?.set(settings, forKey: "protectionSettings")
+        sharedUserDefaults?.synchronize()
         print("✓ Protection settings saved to shared container")
     }
     
@@ -166,6 +182,7 @@ class SharedContainerManager {
     /// Save list of protected apps to shared container
     func saveProtectedApps(_ apps: [String]) { // bundle IDs
         sharedUserDefaults?.set(apps, forKey: "protectedApps")
+        sharedUserDefaults?.synchronize()
         print("✓ Protected apps list saved: \(apps.count) apps")
     }
     
