@@ -15,7 +15,7 @@ class DeviceActivityManager {
     
     var monitoringActivities: [String] = []
     
-    private static let nameIdentifier = "com.gia.screengate"
+    private static let nameIdentifier = "com.gia.screendiet"
     // A data store that stores settings to the current user or device.
     private let managedSettingsStore: ManagedSettingsStore = ManagedSettingsStore(named: .init(nameIdentifier))
     
@@ -26,7 +26,7 @@ class DeviceActivityManager {
     
     private let eventName: DeviceActivityEvent.Name = DeviceActivityEvent.Name(rawValue: nameIdentifier)
     
-    private let userDefaults: UserDefaults = UserDefaults(suiteName: "group.com.gia.screengate") ?? .standard
+    private let userDefaults: UserDefaults = UserDefaults(suiteName: "group.com.gia.screendiet") ?? .standard
     private let jsonEncoder = JSONEncoder()
     private let jsonDecoder = JSONDecoder()
     

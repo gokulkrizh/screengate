@@ -6,7 +6,7 @@
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.com.gia.screengate</string>
+		<string>group.com.gia.screendiet</string>
 	</array>
 </dict>
 </plist>
