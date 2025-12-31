@@ -41,26 +41,35 @@ extension Notification.Name {
 @main
 struct DeviceActivityMonitorDemoApp: App {
     @State private var showRestrictionLifted = false
+    @State private var hasCompletedOnboarding = OnboardingData.hasCompletedOnboarding()
     private let notificationDelegate = NotificationDelegate()
 
     var body: some Scene {
         WindowGroup {
-            NavigationStack {
-                ContentView()
-                    .onOpenURL { url in
-                        handleDeepLink(url)
-                    }
-                    .onReceive(NotificationCenter.default.publisher(for: .showRestrictionLiftedView)) { _ in
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            showRestrictionLifted = true
+            if hasCompletedOnboarding {
+                NavigationStack {
+                    ContentView()
+                        .onOpenURL { url in
+                            handleDeepLink(url)
                         }
-                    }
-                    .fullScreenCover(isPresented: $showRestrictionLifted) {
-                        RestrictionLiftedView()
-                    }
-                    .onAppear {
-                        setupNotificationDelegate()
-                    }
+                        .onReceive(NotificationCenter.default.publisher(for: .showRestrictionLiftedView)) { _ in
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                showRestrictionLifted = true
+                            }
+                        }
+                        .fullScreenCover(isPresented: $showRestrictionLifted) {
+                            RestrictionLiftedView()
+                        }
+                        .onAppear {
+                            setupNotificationDelegate()
+                        }
+                }
+            } else {
+                NavigationStack {
+                    SplashView(onCompletion: {
+                        hasCompletedOnboarding = true
+                    })
+                }
             }
         }
     }

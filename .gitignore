@@ -157,3 +157,5 @@ Config.local.xcconfig
 *.backup
 *.bak
 *.orig
+
+specs/
