@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		551538552F05109D008DABB6 /* SuperwallKit in Frameworks */ = {isa = PBXBuildFile; productRef = 551538542F05109D008DABB6 /* SuperwallKit */; };
 		557B52352EB6598000E46D58 /* ManagedSettings.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 557B52342EB6598000E46D58 /* ManagedSettings.framework */; };
 		557B52372EB6598000E46D58 /* ManagedSettingsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 557B52362EB6598000E46D58 /* ManagedSettingsUI.framework */; };
 		557B523F2EB6598000E46D58 /* ShieldConfigurationExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 557B52322EB6598000E46D58 /* ShieldConfigurationExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -169,6 +170,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				551538552F05109D008DABB6 /* SuperwallKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -258,6 +260,7 @@
 			);
 			name = screendiet;
 			packageProductDependencies = (
+				551538542F05109D008DABB6 /* SuperwallKit */,
 			);
 			productName = screengate;
 			productReference = 557B516D2EB633C500E46D58 /* screendiet.app */;
@@ -363,6 +366,9 @@
 			);
 			mainGroup = 557B51642EB633C500E46D58;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				551538532F05109D008DABB6 /* XCRemoteSwiftPackageReference "Superwall-iOS" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 557B516E2EB633C500E46D58 /* Products */;
 			projectDirPath = "";
@@ -867,6 +873,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		551538532F05109D008DABB6 /* XCRemoteSwiftPackageReference "Superwall-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/superwall/Superwall-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.11.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		551538542F05109D008DABB6 /* SuperwallKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 551538532F05109D008DABB6 /* XCRemoteSwiftPackageReference "Superwall-iOS" */;
+			productName = SuperwallKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 557B51652EB633C500E46D58 /* Project object */;
 }

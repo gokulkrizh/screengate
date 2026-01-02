@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SuperwallKit
 
 struct MonitorView: View {
     @Environment(DeviceActivityManager.self) private var manager
@@ -70,6 +71,10 @@ struct MonitorView: View {
                 AddActivityMonitorView()
                     .environment(self.manager)
             })
+            
+            Button("Show Paywall") {
+                Superwall.shared.register(placement: "campaign_trigger")
+            }
         }
     }
     

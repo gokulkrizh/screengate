@@ -27,6 +27,7 @@ struct ContentView: View {
                         Task {
                             await self.manager.requestFamilyControlAuthorization()
                         }
+                      //  Superwall.shared.register(placement: "campaign_trigger")
                     }, label: {
                         Text("request access")
                     })

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UserNotifications
+import SuperwallKit
 
 class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
     private let manager = DeviceActivityManager()
@@ -44,6 +45,10 @@ struct DeviceActivityMonitorDemoApp: App {
     @State private var hasCompletedOnboarding = OnboardingData.hasCompletedOnboarding()
     private let notificationDelegate = NotificationDelegate()
 
+    init() {
+        Superwall.configure(apiKey: "pk_u5bxkniFBjniC5yFeiCtV")
+    }
+    
     var body: some Scene {
         WindowGroup {
             if hasCompletedOnboarding {
