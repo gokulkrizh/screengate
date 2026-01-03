@@ -51,7 +51,7 @@ struct DeviceActivityMonitorDemoApp: App {
     
     var body: some Scene {
         WindowGroup {
-            if hasCompletedOnboarding {
+            if false {
                 NavigationStack {
                     ContentView()
                         .onOpenURL { url in

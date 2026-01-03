@@ -25,8 +25,8 @@ struct HeroImageView: View {
         }
         .frame(height: height)
         .cornerRadius(24)
-        .padding(.horizontal, appTheme.spacing.large)
-        .padding(.bottom, appTheme.spacing.large)
+       // .padding(.horizontal, appTheme.spacing.large)
+       // .padding(.bottom, appTheme.spacing.large)
     }
 }
 
@@ -36,7 +36,7 @@ struct HeroImageView: View {
             .ignoresSafeArea()
         
         VStack {
-            HeroImageView(imageName: "welcomScreen")
+            HeroImageView(imageName: "problemScreen")
             Spacer()
         }
     }

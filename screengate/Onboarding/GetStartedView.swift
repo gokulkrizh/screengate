@@ -20,6 +20,8 @@ struct GetStartedView: View {
                 
                 // Hero Image Area
                 HeroImageView(imageName: "welcomScreen")
+                    .padding(.horizontal, appTheme.spacing.large)
+                    .padding(.bottom, appTheme.spacing.large)
                 
                 // Text Content
                 ScreenHeader(
