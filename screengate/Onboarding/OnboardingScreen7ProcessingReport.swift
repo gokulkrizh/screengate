@@ -286,7 +286,7 @@ struct OnboardingScreen7ProcessingReport: View {
                 // Auto-advance after progress completes
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     withAnimation(.easeInOut(duration: 0.3)) {
-                       // data.currentScreen = 8
+                        data.currentScreen = 8
                     }
                 }
             }
