@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Settings – Account</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-dark": "#1a3825", // Slightly lighter than background-dark for cards/inputs
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit to keep it looking clean */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #2f4b3a;
+            border-radius: 20px;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased h-screen overflow-hidden flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="flex items-center justify-between p-4 pb-2 bg-background-light dark:bg-background-dark shrink-0 z-10">
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-white" style="font-size: 24px;">arrow_back_ios_new</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] text-center">Account</h2>
+<!-- Spacer for center alignment -->
+<div class="size-10"></div>
+</header>
+<!-- Scrollable Content -->
+<main class="flex-1 overflow-y-auto w-full max-w-md mx-auto px-4 pb-8">
+<!-- Profile Section -->
+<div class="flex flex-col items-center py-6 gap-4">
+<div class="relative group cursor-pointer">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-28 border-4 border-white dark:border-surface-dark shadow-lg" data-alt="User profile picture showing a smiling person or avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuD5rYTYYTFLZdEW6xuRwx6GteRENEOrodf2-iktfhckEWgNXwzfVE8SfHkSjKvhqOJMaYSzkH2eYwHGHo_zGppOro31hn9e6UXs_KCG_h0f-da6XwO78BeXmE1QCoMQZbp44p_poLXCcOdPIuCYQ8eWyEM8_yBISc5wMq31W-8XdjMWglHqbKHF2bLuTAyiWMiUvk4BfCwNH3wKHplBKnVwMeDzXBmakQP_f9_UvwGk3ViWieZOXvJZd9Qt3bT7Dx-AXAuWsrT0uVs");'>
+</div>
+<div class="absolute bottom-0 right-0 bg-primary rounded-full p-2 border-[3px] border-background-light dark:border-background-dark shadow-sm flex items-center justify-center">
+<span class="material-symbols-outlined text-black" style="font-size: 18px;">edit</span>
+</div>
+</div>
+<button class="text-primary font-semibold text-sm hover:underline">Change Profile Photo</button>
+</div>
+<!-- Form Fields -->
+<form class="flex flex-col gap-6 mt-2" onsubmit="event.preventDefault();">
+<!-- Full Name -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-slate-600 dark:text-gray-300">Full Name</label>
+<div class="relative">
+<input class="w-full h-14 rounded-lg bg-white dark:bg-surface-dark border border-gray-200 dark:border-[#2f4b3a] px-4 text-base text-slate-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Enter your full name" type="text" value="Alex Doe"/>
+</div>
+</div>
+<!-- Email -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-slate-600 dark:text-gray-300">Email Address</label>
+<div class="relative">
+<input class="w-full h-14 rounded-lg bg-white dark:bg-surface-dark border border-gray-200 dark:border-[#2f4b3a] px-4 text-base text-slate-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Enter your email" type="email" value="alex@screendiet.app"/>
+<!-- Validation Icon -->
+<div class="absolute right-4 top-1/2 -translate-y-1/2 text-primary pointer-events-none">
+<span class="material-symbols-outlined" style="font-size: 20px;">check_circle</span>
+</div>
+</div>
+</div>
+<!-- Password -->
+<div class="flex flex-col gap-2">
+<label class="text-sm font-medium text-slate-600 dark:text-gray-300">Password</label>
+<div class="relative group">
+<input class="w-full h-14 rounded-lg bg-white dark:bg-surface-dark border border-gray-200 dark:border-[#2f4b3a] px-4 pr-12 text-base text-slate-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all" placeholder="Enter password" type="password" value="password123"/>
+<button class="absolute right-0 top-0 h-full w-12 flex items-center justify-center text-gray-400 hover:text-slate-600 dark:hover:text-white transition-colors" type="button">
+<span class="material-symbols-outlined" style="font-size: 22px;">visibility_off</span>
+</button>
+</div>
+<div class="flex justify-end">
+<button class="text-sm text-primary hover:text-green-400 font-medium transition-colors" type="button">Change Password?</button>
+</div>
+</div>
+<!-- Preferences / Toggles -->
+<div class="flex items-center justify-between p-4 rounded-lg bg-white dark:bg-surface-dark border border-gray-200 dark:border-[#2f4b3a] mt-2">
+<div class="flex flex-col">
+<span class="text-base font-medium text-slate-900 dark:text-white">Email Notifications</span>
+<span class="text-xs text-slate-500 dark:text-gray-400">Receive weekly summaries</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-300 dark:bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Spacer -->
+<div class="h-6"></div>
+<!-- Main Actions -->
+<button class="w-full h-14 bg-primary hover:bg-[#10d450] active:scale-[0.98] transition-all text-black font-bold text-lg rounded-lg shadow-[0_4px_14px_0_rgba(19,236,91,0.39)]">
+                Save Changes
+            </button>
+<!-- Secondary Actions -->
+<div class="flex flex-col gap-4 items-center mt-4">
+<button class="text-slate-500 dark:text-gray-400 font-medium text-base hover:text-slate-900 dark:hover:text-white transition-colors" type="button">
+                    Sign Out
+                </button>
+<button class="text-red-500 hover:text-red-400 font-medium text-base transition-colors flex items-center gap-2" type="button">
+                    Delete Account
+                </button>
+</div>
+<!-- Privacy Footer -->
+<div class="mt-8 text-center pb-8">
+<p class="text-xs text-slate-400 dark:text-gray-600">
+                    Your data is encrypted and secure.<br/>
+<a class="underline hover:text-primary" href="#">Privacy Policy</a>
+</p>
+</div>
+</form>
+</main>
+</body></html>

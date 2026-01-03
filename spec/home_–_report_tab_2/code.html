@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Screendiet - Report</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "card-dark": "#1c2e22", // Custom card color for dark mode
+                        "card-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-gray-900 dark:text-white font-display antialiased selection:bg-primary selection:text-black">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<!-- Header -->
+<header class="pt-12 pb-2 px-6">
+<h1 class="text-4xl font-extrabold tracking-tight">Report</h1>
+</header>
+<!-- Segmented Control -->
+<div class="px-6 py-2">
+<div class="flex h-12 w-full items-center justify-center rounded-xl bg-gray-200 dark:bg-[#1c2e22] p-1">
+<label class="flex cursor-pointer h-full grow items-center justify-center rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-[#102216] has-[:checked]:shadow-sm text-gray-500 dark:text-[#9db9a6] has-[:checked]:text-black dark:has-[:checked]:text-primary transition-all">
+<span class="text-sm font-bold truncate">Daily</span>
+<input checked="" class="hidden" name="period" type="radio" value="Daily"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-[#102216] has-[:checked]:shadow-sm text-gray-500 dark:text-[#9db9a6] has-[:checked]:text-black dark:has-[:checked]:text-primary transition-all">
+<span class="text-sm font-bold truncate">Weekly</span>
+<input class="hidden" name="period" type="radio" value="Weekly"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-[#102216] has-[:checked]:shadow-sm text-gray-500 dark:text-[#9db9a6] has-[:checked]:text-black dark:has-[:checked]:text-primary transition-all">
+<span class="text-sm font-bold truncate">Monthly</span>
+<input class="hidden" name="period" type="radio" value="Monthly"/>
+</label>
+</div>
+</div>
+<!-- Summary Card -->
+<div class="px-6 py-4">
+<div class="relative overflow-hidden rounded-2xl bg-white dark:bg-[#1c2e22] p-6 shadow-sm">
+<!-- Background decoration -->
+<div class="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-primary/10 blur-3xl"></div>
+<div class="relative z-10 flex flex-col gap-1">
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium uppercase tracking-wider">Total Screen Time</p>
+<div class="flex items-baseline gap-3">
+<h2 class="text-5xl font-bold tracking-tight text-black dark:text-white">4<span class="text-3xl">h</span> 12<span class="text-3xl">m</span></h2>
+</div>
+<div class="mt-2 flex items-center gap-2">
+<div class="flex items-center justify-center rounded-full bg-primary/20 px-2 py-0.5">
+<span class="material-symbols-outlined text-sm text-primary" style="font-size: 16px;">trending_down</span>
+<span class="text-xs font-bold text-primary ml-1">12%</span>
+</div>
+<p class="text-xs text-gray-400">from last week</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Activity Chart -->
+<div class="px-6 py-4">
+<div class="rounded-2xl bg-white dark:bg-[#1c2e22] p-6 shadow-sm">
+<div class="flex justify-between items-end mb-6">
+<div>
+<h3 class="text-lg font-bold text-black dark:text-white">Activity</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400">Daily Average: 3h 20m</p>
+</div>
+<button class="text-primary hover:bg-primary/10 p-1 rounded-md transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<div class="grid h-[180px] grid-cols-7 items-end gap-2 md:gap-4">
+<!-- Mon -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="relative w-full rounded-md bg-gray-100 dark:bg-[#102216] h-full flex items-end overflow-hidden">
+<div class="w-full bg-primary/40 group-hover:bg-primary transition-all duration-300 rounded-t-md" style="height: 45%;"></div>
+</div>
+<span class="text-[10px] font-semibold text-gray-400 uppercase">Mon</span>
+</div>
+<!-- Tue -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="relative w-full rounded-md bg-gray-100 dark:bg-[#102216] h-full flex items-end overflow-hidden">
+<div class="w-full bg-primary/60 group-hover:bg-primary transition-all duration-300 rounded-t-md" style="height: 62%;"></div>
+</div>
+<span class="text-[10px] font-semibold text-gray-400 uppercase">Tue</span>
+</div>
+<!-- Wed -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="relative w-full rounded-md bg-gray-100 dark:bg-[#102216] h-full flex items-end overflow-hidden">
+<div class="w-full bg-primary/30 group-hover:bg-primary transition-all duration-300 rounded-t-md" style="height: 30%;"></div>
+</div>
+<span class="text-[10px] font-semibold text-gray-400 uppercase">Wed</span>
+</div>
+<!-- Thu (Peak) -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="relative w-full rounded-md bg-gray-100 dark:bg-[#102216] h-full flex items-end overflow-hidden">
+<div class="w-full bg-primary group-hover:bg-primary transition-all duration-300 rounded-t-md shadow-[0_0_10px_rgba(19,236,91,0.4)]" style="height: 85%;"></div>
+</div>
+<span class="text-[10px] font-semibold text-gray-400 uppercase">Thu</span>
+</div>
+<!-- Fri -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="relative w-full rounded-md bg-gray-100 dark:bg-[#102216] h-full flex items-end overflow-hidden">
+<div class="w-full bg-primary/50 group-hover:bg-primary transition-all duration-300 rounded-t-md" style="height: 55%;"></div>
+</div>
+<span class="text-[10px] font-semibold text-gray-400 uppercase">Fri</span>
+</div>
+<!-- Sat -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="relative w-full rounded-md bg-gray-100 dark:bg-[#102216] h-full flex items-end overflow-hidden">
+<div class="w-full bg-primary/80 group-hover:bg-primary transition-all duration-300 rounded-t-md" style="height: 75%;"></div>
+</div>
+<span class="text-[10px] font-semibold text-gray-400 uppercase">Sat</span>
+</div>
+<!-- Sun -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer">
+<div class="relative w-full rounded-md bg-gray-100 dark:bg-[#102216] h-full flex items-end overflow-hidden">
+<div class="w-full bg-primary/40 group-hover:bg-primary transition-all duration-300 rounded-t-md" style="height: 40%;"></div>
+</div>
+<span class="text-[10px] font-semibold text-gray-400 uppercase">Sun</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Streak Visualization (GitHub style) -->
+<div class="px-6 py-4">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-xl font-bold text-black dark:text-white">Focus Streak</h3>
+<div class="flex items-center gap-1 text-primary text-sm font-bold">
+<span class="material-symbols-outlined" style="font-size: 18px;">local_fire_department</span>
+<span>12 Days</span>
+</div>
+</div>
+<div class="rounded-2xl bg-white dark:bg-[#1c2e22] p-6 shadow-sm overflow-x-auto no-scrollbar">
+<div class="min-w-[280px]">
+<div class="grid grid-rows-7 grid-flow-col gap-1.5 justify-between">
+<!-- Days of week labels (hidden for cleaner look or could be added on left) -->
+<!-- Column 1 -->
+<div class="h-8 w-8 rounded bg-gray-200 dark:bg-[#2A4031]"></div>
+<div class="h-8 w-8 rounded bg-primary/40"></div>
+<div class="h-8 w-8 rounded bg-primary"></div>
+<div class="h-8 w-8 rounded bg-gray-200 dark:bg-[#2A4031]"></div>
+<div class="h-8 w-8 rounded bg-primary/60"></div>
+<div class="h-8 w-8 rounded bg-primary"></div>
+<div class="h-8 w-8 rounded bg-primary"></div>
+<!-- Column 2 -->
+<div class="h-8 w-8 rounded bg-primary"></div>
+<div class="h-8 w-8 rounded bg-primary"></div>
+<div class="h-8 w-8 rounded bg-gray-200 dark:bg-[#2A4031]"></div>
+<div class="h-8 w-8 rounded bg-gray-200 dark:bg-[#2A4031]"></div>
+<div class="h-8 w-8 rounded bg-primary/30"></div>
+<div class="h-8 w-8 rounded bg-primary/80"></div>
+<div class="h-8 w-8 rounded bg-primary"></div>
+<!-- Column 3 -->
+<div class="h-8 w-8 rounded bg-primary"></div>
+<div class="h-8 w-8 rounded bg-gray-200 dark:bg-[#2A4031]"></div>
+<div class="h-8 w-8 rounded bg-primary"></div>
+<div class="h-8 w-8 rounded bg-primary"></div>
+<div class="h-8 w-8 rounded bg-primary"></div>
+<div class="h-8 w-8 rounded bg-gray-200 dark:bg-[#2A4031]"></div>
+<div class="h-8 w-8 rounded bg-gray-200 dark:bg-[#2A4031]"></div>
+<!-- Column 4 -->
+<div class="h-8 w-8 rounded bg-primary/50"></div>
+<div class="h-8 w-8 rounded bg-primary"></div>
+<div class="h-8 w-8 rounded bg-primary"></div>
+<div class="h-8 w-8 rounded bg-gray-200 dark:bg-[#2A4031]"></div>
+<div class="h-8 w-8 rounded bg-primary/20"></div>
+<div class="h-8 w-8 rounded bg-primary"></div> <!-- Current Dayish -->
+<div class="h-8 w-8 rounded border-2 border-dashed border-gray-600 opacity-50"></div>
+<!-- Column 5 (Future) -->
+<div class="h-8 w-8 rounded border-2 border-dashed border-gray-600 opacity-30"></div>
+<div class="h-8 w-8 rounded border-2 border-dashed border-gray-600 opacity-30"></div>
+<div class="h-8 w-8 rounded border-2 border-dashed border-gray-600 opacity-30"></div>
+<div class="h-8 w-8 rounded border-2 border-dashed border-gray-600 opacity-30"></div>
+<div class="h-8 w-8 rounded border-2 border-dashed border-gray-600 opacity-30"></div>
+<div class="h-8 w-8 rounded border-2 border-dashed border-gray-600 opacity-30"></div>
+<div class="h-8 w-8 rounded border-2 border-dashed border-gray-600 opacity-30"></div>
+</div>
+<!-- Legend -->
+<div class="mt-4 flex items-center justify-end gap-4 text-xs text-gray-400">
+<div class="flex items-center gap-1.5">
+<div class="h-3 w-3 rounded bg-[#2A4031]"></div>
+<span>Off</span>
+</div>
+<div class="flex items-center gap-1.5">
+<div class="h-3 w-3 rounded bg-primary/50"></div>
+<span>Good</span>
+</div>
+<div class="flex items-center gap-1.5">
+<div class="h-3 w-3 rounded bg-primary"></div>
+<span>Perfect</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Top Apps Section -->
+<div class="px-6 py-4 pb-8">
+<h3 class="mb-4 text-xl font-bold text-black dark:text-white">Top Apps</h3>
+<div class="flex flex-col gap-4">
+<!-- App Item 1 -->
+<div class="group flex flex-col gap-2 rounded-2xl bg-white dark:bg-[#1c2e22] p-4 transition-transform active:scale-[0.98]">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-900/20">
+<span class="material-symbols-outlined text-xl">photo_camera</span>
+</div>
+<div>
+<p class="font-bold text-black dark:text-white">Instagram</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Social</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-bold text-black dark:text-white">1h 30m</p>
+<p class="text-xs font-medium text-red-500">↑ 15%</p>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-[#102216]">
+<div class="h-full w-[65%] rounded-full bg-primary shadow-[0_0_8px_rgba(19,236,91,0.5)]"></div>
+</div>
+</div>
+<!-- App Item 2 -->
+<div class="group flex flex-col gap-2 rounded-2xl bg-white dark:bg-[#1c2e22] p-4 transition-transform active:scale-[0.98]">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-700 text-white shadow-lg shadow-red-900/20">
+<span class="material-symbols-outlined text-xl">play_arrow</span>
+</div>
+<div>
+<p class="font-bold text-black dark:text-white">YouTube</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Entertainment</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-bold text-black dark:text-white">45m</p>
+<p class="text-xs font-medium text-primary">↓ 5%</p>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-[#102216]">
+<div class="h-full w-[35%] rounded-full bg-primary/70"></div>
+</div>
+</div>
+<!-- App Item 3 -->
+<div class="group flex flex-col gap-2 rounded-2xl bg-white dark:bg-[#1c2e22] p-4 transition-transform active:scale-[0.98]">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-lg shadow-blue-900/20">
+<span class="material-symbols-outlined text-xl">mail</span>
+</div>
+<div>
+<p class="font-bold text-black dark:text-white">Mail</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Productivity</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-bold text-black dark:text-white">20m</p>
+<p class="text-xs font-medium text-primary">↓ 12%</p>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-[#102216]">
+<div class="h-full w-[15%] rounded-full bg-primary/40"></div>
+</div>
+</div>
+</div>
+<div class="mt-4 flex justify-center">
+<button class="text-sm font-semibold text-primary hover:text-white transition-colors">View All Apps</button>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation -->
+<div class="fixed bottom-0 left-0 z-50 w-full border-t border-gray-200 dark:border-white/5 bg-white/90 dark:bg-[#102216]/90 backdrop-blur-lg pb-6 pt-3">
+<div class="flex justify-around px-2">
+<!-- Home -->
+<button class="flex flex-col items-center gap-1 p-2 text-gray-400 hover:text-gray-200">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</button>
+<!-- Focus -->
+<button class="flex flex-col items-center gap-1 p-2 text-gray-400 hover:text-gray-200">
+<span class="material-symbols-outlined text-2xl">timer</span>
+<span class="text-[10px] font-medium">Focus</span>
+</button>
+<!-- Report (Active) -->
+<button class="flex flex-col items-center gap-1 p-2 text-primary">
+<span class="material-symbols-outlined text-2xl fill-1 font-variation-settings-['FILL':1]">bar_chart</span>
+<span class="text-[10px] font-medium">Report</span>
+</button>
+<!-- Settings -->
+<button class="flex flex-col items-center gap-1 p-2 text-gray-400 hover:text-gray-200">
+<span class="material-symbols-outlined text-2xl">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</button>
+</div>
+</div>
+</body></html>

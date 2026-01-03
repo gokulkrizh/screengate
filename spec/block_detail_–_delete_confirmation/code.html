@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Block Detail – Delete Confirmation</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-dark": "#111813",
+                        "surface-highlight": "#1a261e",
+                        "text-secondary": "#9db9a6",
+                        "danger": "#FF453A",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased overflow-hidden">
+<div class="relative w-full h-[100dvh] flex flex-col">
+<!-- Background: Simulated previous screen content -->
+<!-- We use an abstract image to represent the 'Screendiet' dashboard in the background -->
+<div class="absolute inset-0 z-0 bg-cover bg-center" data-alt="Abstract dark green and black gradient background representing the app dashboard" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAs40LjhjHe2HZQ0z2tKcK8rYTsyFTkTb3IuDIV4kKygXIrnicIah779TjFsWS-A0m8hx0nePclCIcuBZJulK68cqLyDzVN-kkBxhCySWg8mXmeAMPvrCGSGr5G5CzwHCNOMq7kHj6XUSokLomz2ovgYucUVe-761t5G4XmBKF6N0rAywQC2FI6d-_ON9mkUIBTsvXW-wyotyXo7r_j6cO8h-7SLuqhjNSr-AEtjV09za86RyrC3wo2aopgPe7L8X8rf2EDbUamOL4');">
+<div class="absolute inset-0 bg-[#102216]/80 backdrop-blur-sm"></div>
+</div>
+<!-- Overlay Backdrop -->
+<div class="absolute inset-0 z-10 bg-black/50 transition-opacity"></div>
+<!-- Bottom Sheet Modal -->
+<div class="absolute bottom-0 left-0 right-0 z-20 flex flex-col justify-end h-full pointer-events-none">
+<div class="w-full max-w-md mx-auto pointer-events-auto">
+<!-- Sheet Container -->
+<div class="bg-surface-dark rounded-t-3xl shadow-2xl overflow-hidden border-t border-[#28392e]/50 ring-1 ring-white/5">
+<!-- BottomSheetHandle -->
+<div aria-hidden="true" class="flex items-center justify-center pt-4 pb-2 w-full">
+<div class="h-1.5 w-12 rounded-full bg-[#3b5443]"></div>
+</div>
+<!-- Content Wrapper -->
+<div class="flex flex-col px-6 pt-2 pb-8 md:pb-10">
+<!-- Warning Icon -->
+<div class="flex justify-center mb-5 mt-2">
+<div class="flex items-center justify-center w-16 h-16 rounded-full bg-danger/10 ring-1 ring-danger/20">
+<span class="material-symbols-outlined text-danger" style="font-size: 32px;">delete</span>
+</div>
+</div>
+<!-- HeadlineText -->
+<h2 class="text-white tracking-tight text-[24px] font-bold leading-tight text-center mb-3">
+                            Delete 'Morning Focus'?
+                        </h2>
+<!-- BodyText -->
+<p class="text-text-secondary text-base font-normal leading-relaxed text-center mb-6">
+                            You are about to remove this block from your schedule. Statistics associated with this block will remain, but future sessions will be cancelled. This action cannot be undone.
+                        </p>
+<!-- Block Preview (ListItem adapted) -->
+<div class="mb-8">
+<div class="flex items-center gap-4 bg-surface-highlight border border-[#28392e] rounded-xl px-4 py-3 shadow-sm">
+<div class="text-primary flex items-center justify-center rounded-lg bg-[#28392e] shrink-0 size-12">
+<span class="material-symbols-outlined" style="font-size: 24px;">schedule</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-white text-base font-semibold leading-normal line-clamp-1">Morning Focus</p>
+<p class="text-text-secondary text-sm font-normal leading-normal line-clamp-1">Daily • 08:00 - 10:00</p>
+</div>
+</div>
+</div>
+<!-- ButtonGroup -->
+<div class="flex flex-col gap-3 w-full">
+<!-- Destructive Action -->
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-5 bg-danger hover:bg-red-600 text-white text-base font-bold leading-normal tracking-[0.015em] transition-colors duration-200 shadow-lg shadow-danger/20 active:scale-[0.98]">
+<span class="truncate">Delete Block</span>
+</button>
+<!-- Cancel Action -->
+<button class="flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 px-5 bg-transparent border border-[#28392e] hover:bg-[#1a261e] text-white text-base font-bold leading-normal tracking-[0.015em] transition-colors duration-200 active:scale-[0.98]">
+<span class="truncate">Cancel</span>
+</button>
+</div>
+</div>
+<!-- End Content Wrapper -->
+<!-- Bottom Safe Area Spacer -->
+<div class="h-6 bg-surface-dark"></div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

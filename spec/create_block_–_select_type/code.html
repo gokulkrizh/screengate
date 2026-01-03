@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create Block - Screendiet</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Manrope -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-dark": "#1C2E24", 
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+        
+        /* Hide default radio button but keep functionality accessible */
+        .card-radio:checked + div {
+            border-color: #13ec5b;
+            background-color: rgba(19, 236, 91, 0.05);
+        }
+        
+        .card-radio:checked + div .radio-indicator {
+            background-color: #13ec5b;
+            border-color: #13ec5b;
+        }
+
+        .card-radio:checked + div .radio-indicator::after {
+            content: '';
+            display: block;
+            width: 8px;
+            height: 8px;
+            background: #102216;
+            border-radius: 50%;
+        }
+
+        .card-radio:checked + div .icon-box {
+            color: #13ec5b;
+            background-color: rgba(19, 236, 91, 0.1);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#111813] dark:text-white font-display min-h-screen flex flex-col overflow-x-hidden selection:bg-primary selection:text-background-dark">
+<!-- Navigation Bar -->
+<header class="sticky top-0 z-10 flex items-center justify-between px-4 py-4 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
+<button aria-label="Close" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-2xl font-medium">close</span>
+</button>
+<h2 class="text-lg font-bold tracking-tight">New Block</h2>
+<div class="w-10"></div> <!-- Spacer for balance -->
+</header>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col px-4 pb-24 max-w-lg mx-auto w-full">
+<!-- Headline -->
+<div class="py-4 mb-2">
+<h1 class="text-3xl font-extrabold leading-tight tracking-tight mb-2">
+                Choose your<br/>
+<span class="text-primary">discipline strategy</span>
+</h1>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">
+                Select how you want to limit your screen time today.
+            </p>
+</div>
+<!-- Selection Cards -->
+<div class="flex flex-col gap-3">
+<!-- Card 1: Scheduled -->
+<label class="group relative cursor-pointer tap-highlight-transparent">
+<input checked="" class="card-radio sr-only" name="block_type" type="radio" value="scheduled"/>
+<div class="flex items-center gap-4 p-4 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-surface-dark transition-all duration-200 hover:border-primary/50">
+<!-- Icon -->
+<div class="icon-box flex items-center justify-center w-12 h-12 rounded-xl bg-gray-100 dark:bg-black/20 text-gray-900 dark:text-white transition-colors duration-200">
+<span class="material-symbols-outlined text-[28px]">calendar_today</span>
+</div>
+<!-- Text -->
+<div class="flex flex-col flex-1">
+<span class="text-base font-bold text-gray-900 dark:text-white leading-tight mb-0.5">Scheduled</span>
+<span class="text-xs font-medium text-gray-500 dark:text-gray-400 leading-normal">Plan ahead. Set fixed times.</span>
+</div>
+<!-- Radio Circle -->
+<div class="radio-indicator flex items-center justify-center w-6 h-6 rounded-full border-2 border-gray-300 dark:border-gray-500 transition-all duration-200"></div>
+</div>
+</label>
+<!-- Card 2: Open Limit -->
+<label class="group relative cursor-pointer tap-highlight-transparent">
+<input class="card-radio sr-only" name="block_type" type="radio" value="open_limit"/>
+<div class="flex items-center gap-4 p-4 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-surface-dark transition-all duration-200 hover:border-primary/50">
+<div class="icon-box flex items-center justify-center w-12 h-12 rounded-xl bg-gray-100 dark:bg-black/20 text-gray-900 dark:text-white transition-colors duration-200">
+<span class="material-symbols-outlined text-[28px]">hourglass_top</span>
+</div>
+<div class="flex flex-col flex-1">
+<span class="text-base font-bold text-gray-900 dark:text-white leading-tight mb-0.5">Open Limit</span>
+<span class="text-xs font-medium text-gray-500 dark:text-gray-400 leading-normal">Set a usage cap for the day.</span>
+</div>
+<div class="radio-indicator flex items-center justify-center w-6 h-6 rounded-full border-2 border-gray-300 dark:border-gray-500 transition-all duration-200"></div>
+</div>
+</label>
+<!-- Card 3: App Time Limit -->
+<label class="group relative cursor-pointer tap-highlight-transparent">
+<input class="card-radio sr-only" name="block_type" type="radio" value="app_limit"/>
+<div class="flex items-center gap-4 p-4 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-surface-dark transition-all duration-200 hover:border-primary/50">
+<div class="icon-box flex items-center justify-center w-12 h-12 rounded-xl bg-gray-100 dark:bg-black/20 text-gray-900 dark:text-white transition-colors duration-200">
+<span class="material-symbols-outlined text-[28px]">app_blocking</span>
+</div>
+<div class="flex flex-col flex-1">
+<span class="text-base font-bold text-gray-900 dark:text-white leading-tight mb-0.5">App Time Limit</span>
+<span class="text-xs font-medium text-gray-500 dark:text-gray-400 leading-normal">Limit specific apps individually.</span>
+</div>
+<div class="radio-indicator flex items-center justify-center w-6 h-6 rounded-full border-2 border-gray-300 dark:border-gray-500 transition-all duration-200"></div>
+</div>
+</label>
+<!-- Card 4: Block Now (Special Emphasis) -->
+<label class="group relative cursor-pointer tap-highlight-transparent mt-2">
+<input class="card-radio sr-only" name="block_type" type="radio" value="block_now"/>
+<div class="flex items-center gap-4 p-4 rounded-2xl border-2 border-gray-200 dark:border-white/20 bg-white dark:bg-surface-dark transition-all duration-200 hover:border-primary">
+<!-- Different initial icon color for emphasis -->
+<div class="icon-box flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary transition-colors duration-200">
+<span class="material-symbols-outlined text-[28px] fill-current">bolt</span>
+</div>
+<div class="flex flex-col flex-1">
+<span class="text-base font-bold text-gray-900 dark:text-white leading-tight mb-0.5">Block Now</span>
+<span class="text-xs font-medium text-gray-500 dark:text-gray-400 leading-normal">Emergency. Lock instantly.</span>
+</div>
+<div class="radio-indicator flex items-center justify-center w-6 h-6 rounded-full border-2 border-gray-300 dark:border-gray-500 transition-all duration-200"></div>
+</div>
+</label>
+</div>
+</main>
+<!-- Bottom Action Bar -->
+<div class="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background-light dark:from-background-dark via-background-light dark:via-background-dark to-transparent z-20">
+<div class="max-w-lg mx-auto">
+<button class="w-full flex items-center justify-center h-14 bg-primary hover:bg-[#0fd650] active:scale-[0.98] text-background-dark text-lg font-bold rounded-xl transition-all shadow-lg shadow-primary/25">
+                Continue
+                <span class="material-symbols-outlined ml-2 text-xl font-bold">arrow_forward</span>
+</button>
+</div>
+</div>
+</body></html>

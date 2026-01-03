@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Screendiet Permissions</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "primary-dark": "#0fb847",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "card-dark": "#16261b", 
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            min-height: 100dvh;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-gray-900 dark:text-white font-display flex flex-col antialiased selection:bg-primary/30 selection:text-background-dark">
+<div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+<div class="absolute top-[-15%] right-[-15%] w-[350px] h-[350px] bg-primary/10 rounded-full blur-[120px] mix-blend-screen"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[280px] h-[280px] bg-primary/5 rounded-full blur-[100px]"></div>
+</div>
+<div class="flex-1 flex flex-col justify-between w-full max-w-md mx-auto px-6 py-8 relative z-10">
+<div class="flex flex-col items-center flex-1 justify-center min-h-[40vh]">
+<div class="mb-8 relative group">
+<div class="absolute inset-0 bg-primary/20 rounded-[2.5rem] blur-2xl transform scale-90 group-hover:scale-100 transition-transform duration-700"></div>
+<div class="w-32 h-32 relative flex items-center justify-center rounded-[2.5rem] shadow-2xl ring-1 ring-white/10 overflow-hidden" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDV1W_gCw6eRfjQvK_MKN5bKzhe5vub1eOIQjxD0wlbj94yvyO8IxuqnTOciItbPUNLPFuMIMX8JGQhPwH41fd8pyNWLWP3njkl0hmZo3EpGQLoXV6wcLtJbM_IF_dYsDD9IRitpbnG6NFTW9nktfKpdaxChO2toRlCQrMEdXkBnntgxP8P9BuDF_Dy7moxVEKAreMHx1EQmukDH9j7fWGHNzLBs1IgGDd-5zWonE-TRVA0jN9l1b_vqWRwapj94w1Ni6jOmlBLLdI"); background-size: cover; background-position: center;'>
+<div class="absolute inset-0 bg-background-dark/30 backdrop-blur-[1px]"></div>
+<span class="material-symbols-outlined text-white relative z-10 text-[56px] drop-shadow-md">timelapse</span>
+</div>
+</div>
+<div class="text-center space-y-3 max-w-[320px]">
+<h1 class="text-3xl font-extrabold tracking-tight leading-tight text-gray-900 dark:text-white">
+                    Screen Time Access
+                </h1>
+<p class="text-gray-500 dark:text-gray-400 text-base font-medium leading-relaxed">
+                    Screendiet needs this permission to sync with your device's usage data.
+                </p>
+</div>
+</div>
+<div class="w-full flex flex-col gap-3 mb-8">
+<div class="flex items-start gap-4 p-5 rounded-2xl bg-white dark:bg-card-dark border border-gray-100 dark:border-primary/10 shadow-sm relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+<div class="flex items-center justify-center w-11 h-11 rounded-xl bg-primary/10 shrink-0 text-primary z-10">
+<span class="material-symbols-outlined text-[24px]">analytics</span>
+</div>
+<div class="flex flex-col pt-0.5 z-10">
+<span class="text-gray-900 dark:text-white font-bold text-[15px]">Monitor Usage</span>
+<span class="text-gray-500 dark:text-gray-400 text-[13px] leading-relaxed mt-1">
+                        Accurately track your daily digital habits to generate insights.
+                    </span>
+</div>
+</div>
+<div class="flex items-start gap-4 p-5 rounded-2xl bg-white dark:bg-card-dark border border-gray-100 dark:border-primary/10 shadow-sm relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+<div class="flex items-center justify-center w-11 h-11 rounded-xl bg-primary/10 shrink-0 text-primary z-10">
+<span class="material-symbols-outlined text-[24px]">block</span>
+</div>
+<div class="flex flex-col pt-0.5 z-10">
+<span class="text-gray-900 dark:text-white font-bold text-[15px]">Enforce Limits</span>
+<span class="text-gray-500 dark:text-gray-400 text-[13px] leading-relaxed mt-1">
+                        Effectively block distracting apps when your limits are reached.
+                    </span>
+</div>
+</div>
+</div>
+<div class="w-full flex flex-col gap-3 mt-auto">
+<button class="flex w-full cursor-pointer items-center justify-center relative overflow-hidden rounded-xl h-14 px-5 bg-primary hover:bg-primary-dark transition-all duration-300 shadow-[0_4px_20px_rgba(19,236,91,0.25)] hover:shadow-[0_4px_25px_rgba(19,236,91,0.4)] active:scale-[0.98]">
+<span class="text-background-dark text-[17px] font-bold tracking-wide">Allow Access</span>
+</button>
+<button class="flex w-full cursor-pointer items-center justify-center rounded-xl h-12 px-4 bg-transparent hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-gray-500 dark:text-gray-400 text-[15px] font-semibold">
+<span>Not Now</span>
+</button>
+<p class="text-center text-[11px] text-gray-400 dark:text-gray-600 font-medium mt-2">
+                Your data stays private and never leaves your device.
+            </p>
+</div>
+</div>
+
+</body></html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Screendiet - Onboarding - Age</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+        darkMode: "class",
+        theme: {
+            extend: {
+                colors: {
+                    "primary": "#13ec5b",
+                    "background-light": "#f6f8f6",
+                    "background-dark": "#102216",
+                    "secondary-dark": "#1a2e22",
+                },
+                fontFamily: {
+                    "display": ["Manrope", "sans-serif"]
+                },
+                borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+            },
+        },
+    }
+</script>
+<style>.no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }.mask-gradient-y {
+        mask-image: linear-gradient(to bottom, transparent 0%, black 40%, black 60%, transparent 100%);
+        -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 40%, black 60%, transparent 100%);
+    }
+    body {
+      min-height: max(884px, 100dvh);
+    }
+</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display h-screen w-full flex flex-col overflow-hidden text-[#111813] dark:text-white select-none relative">
+<div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-3xl pointer-events-none z-0"></div>
+<div class="flex-none pt-12 pb-4 px-6 z-10">
+<div class="flex w-full flex-row items-center justify-start">
+<button class="flex items-center justify-center w-12 h-12 -ml-2 rounded-full text-[#111813] dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+</div>
+</div>
+<div class="flex-1 flex flex-col justify-between relative z-10">
+<div class="px-8 mt-2">
+<h1 class="text-3xl md:text-4xl font-semibold leading-tight text-[#111813] dark:text-white">
+            Let's customize <br/> your plan.
+        </h1>
+</div>
+<div class="flex-1 flex items-center justify-center w-full">
+<div class="flex flex-row items-center justify-center gap-2 md:gap-4 w-full px-4">
+<span class="text-2xl md:text-3xl font-medium text-gray-400 dark:text-[#5a6b60]">I am</span>
+<div class="relative h-64 w-32 md:w-36 flex-shrink-0">
+<div class="absolute inset-0 overflow-y-scroll no-scrollbar mask-gradient-y snap-y snap-mandatory py-[96px]">
+<div class="snap-center h-16 flex items-center justify-center w-full"></div>
+<div class="snap-center h-16 flex items-center justify-center w-full text-3xl font-semibold text-gray-400 opacity-20 transition-all">21</div>
+<div class="snap-center h-16 flex items-center justify-center w-full text-3xl font-semibold text-gray-400 opacity-40 transition-all">22</div>
+<div class="snap-center h-16 flex items-center justify-center w-full text-3xl font-semibold text-gray-400 opacity-60 transition-all">23</div>
+<div class="snap-center h-16 flex items-center justify-center w-full text-6xl md:text-7xl font-bold text-primary tracking-tight transition-all scale-100">
+                        24
+                     </div>
+<div class="snap-center h-16 flex items-center justify-center w-full text-3xl font-semibold text-gray-400 opacity-60 transition-all">25</div>
+<div class="snap-center h-16 flex items-center justify-center w-full text-3xl font-semibold text-gray-400 opacity-40 transition-all">26</div>
+<div class="snap-center h-16 flex items-center justify-center w-full text-3xl font-semibold text-gray-400 opacity-20 transition-all">27</div>
+<div class="snap-center h-16 flex items-center justify-center w-full"></div>
+</div>
+</div>
+<span class="text-2xl md:text-3xl font-medium text-gray-400 dark:text-[#5a6b60]">years old.</span>
+</div>
+</div>
+<div class="flex-none flex flex-col gap-6 items-center w-full px-6 pb-10">
+<div class="flex items-center gap-2 opacity-70">
+<span class="material-symbols-outlined text-[18px] text-[#9db9a6]">lock</span>
+<p class="text-[#9db9a6] text-sm font-medium">Used for benchmarking focus stats.</p>
+</div>
+<button class="w-full bg-primary hover:bg-[#0fd650] text-[#102216] text-lg font-bold py-4 px-6 rounded-2xl transition-all transform active:scale-[0.98] shadow-[0_0_30px_rgba(19,236,91,0.25)]">
+            Continue
+        </button>
+</div>
+</div>
+
+</body></html>

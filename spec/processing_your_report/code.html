@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Processing Your Report - Screendiet</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#0c1610", 
+                        "surface-dark": "#162b1f",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    animation: {
+                        'spin-slow': 'spin 4s linear infinite',
+                        'pulse-glow': 'pulse-glow 3s infinite',
+                        'shimmer': 'shimmer 1.5s infinite',
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 25px rgba(19, 236, 91, 0.1); transform: scale(1); }
+            50% { box-shadow: 0 0 50px rgba(19, 236, 91, 0.25); transform: scale(1.02); }
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }.glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display text-white overflow-hidden antialiased selection:bg-primary/30">
+<div class="fixed inset-0 pointer-events-none overflow-hidden">
+<div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] mix-blend-screen"></div>
+</div>
+<div class="relative flex min-h-screen w-full flex-col z-10">
+<header class="flex w-full items-center justify-center pt-8 pb-4 z-20">
+<div class="flex items-center gap-2 opacity-80 mix-blend-luminosity hover:mix-blend-normal transition-all duration-500">
+<span class="material-symbols-outlined text-primary text-[20px]">smartphone</span>
+<span class="text-xs font-bold tracking-[0.2em] uppercase text-white/90">Screendiet</span>
+</div>
+</header>
+<main class="flex flex-1 flex-col items-center justify-center px-6 pb-16 w-full max-w-md mx-auto">
+<div class="relative mb-12 flex items-center justify-center">
+<div class="absolute inset-0 rounded-full border border-primary/20 animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite] opacity-20 scale-150"></div>
+<div class="absolute inset-0 rounded-full border border-primary/10 animate-[ping_3s_cubic-bezier(0,0,0.2,1)_infinite] opacity-10 animation-delay-500 scale-125"></div>
+<div class="relative h-40 w-40 rounded-full bg-surface-dark border border-primary/20 shadow-[0_0_60px_-15px_rgba(19,236,91,0.3)] flex items-center justify-center overflow-hidden animate-pulse-glow">
+<div class="absolute inset-0 bg-center bg-no-repeat bg-cover opacity-30 mix-blend-color-dodge" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC9if_BxxA4cQAxOrD4Wgt4Si2-3iIh5W94CZmr_-0xQsKOQ9zPEdUAP7FbHxeuXFFdzi-o--8eVdTXB3wDFGD5TIVMZvfUzvKY7iMPFJpgn769vIU6lM3sc9GzTEKjXCMa_jpYRamxCDL0MrPrWZRKgqSyHtLt__PuASqHBI3Vvob_QfZizhqzajqYX2Cdz3CJi4TftazGeTenmATtUfVws1l3JUHAS7VPPmI7BWsotHlFFqFwaGQZWFj3fS-eOPgU943wS1mFldY");'>
+</div>
+<div class="absolute inset-2 rounded-full border-2 border-dashed border-primary/30 animate-spin-slow"></div>
+<div class="relative z-10 flex flex-col items-center justify-center text-primary drop-shadow-[0_0_15px_rgba(19,236,91,0.8)]">
+<span class="material-symbols-outlined text-[56px]">psychology</span>
+</div>
+<div class="absolute inset-0 bg-gradient-to-b from-transparent via-primary/10 to-transparent w-full h-full animate-[shimmer_2s_linear_infinite] opacity-50"></div>
+</div>
+</div>
+<div class="w-full text-center space-y-3 mb-12">
+<h1 class="text-white tracking-tight text-3xl font-bold">Processing Your Report</h1>
+<p class="text-white/50 text-base font-medium leading-relaxed max-w-xs mx-auto">
+                    We're analyzing your daily usage patterns to personalize your digital diet.
+                </p>
+</div>
+<div class="w-full glass-panel rounded-2xl p-6 shadow-2xl space-y-8">
+<div class="space-y-3">
+<div class="flex justify-between items-end px-1">
+<p class="text-primary text-xs font-bold tracking-widest uppercase">Calculating focus score</p>
+<span class="text-white text-base font-bold tabular-nums">72%</span>
+</div>
+<div class="h-2 w-full rounded-full bg-black/40 overflow-hidden ring-1 ring-white/5">
+<div class="h-full rounded-full bg-primary relative w-[72%] shadow-[0_0_15px_rgba(19,236,91,0.6)]">
+<div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent w-full animate-shimmer"></div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-5">
+<div class="flex items-start gap-4 group">
+<div class="relative flex-shrink-0 mt-0.5">
+<div class="absolute inset-0 bg-primary/20 rounded-full blur-sm opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<span class="material-symbols-outlined text-primary text-[20px] relative z-10">check_circle</span>
+</div>
+<div class="flex flex-col">
+<span class="text-white/40 text-sm font-medium line-through decoration-white/20">Screen time numbers crunched</span>
+</div>
+</div>
+<div class="flex items-start gap-4 group">
+<div class="relative flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-primary text-[20px]">check_circle</span>
+</div>
+<div class="flex flex-col">
+<span class="text-white/40 text-sm font-medium line-through decoration-white/20">Distraction patterns identified</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative flex-shrink-0 h-5 w-5">
+<div class="absolute inset-0 border-2 border-white/10 rounded-full"></div>
+<div class="absolute inset-0 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+</div>
+<span class="text-white text-sm font-semibold tracking-wide">Generating insights...</span>
+</div>
+</div>
+</div>
+</main>
+<div class="h-6 w-full"></div>
+</div>
+</body></html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Screendiet - Plan</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-dark": "#1c271f",
+                        "surface-highlight": "#28392e",
+                        "text-secondary": "#9db9a6"
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-white antialiased selection:bg-primary selection:text-black">
+<div class="relative flex min-h-screen w-full flex-col overflow-hidden pb-20">
+<header class="sticky top-0 z-20 flex items-center justify-between bg-background-light/95 dark:bg-background-dark/95 px-5 py-4 backdrop-blur-md">
+<h1 class="text-3xl font-extrabold tracking-tight dark:text-white">Plan</h1>
+<div class="flex items-center gap-4">
+<button class="flex h-10 w-10 items-center justify-center rounded-full bg-surface-highlight hover:bg-surface-highlight/80 transition-colors">
+<span class="material-symbols-outlined text-primary" style="font-size: 24px;">add</span>
+</button>
+</div>
+</header>
+<main class="flex-1 flex flex-col gap-4">
+<section class="flex flex-col gap-3">
+<div class="flex items-center justify-between px-5 pt-2 pb-1">
+<h2 class="text-xs font-bold tracking-widest text-text-secondary uppercase">Upcoming Blocks</h2>
+<button class="text-xs font-semibold text-primary/80 hover:text-primary transition-colors">View Calendar</button>
+</div>
+<div>
+<h3 class="px-5 text-sm font-bold text-white mb-3">Today</h3>
+<div class="px-5 flex flex-col gap-3">
+<div class="group relative flex flex-col gap-4 rounded-2xl bg-surface-dark p-5 shadow-lg border border-surface-highlight overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-primary"></div>
+<div class="flex items-start justify-between gap-4">
+<div class="flex flex-col z-10 w-full">
+<div class="flex items-center justify-between w-full mb-2">
+<span class="inline-flex items-center rounded bg-primary/20 px-2 py-1 text-[10px] font-bold text-primary uppercase tracking-wide">
+                                    Next Up
+                                </span>
+<span class="text-xs text-text-secondary font-medium flex items-center gap-1">
+<span class="material-symbols-outlined" style="font-size: 14px;">lock</span> Strict Mode
+                                </span>
+</div>
+<div class="flex items-center justify-between gap-4">
+<div>
+<h3 class="text-2xl font-bold leading-tight text-white">Deep Work</h3>
+<div class="flex items-center gap-2 text-text-secondary text-sm mt-1.5">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined" style="font-size: 16px;">schedule</span>
+<span class="font-medium text-white">10:00 - 12:00</span>
+</div>
+<span class="text-xs opacity-50">•</span>
+<span class="text-xs font-medium">2h</span>
+</div>
+</div>
+<div class="h-14 w-14 rounded-xl bg-cover bg-center opacity-80 group-hover:opacity-100 transition-opacity flex-shrink-0 border border-white/10" data-alt="Abstract minimal focus pattern dark" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDxoK24fyb8S4P78BAL3fchuZu1uPstm7Hrv3XeItNosKv52WoX63cvHYPj00OQnCE2Yp_2xV7Agq3OE8bl_l4Dv6RzmipYGFkycFA1uRWPRTWVP8kNPu9DvnnPQeaeZoVKwBrwjFoTK8ij_9L0E0bYMYlvpfq241U5FGPLSW575_qTSHbbt0xeSrQly1LJsFfQLUVGB-DduqPmPLjNCjCQ2VHKskRpMLaKzvEQ6OgbopHSWFE7kvPYPxw4FNcwia5zKoCFwDxs7gY');">
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-white/5 mt-1">
+<div class="flex items-center gap-2">
+<div class="flex -space-x-2">
+<div class="h-7 w-7 rounded-full border-2 border-surface-dark bg-gray-700 flex items-center justify-center text-[10px] text-white font-bold">A</div>
+<div class="h-7 w-7 rounded-full border-2 border-surface-dark bg-gray-600 flex items-center justify-center text-[10px] text-white font-bold">+</div>
+</div>
+<span class="text-xs text-text-secondary">Shared block</span>
+</div>
+<button class="flex items-center gap-1.5 rounded-full bg-primary pl-3 pr-4 py-2 text-xs font-bold text-black hover:bg-primary/90 transition-colors shadow-[0_0_10px_rgba(19,236,91,0.2)]">
+<span class="material-symbols-outlined" style="font-size: 16px;">play_arrow</span>
+                            Start Early
+                        </button>
+</div>
+</div>
+<div class="flex items-center gap-4 rounded-2xl bg-surface-dark p-4 shadow-sm border border-transparent hover:border-surface-highlight transition-all">
+<div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-surface-highlight/40 text-text-secondary border border-white/5">
+<span class="material-symbols-outlined" style="font-size: 24px;">menu_book</span>
+</div>
+<div class="flex flex-1 flex-col">
+<h3 class="text-base font-bold text-white">Afternoon Read</h3>
+<div class="flex items-center gap-2 text-xs mt-0.5">
+<span class="text-white">14:00 - 15:00</span>
+<span class="text-text-secondary">• Soft Block</span>
+</div>
+</div>
+<button class="rounded-full p-2 text-text-secondary hover:bg-surface-highlight hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+<div class="mt-1">
+<h3 class="px-5 text-sm font-bold text-text-secondary mb-3">Tomorrow</h3>
+<div class="px-5 flex flex-col gap-3">
+<div class="flex items-center gap-4 rounded-2xl bg-surface-dark p-4 shadow-sm border border-transparent hover:border-surface-highlight transition-all">
+<div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-surface-highlight/40 text-text-secondary border border-white/5">
+<span class="material-symbols-outlined" style="font-size: 24px;">fitness_center</span>
+</div>
+<div class="flex flex-1 flex-col">
+<h3 class="text-base font-bold text-white">Morning Run</h3>
+<div class="flex items-center gap-2 text-xs mt-0.5">
+<span class="text-white">07:00 - 08:00</span>
+<span class="text-text-secondary">• Health</span>
+</div>
+</div>
+<button class="rounded-full p-2 text-text-secondary hover:bg-surface-highlight hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<section class="flex flex-col bg-surface-dark/30 pt-6 rounded-t-[2rem] border-t border-white/5 mt-2 flex-1 pb-10">
+<div class="flex items-center justify-between px-6 pb-4">
+<div class="flex items-center gap-2">
+<h2 class="text-xs font-bold tracking-widest text-text-secondary uppercase">Template Collections</h2>
+<button class="flex items-center justify-center rounded-full hover:bg-surface-highlight/50 p-1 transition-colors">
+<span class="material-symbols-outlined text-text-secondary" style="font-size: 18px;">tune</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 px-5">
+<div class="group flex cursor-pointer flex-col justify-between gap-4 rounded-2xl bg-surface-dark p-4 shadow-sm border border-white/5 hover:border-primary/40 hover:shadow-[0_4px_20px_-4px_rgba(19,236,91,0.15)] transition-all duration-300">
+<div class="flex items-start justify-between">
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/10">
+<span class="material-symbols-outlined filled" style="font-size: 20px;">bolt</span>
+</div>
+<span class="material-symbols-outlined text-gray-600 group-hover:text-primary transition-colors transform group-hover:translate-x-0.5" style="font-size: 20px;">arrow_forward</span>
+</div>
+<div>
+<h3 class="font-bold text-white text-base">Laser Focus</h3>
+<p class="text-xs text-text-secondary mt-1 leading-snug line-clamp-2">High intensity. No socials, no notifications.</p>
+</div>
+<div class="flex gap-1.5 mt-1 items-center">
+<span class="h-2 w-2 rounded-full bg-blue-500"></span>
+<span class="h-1.5 w-1.5 rounded-full bg-surface-highlight"></span>
+<span class="h-1.5 w-1.5 rounded-full bg-surface-highlight"></span>
+</div>
+</div>
+<div class="group flex cursor-pointer flex-col justify-between gap-4 rounded-2xl bg-surface-dark p-4 shadow-sm border border-white/5 hover:border-primary/40 hover:shadow-[0_4px_20px_-4px_rgba(19,236,91,0.15)] transition-all duration-300">
+<div class="flex items-start justify-between">
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-500/10 text-orange-400 border border-orange-500/10">
+<span class="material-symbols-outlined filled" style="font-size: 20px;">wb_sunny</span>
+</div>
+<span class="material-symbols-outlined text-gray-600 group-hover:text-primary transition-colors transform group-hover:translate-x-0.5" style="font-size: 20px;">arrow_forward</span>
+</div>
+<div>
+<h3 class="font-bold text-white text-base">Rinse &amp; Shine</h3>
+<p class="text-xs text-text-secondary mt-1 leading-snug line-clamp-2">Morning routine. Email blocked till 10am.</p>
+</div>
+<div class="flex gap-1.5 mt-1 items-center">
+<span class="h-2 w-2 rounded-full bg-orange-500"></span>
+<span class="h-2 w-2 rounded-full bg-orange-500"></span>
+<span class="h-1.5 w-1.5 rounded-full bg-surface-highlight"></span>
+</div>
+</div>
+<div class="group flex cursor-pointer flex-col justify-between gap-4 rounded-2xl bg-surface-dark p-4 shadow-sm border border-white/5 hover:border-primary/40 hover:shadow-[0_4px_20px_-4px_rgba(19,236,91,0.15)] transition-all duration-300">
+<div class="flex items-start justify-between">
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/10">
+<span class="material-symbols-outlined filled" style="font-size: 20px;">self_improvement</span>
+</div>
+<span class="material-symbols-outlined text-gray-600 group-hover:text-primary transition-colors transform group-hover:translate-x-0.5" style="font-size: 20px;">arrow_forward</span>
+</div>
+<div>
+<h3 class="font-bold text-white text-base">Mindful Reset</h3>
+<p class="text-xs text-text-secondary mt-1 leading-snug line-clamp-2">Meditation prep &amp; breathing breaks.</p>
+</div>
+<div class="flex gap-1.5 mt-1 items-center">
+<span class="h-2 w-2 rounded-full bg-purple-500"></span>
+<span class="h-1.5 w-1.5 rounded-full bg-surface-highlight"></span>
+</div>
+</div>
+<div class="group flex cursor-pointer flex-col justify-between gap-4 rounded-2xl bg-surface-dark p-4 shadow-sm border border-white/5 hover:border-primary/40 hover:shadow-[0_4px_20px_-4px_rgba(19,236,91,0.15)] transition-all duration-300">
+<div class="flex items-start justify-between">
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10 text-primary border border-green-500/10">
+<span class="material-symbols-outlined filled" style="font-size: 20px;">nights_stay</span>
+</div>
+<span class="material-symbols-outlined text-gray-600 group-hover:text-primary transition-colors transform group-hover:translate-x-0.5" style="font-size: 20px;">arrow_forward</span>
+</div>
+<div>
+<h3 class="font-bold text-white text-base">Digital Sunset</h3>
+<p class="text-xs text-text-secondary mt-1 leading-snug line-clamp-2">Wind down. Blue light reduced.</p>
+</div>
+<div class="flex gap-1.5 mt-1 items-center">
+<span class="h-2 w-2 rounded-full bg-primary"></span>
+<span class="h-2 w-2 rounded-full bg-primary"></span>
+</div>
+</div>
+</div>
+</section>
+</main>
+<nav class="fixed bottom-0 left-0 right-0 z-50 border-t border-white/5 bg-background-dark/95 backdrop-blur-lg pb-safe">
+<div class="flex h-16 items-center justify-around px-2">
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined filled" style="font-variation-settings: 'FILL' 1;">calendar_today</span>
+<span class="text-[10px] font-bold">Plan</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-text-secondary hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">bar_chart</span>
+<span class="text-[10px] font-medium">Stats</span>
+</a>
+<div class="relative -top-6 flex flex-col items-center">
+<button class="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-background-dark shadow-[0_0_15px_rgba(19,236,91,0.4)] transition-transform hover:scale-105 active:scale-95">
+<span class="material-symbols-outlined" style="font-size: 28px; font-weight: 600;">play_arrow</span>
+</button>
+</div>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-text-secondary hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">group</span>
+<span class="text-[10px] font-medium">Friends</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center gap-1 text-text-secondary hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+<span class="text-[10px] font-medium">Settings</span>
+</a>
+</div>
+<div class="h-5 w-full"></div>
+</nav>
+</div>
+</body></html>

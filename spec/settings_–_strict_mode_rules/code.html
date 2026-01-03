@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Screendiet - Strict Mode Rules</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-dark": "#1A2C20",
+                        "surface-dark-highlight": "#243E2D",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased overflow-x-hidden">
+<div class="relative flex flex-col min-h-screen w-full mx-auto max-w-md bg-background-light dark:bg-background-dark shadow-2xl">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 flex items-center justify-between px-4 py-3 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-black/5 dark:border-white/5">
+<button class="flex items-center justify-center w-10 h-10 -ml-2 rounded-full active:bg-black/5 dark:active:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[24px]">arrow_back_ios_new</span>
+</button>
+<h1 class="text-lg font-bold leading-tight tracking-tight text-center flex-1 pr-8">Strict Mode Rules</h1>
+</header>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col px-4 pb-32">
+<!-- Intro Text -->
+<div class="mt-4 mb-6">
+<p class="text-slate-500 dark:text-gray-400 text-base font-medium leading-relaxed">
+                    Choose how strictly Screendiet enforces your limits. Higher levels prevent bypassing rules and ensure focus.
+                </p>
+</div>
+<!-- Difficulty Segmented Control -->
+<div class="mb-6 p-1 bg-slate-200 dark:bg-surface-dark rounded-xl flex items-stretch h-12 relative">
+<!-- Easy -->
+<label class="flex-1 relative cursor-pointer group">
+<input class="peer sr-only" name="difficulty" type="radio" value="easy"/>
+<div class="w-full h-full flex items-center justify-center rounded-lg text-sm font-bold text-slate-500 dark:text-gray-400 transition-all duration-200 peer-checked:bg-white dark:peer-checked:bg-surface-dark-highlight peer-checked:text-slate-900 dark:peer-checked:text-white peer-checked:shadow-sm">
+                        Easy
+                    </div>
+</label>
+<!-- Medium -->
+<label class="flex-1 relative cursor-pointer group">
+<input checked="" class="peer sr-only" name="difficulty" type="radio" value="medium"/>
+<div class="w-full h-full flex items-center justify-center rounded-lg text-sm font-bold text-slate-500 dark:text-gray-400 transition-all duration-200 peer-checked:bg-white dark:peer-checked:bg-surface-dark-highlight peer-checked:text-slate-900 dark:peer-checked:text-white peer-checked:shadow-sm">
+                        Medium
+                    </div>
+</label>
+<!-- Hard -->
+<label class="flex-1 relative cursor-pointer group">
+<input class="peer sr-only" name="difficulty" type="radio" value="hard"/>
+<div class="w-full h-full flex items-center justify-center rounded-lg text-sm font-bold text-slate-500 dark:text-gray-400 transition-all duration-200 peer-checked:bg-white dark:peer-checked:bg-surface-dark-highlight peer-checked:text-slate-900 dark:peer-checked:text-white peer-checked:shadow-sm">
+                        Hard
+                    </div>
+</label>
+</div>
+<!-- Current Mode Explanation Card -->
+<div class="mb-8 p-4 rounded-xl bg-primary/10 border border-primary/20 flex gap-3 items-start">
+<span class="material-symbols-outlined text-primary shrink-0 mt-0.5">info</span>
+<div class="flex-1">
+<h3 class="text-primary font-bold text-sm mb-1">Medium Strictness</h3>
+<p class="text-xs text-slate-600 dark:text-gray-300 leading-relaxed">
+                        You can pause sessions, but it requires a 10-second delay or solving a challenge. Notifications are muted.
+                    </p>
+</div>
+</div>
+<!-- General Restrictions Section -->
+<div class="mb-2">
+<h2 class="text-slate-900 dark:text-white text-lg font-bold mb-4">General Permissions</h2>
+<!-- Toggle Item: Emergency Break -->
+<div class="flex items-center justify-between py-3 border-b border-black/5 dark:border-white/5">
+<div class="flex flex-col pr-4">
+<span class="text-base font-medium text-slate-900 dark:text-white">Allow Emergency Break</span>
+<span class="text-xs text-slate-500 dark:text-gray-400 mt-0.5">5 min break, once per day</span>
+</div>
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full bg-slate-200 dark:bg-surface-dark p-0.5 transition-colors duration-200 has-[:checked]:bg-primary">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<div class="h-[27px] w-[27px] rounded-full bg-white shadow-sm transition-transform duration-200 peer-checked:translate-x-5"></div>
+</label>
+</div>
+<!-- Toggle Item: Notifications -->
+<div class="flex items-center justify-between py-3 border-b border-black/5 dark:border-white/5">
+<div class="flex flex-col pr-4">
+<span class="text-base font-medium text-slate-900 dark:text-white">Block Notifications</span>
+<span class="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Silence non-critical alerts</span>
+</div>
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full bg-slate-200 dark:bg-surface-dark p-0.5 transition-colors duration-200 has-[:checked]:bg-primary">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<div class="h-[27px] w-[27px] rounded-full bg-white shadow-sm transition-transform duration-200 peer-checked:translate-x-5"></div>
+</label>
+</div>
+</div>
+<!-- Advanced Security Section -->
+<div class="mt-6 mb-4">
+<h2 class="text-slate-900 dark:text-white text-lg font-bold mb-4">Advanced Security</h2>
+<!-- Toggle Item: Prevent Uninstall -->
+<div class="flex items-center justify-between py-3 border-b border-black/5 dark:border-white/5">
+<div class="flex items-start gap-3 pr-4">
+<div class="flex flex-col">
+<span class="text-base font-medium text-slate-900 dark:text-white flex items-center gap-2">
+                                Prevent App Deletion
+                                <span class="material-symbols-outlined text-orange-400 text-[18px]">warning</span>
+</span>
+<span class="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Requires iOS Profile installation</span>
+</div>
+</div>
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full bg-slate-200 dark:bg-surface-dark p-0.5 transition-colors duration-200 has-[:checked]:bg-primary">
+<input class="peer sr-only" type="checkbox"/>
+<div class="h-[27px] w-[27px] rounded-full bg-white shadow-sm transition-transform duration-200 peer-checked:translate-x-5"></div>
+</label>
+</div>
+<!-- Toggle Item: Strict Unlock -->
+<div class="flex items-center justify-between py-3 border-b border-black/5 dark:border-white/5 opacity-50 pointer-events-none">
+<div class="flex flex-col pr-4">
+<span class="text-base font-medium text-slate-900 dark:text-white">Strict Unlock</span>
+<span class="text-xs text-slate-500 dark:text-gray-400 mt-0.5">No pausing allowed (Hard Mode only)</span>
+</div>
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full bg-slate-200 dark:bg-surface-dark p-0.5 transition-colors duration-200 has-[:checked]:bg-primary">
+<input class="peer sr-only" disabled="" type="checkbox"/>
+<div class="h-[27px] w-[27px] rounded-full bg-white shadow-sm transition-transform duration-200 peer-checked:translate-x-5"></div>
+</label>
+</div>
+</div>
+<!-- Footer Note -->
+<p class="text-center text-xs text-slate-400 dark:text-gray-500 mt-4 px-8">
+                Changes to strict mode take effect immediately on the next session.
+            </p>
+</main>
+<!-- Sticky Bottom Action -->
+<div class="fixed bottom-0 left-0 right-0 z-40 p-4 bg-gradient-to-t from-background-light dark:from-background-dark via-background-light dark:via-background-dark to-transparent max-w-md mx-auto">
+<button class="w-full bg-primary hover:bg-[#0fdc53] text-surface-dark font-bold text-lg py-4 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+<span>Save Rules</span>
+<span class="material-symbols-outlined text-[20px] font-bold">check</span>
+</button>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Screendiet Splash Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom subtle pulsing animation for the logo */
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(0.95); }
+        }
+        .animate-pulse-soft {
+            animation: pulse-soft 2s ease-in-out infinite;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<div class="relative flex h-screen w-full flex-col items-center justify-between bg-background-light dark:bg-background-dark overflow-hidden">
+<!-- Top spacer for balance -->
+<div class="flex-1"></div>
+<!-- Main Content: Logo & Name -->
+<div class="flex flex-col items-center justify-center gap-8 w-full px-10 animate-pulse-soft">
+<!-- Logo Container -->
+<div class="relative flex items-center justify-center">
+<!-- Outer glow effect -->
+<div class="absolute inset-0 bg-primary/20 blur-xl rounded-full scale-150"></div>
+<!-- Actual Logo Shape -->
+<div class="relative flex items-center justify-center w-32 h-32 rounded-3xl bg-primary text-background-dark shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-6xl">smartphone</span>
+<!-- Abstract "bite" or reduction overlay -->
+<div class="absolute -right-2 -top-2 w-10 h-10 bg-background-light dark:bg-background-dark rounded-full"></div>
+</div>
+</div>
+<!-- App Name -->
+<div class="flex flex-col items-center gap-1">
+<h1 class="text-gray-900 dark:text-white text-4xl font-extrabold tracking-tight">Screendiet</h1>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium tracking-wide uppercase">Digital Wellbeing</p>
+</div>
+</div>
+<!-- Bottom Section: Loader & Version -->
+<div class="flex-1 flex flex-col justify-end w-full pb-12 px-12 gap-8">
+<!-- Progress Bar -->
+<div class="w-full flex flex-col gap-2 items-center">
+<div class="w-full max-w-[200px] h-1.5 rounded-full bg-gray-200 dark:bg-white/10 overflow-hidden">
+<div class="h-full rounded-full bg-primary w-[60%]"></div>
+</div>
+<p class="text-xs text-gray-400 dark:text-gray-500 font-medium">Loading your profile...</p>
+</div>
+<!-- Version Info -->
+<p class="text-gray-400 dark:text-gray-600 text-xs font-normal text-center opacity-60">v1.0</p>
+</div>
+</div>
+</body></html>

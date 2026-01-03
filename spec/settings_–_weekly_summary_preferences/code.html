@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Weekly Summary Preferences - Screendiet</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hide for cleaner UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased min-h-screen flex justify-center">
+<div class="relative flex h-full min-h-screen w-full max-w-md flex-col bg-background-light dark:bg-background-dark overflow-x-hidden shadow-2xl">
+<!-- Top App Bar -->
+<div class="flex items-center px-4 pt-12 pb-4 sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md">
+<button class="text-neutral-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back_ios_new</span>
+</button>
+<h1 class="text-neutral-900 dark:text-white text-xl font-bold leading-tight tracking-tight flex-1 text-center pr-10">Weekly Summary</h1>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 flex flex-col px-4 pb-24 space-y-6">
+<!-- Master Toggle Card -->
+<div class="flex flex-col items-start justify-between gap-4 rounded-xl border border-neutral-200 dark:border-[#3b5443] bg-white dark:bg-[#1a2c22] p-5 shadow-sm">
+<div class="flex items-center justify-between w-full">
+<div class="flex flex-col gap-1 pr-4">
+<p class="text-neutral-900 dark:text-white text-lg font-bold leading-tight">Enable Weekly Summary</p>
+<p class="text-neutral-500 dark:text-[#9db9a6] text-sm font-medium leading-normal">Get a breakdown of your digital habits delivered to your inbox.</p>
+</div>
+<label class="relative flex h-[31px] w-[51px] shrink-0 cursor-pointer items-center rounded-full border-none bg-neutral-200 dark:bg-[#28392e] p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-colors duration-200">
+<input checked="" class="peer sr-only" type="checkbox"/>
+<div class="h-[27px] w-[27px] rounded-full bg-white shadow-md transition-all duration-200"></div>
+</label>
+</div>
+</div>
+<!-- Delivery Schedule Section -->
+<div class="flex flex-col gap-3">
+<h3 class="text-neutral-900 dark:text-white text-base font-bold leading-tight px-1">Delivery Schedule</h3>
+<div class="flex flex-col rounded-xl border border-neutral-200 dark:border-[#3b5443] bg-white dark:bg-[#1a2c22] overflow-hidden shadow-sm">
+<!-- Day Picker -->
+<div class="p-4 border-b border-neutral-100 dark:border-[#28392e]">
+<p class="text-neutral-500 dark:text-[#9db9a6] text-xs font-bold uppercase tracking-wider mb-3">Day of Week</p>
+<div class="flex justify-between items-center gap-1 overflow-x-auto no-scrollbar pb-1">
+<!-- Sunday: Active State Example -->
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-background-dark shadow-sm transition-transform active:scale-95">
+<span class="text-sm font-bold">S</span>
+</button>
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full bg-neutral-100 dark:bg-[#28392e] text-neutral-600 dark:text-white hover:bg-neutral-200 dark:hover:bg-[#3b5443] transition-colors">
+<span class="text-sm font-medium">M</span>
+</button>
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full bg-neutral-100 dark:bg-[#28392e] text-neutral-600 dark:text-white hover:bg-neutral-200 dark:hover:bg-[#3b5443] transition-colors">
+<span class="text-sm font-medium">T</span>
+</button>
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full bg-neutral-100 dark:bg-[#28392e] text-neutral-600 dark:text-white hover:bg-neutral-200 dark:hover:bg-[#3b5443] transition-colors">
+<span class="text-sm font-medium">W</span>
+</button>
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full bg-neutral-100 dark:bg-[#28392e] text-neutral-600 dark:text-white hover:bg-neutral-200 dark:hover:bg-[#3b5443] transition-colors">
+<span class="text-sm font-medium">T</span>
+</button>
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full bg-neutral-100 dark:bg-[#28392e] text-neutral-600 dark:text-white hover:bg-neutral-200 dark:hover:bg-[#3b5443] transition-colors">
+<span class="text-sm font-medium">F</span>
+</button>
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full bg-neutral-100 dark:bg-[#28392e] text-neutral-600 dark:text-white hover:bg-neutral-200 dark:hover:bg-[#3b5443] transition-colors">
+<span class="text-sm font-medium">S</span>
+</button>
+</div>
+</div>
+<!-- Time Picker Row -->
+<div class="flex items-center justify-between p-4 cursor-pointer hover:bg-neutral-50 dark:hover:bg-[#28392e]/50 transition-colors group">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-primary/10 text-primary">
+<span class="material-symbols-outlined" style="font-size: 20px;">schedule</span>
+</div>
+<p class="text-neutral-900 dark:text-white text-base font-medium">Delivery Time</p>
+</div>
+<div class="flex items-center gap-2 bg-neutral-100 dark:bg-[#28392e] px-3 py-1.5 rounded-lg group-hover:bg-neutral-200 dark:group-hover:bg-[#3b5443] transition-colors">
+<span class="text-neutral-900 dark:text-white text-base font-bold">09:00 AM</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Include in Report Section -->
+<div class="flex flex-col gap-3">
+<h3 class="text-neutral-900 dark:text-white text-base font-bold leading-tight px-1">Include in Report</h3>
+<div class="flex flex-col rounded-xl border border-neutral-200 dark:border-[#3b5443] bg-white dark:bg-[#1a2c22] overflow-hidden shadow-sm divide-y divide-neutral-100 dark:divide-[#28392e]">
+<!-- Metric Item 1 -->
+<label class="flex items-center justify-between p-4 cursor-pointer hover:bg-neutral-50 dark:hover:bg-[#28392e]/50 transition-colors">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-blue-500/10 text-blue-500">
+<span class="material-symbols-outlined" style="font-size: 20px;">timer</span>
+</div>
+<div class="flex flex-col">
+<span class="text-neutral-900 dark:text-white text-base font-medium">Total Screen Time</span>
+<span class="text-neutral-500 dark:text-[#9db9a6] text-xs">Daily average &amp; weekly total</span>
+</div>
+</div>
+<div class="relative flex items-center">
+<input checked="" class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-primary bg-neutral-100 dark:bg-[#28392e] focus:ring-primary focus:ring-offset-0 transition-all" type="checkbox"/>
+</div>
+</label>
+<!-- Metric Item 2 -->
+<label class="flex items-center justify-between p-4 cursor-pointer hover:bg-neutral-50 dark:hover:bg-[#28392e]/50 transition-colors">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-purple-500/10 text-purple-500">
+<span class="material-symbols-outlined" style="font-size: 20px;">psychology</span>
+</div>
+<div class="flex flex-col">
+<span class="text-neutral-900 dark:text-white text-base font-medium">Focus Session Analysis</span>
+<span class="text-neutral-500 dark:text-[#9db9a6] text-xs">Deep work intervals</span>
+</div>
+</div>
+<div class="relative flex items-center">
+<input checked="" class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-primary bg-neutral-100 dark:bg-[#28392e] focus:ring-primary focus:ring-offset-0 transition-all" type="checkbox"/>
+</div>
+</label>
+<!-- Metric Item 3 -->
+<label class="flex items-center justify-between p-4 cursor-pointer hover:bg-neutral-50 dark:hover:bg-[#28392e]/50 transition-colors">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-red-500/10 text-red-500">
+<span class="material-symbols-outlined" style="font-size: 20px;">block</span>
+</div>
+<div class="flex flex-col">
+<span class="text-neutral-900 dark:text-white text-base font-medium">Top Distracting Apps</span>
+<span class="text-neutral-500 dark:text-[#9db9a6] text-xs">Most opened non-productive apps</span>
+</div>
+</div>
+<div class="relative flex items-center">
+<input class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-primary bg-neutral-100 dark:bg-[#28392e] focus:ring-primary focus:ring-offset-0 transition-all" type="checkbox"/>
+</div>
+</label>
+<!-- Metric Item 4 -->
+<label class="flex items-center justify-between p-4 cursor-pointer hover:bg-neutral-50 dark:hover:bg-[#28392e]/50 transition-colors">
+<div class="flex items-center gap-3">
+<div class="p-2 rounded-lg bg-orange-500/10 text-orange-500">
+<span class="material-symbols-outlined" style="font-size: 20px;">trending_up</span>
+</div>
+<div class="flex flex-col">
+<span class="text-neutral-900 dark:text-white text-base font-medium">Productivity Trends</span>
+<span class="text-neutral-500 dark:text-[#9db9a6] text-xs">Weekly comparison</span>
+</div>
+</div>
+<div class="relative flex items-center">
+<input checked="" class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-primary bg-neutral-100 dark:bg-[#28392e] focus:ring-primary focus:ring-offset-0 transition-all" type="checkbox"/>
+</div>
+</label>
+</div>
+</div>
+<!-- Sample Preview Button -->
+<button class="w-full mt-2 py-3 rounded-xl border border-neutral-200 dark:border-[#3b5443] text-neutral-600 dark:text-[#9db9a6] font-bold text-sm hover:bg-neutral-50 dark:hover:bg-[#1a2c22] transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+                View Sample Summary
+            </button>
+</div>
+<!-- Sticky Footer Action -->
+<div class="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark dark:to-transparent z-10 flex justify-center w-full max-w-md mx-auto pointer-events-none">
+<button class="w-full bg-primary hover:bg-primary/90 text-background-dark font-extrabold text-base py-4 rounded-xl shadow-lg transition-transform active:scale-[0.98] pointer-events-auto flex items-center justify-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 22px;">save</span>
+                Save Preferences
+            </button>
+</div>
+<!-- Bottom Spacer for Safe Area -->
+<div class="h-6 w-full"></div>
+</div>
+</body></html>

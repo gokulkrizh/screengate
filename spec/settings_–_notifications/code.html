@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Settings - Notifications</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-dark": "#1c2e24",
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar hiding */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-white antialiased overflow-x-hidden selection:bg-primary selection:text-black">
+<div class="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto">
+<!-- Header -->
+<div class="sticky top-0 z-10 flex items-center bg-background-light/95 dark:bg-background-dark/95 p-4 pb-2 justify-between backdrop-blur-md transition-colors duration-300">
+<button class="text-gray-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors active:scale-95">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</button>
+<h2 class="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Notifications</h2>
+</div>
+<!-- Main Content -->
+<div class="flex-1 flex flex-col p-4 gap-6 pb-12">
+<!-- Section 1: Master Toggle -->
+<div class="flex flex-col gap-2">
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-white/5 transition-colors duration-300">
+<div class="flex items-center gap-4 p-4 min-h-16 justify-between">
+<div class="flex items-center gap-3">
+<div class="flex items-center justify-center rounded-lg bg-primary/20 shrink-0 size-10 text-primary">
+<span class="material-symbols-outlined">notifications</span>
+</div>
+<div class="flex flex-col">
+<p class="text-gray-900 dark:text-white text-base font-semibold leading-normal">Allow Notifications</p>
+<p class="text-gray-500 dark:text-gray-400 text-xs font-medium">Enable alerts for Screendiet</p>
+</div>
+</div>
+<div class="shrink-0">
+<!-- Custom Toggle Component -->
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-gray-300 dark:bg-[#28392e] p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all duration-300 ease-in-out">
+<div class="h-full w-[27px] rounded-full bg-white shadow-[0_3px_8px_rgba(0,0,0,0.15),0_3px_1px_rgba(0,0,0,0.06)]"></div>
+<input checked="" class="invisible absolute peer" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 2: Focus & Sessions -->
+<div class="flex flex-col gap-2">
+<h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider px-2 ml-2">Focus &amp; Sessions</h3>
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-white/5 divide-y divide-gray-100 dark:divide-white/5 transition-colors duration-300">
+<!-- Session Start -->
+<div class="flex items-center gap-4 p-4 min-h-14 justify-between group active:bg-gray-50 dark:active:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<div class="text-gray-400 dark:text-gray-500 flex items-center justify-center shrink-0 size-6">
+<span class="material-symbols-outlined text-[22px]">timer</span>
+</div>
+<p class="text-gray-900 dark:text-white text-base font-medium flex-1 truncate">Session Start Alerts</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-gray-300 dark:bg-[#28392e] p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all duration-300 ease-in-out">
+<div class="h-full w-[27px] rounded-full bg-white shadow-[0_3px_8px_rgba(0,0,0,0.15),0_3px_1px_rgba(0,0,0,0.06)]"></div>
+<input checked="" class="invisible absolute peer" type="checkbox"/>
+</label>
+</div>
+</div>
+<!-- Session End -->
+<div class="flex items-center gap-4 p-4 min-h-14 justify-between group active:bg-gray-50 dark:active:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<div class="text-gray-400 dark:text-gray-500 flex items-center justify-center shrink-0 size-6">
+<span class="material-symbols-outlined text-[22px]">timer_off</span>
+</div>
+<p class="text-gray-900 dark:text-white text-base font-medium flex-1 truncate">Session End Alerts</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-gray-300 dark:bg-[#28392e] p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all duration-300 ease-in-out">
+<div class="h-full w-[27px] rounded-full bg-white shadow-[0_3px_8px_rgba(0,0,0,0.15),0_3px_1px_rgba(0,0,0,0.06)]"></div>
+<input checked="" class="invisible absolute peer" type="checkbox"/>
+</label>
+</div>
+</div>
+<!-- Break Reminders -->
+<div class="flex items-center gap-4 p-4 min-h-14 justify-between group active:bg-gray-50 dark:active:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<div class="text-gray-400 dark:text-gray-500 flex items-center justify-center shrink-0 size-6">
+<span class="material-symbols-outlined text-[22px]">self_improvement</span>
+</div>
+<p class="text-gray-900 dark:text-white text-base font-medium flex-1 truncate">Break Reminders</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-gray-300 dark:bg-[#28392e] p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all duration-300 ease-in-out">
+<div class="h-full w-[27px] rounded-full bg-white shadow-[0_3px_8px_rgba(0,0,0,0.15),0_3px_1px_rgba(0,0,0,0.06)]"></div>
+<input class="invisible absolute peer" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 3: Progress & Motivation -->
+<div class="flex flex-col gap-2">
+<h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider px-2 ml-2">Progress &amp; Motivation</h3>
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-white/5 divide-y divide-gray-100 dark:divide-white/5 transition-colors duration-300">
+<!-- Daily Streak -->
+<div class="flex items-center gap-4 p-4 min-h-14 justify-between group active:bg-gray-50 dark:active:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<div class="text-gray-400 dark:text-gray-500 flex items-center justify-center shrink-0 size-6">
+<span class="material-symbols-outlined text-[22px]">local_fire_department</span>
+</div>
+<p class="text-gray-900 dark:text-white text-base font-medium flex-1 truncate">Daily Streak Updates</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-gray-300 dark:bg-[#28392e] p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all duration-300 ease-in-out">
+<div class="h-full w-[27px] rounded-full bg-white shadow-[0_3px_8px_rgba(0,0,0,0.15),0_3px_1px_rgba(0,0,0,0.06)]"></div>
+<input checked="" class="invisible absolute peer" type="checkbox"/>
+</label>
+</div>
+</div>
+<!-- Weekly Summary -->
+<div class="flex items-center gap-4 p-4 min-h-14 justify-between group active:bg-gray-50 dark:active:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<div class="text-gray-400 dark:text-gray-500 flex items-center justify-center shrink-0 size-6">
+<span class="material-symbols-outlined text-[22px]">insights</span>
+</div>
+<p class="text-gray-900 dark:text-white text-base font-medium flex-1 truncate">Weekly Screen Time</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[31px] w-[51px] cursor-pointer items-center rounded-full border-none bg-gray-300 dark:bg-[#28392e] p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-all duration-300 ease-in-out">
+<div class="h-full w-[27px] rounded-full bg-white shadow-[0_3px_8px_rgba(0,0,0,0.15),0_3px_1px_rgba(0,0,0,0.06)]"></div>
+<input checked="" class="invisible absolute peer" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 4: Preferences -->
+<div class="flex flex-col gap-2">
+<h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider px-2 ml-2">Preferences</h3>
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-white/5 divide-y divide-gray-100 dark:divide-white/5 transition-colors duration-300">
+<!-- Quiet Hours -->
+<div class="flex items-center gap-4 p-4 min-h-14 justify-between group active:bg-gray-50 dark:active:bg-white/5 transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="text-gray-400 dark:text-gray-500 flex items-center justify-center shrink-0 size-6">
+<span class="material-symbols-outlined text-[22px]">bedtime</span>
+</div>
+<p class="text-gray-900 dark:text-white text-base font-medium flex-1 truncate">Quiet Hours</p>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-primary text-sm font-semibold">10:00 PM - 7:00 AM</span>
+<span class="material-symbols-outlined text-gray-400 dark:text-gray-600 text-[20px]">chevron_right</span>
+</div>
+</div>
+<!-- Notification Sound -->
+<div class="flex items-center gap-4 p-4 min-h-14 justify-between group active:bg-gray-50 dark:active:bg-white/5 transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="text-gray-400 dark:text-gray-500 flex items-center justify-center shrink-0 size-6">
+<span class="material-symbols-outlined text-[22px]">music_note</span>
+</div>
+<p class="text-gray-900 dark:text-white text-base font-medium flex-1 truncate">Notification Sound</p>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="text-gray-500 dark:text-gray-400 text-sm font-medium">Droplet</span>
+<span class="material-symbols-outlined text-gray-400 dark:text-gray-600 text-[20px]">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer text -->
+<div class="px-4 mt-2 text-center">
+<p class="text-gray-400 dark:text-gray-600 text-xs font-medium">
+                     Notifications are currently enabled. Manage system-level permissions in <a class="text-primary hover:underline" href="#">iOS Settings</a>.
+                 </p>
+</div>
+</div>
+</div>
+</body></html>

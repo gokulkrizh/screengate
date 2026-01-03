@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create Block - Screendiet</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-dark": "#1c2e22",
+                        "surface-highlight": "#28392e",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-gray-900 dark:text-white overflow-hidden">
+<div class="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark shadow-2xl overflow-hidden">
+<!-- Header -->
+<header class="flex items-center justify-between p-4 pb-2 bg-background-light dark:bg-background-dark z-10">
+<button class="text-gray-900 dark:text-white flex size-10 shrink-0 items-center justify-center hover:bg-gray-200 dark:hover:bg-white/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-[24px]">arrow_back_ios_new</span>
+</button>
+<h1 class="text-gray-900 dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center">Create Block</h1>
+<button class="flex w-12 items-center justify-center">
+<p class="text-primary text-base font-bold leading-normal tracking-wide shrink-0">Save</p>
+</button>
+</header>
+<!-- Main Scrollable Content -->
+<main class="flex-1 overflow-y-auto no-scrollbar pb-24 px-4">
+<!-- Apps Section -->
+<section class="mt-4">
+<h2 class="text-gray-900 dark:text-white tracking-tight text-xl font-bold leading-tight pb-3">Apps to Block</h2>
+<div class="flex items-center gap-4 bg-white dark:bg-surface-dark p-4 rounded-2xl justify-between shadow-sm border border-gray-100 dark:border-white/5 active:scale-[0.99] transition-transform cursor-pointer">
+<div class="flex items-center gap-4 overflow-hidden">
+<!-- Stacked Icons for effect -->
+<div class="flex -space-x-3 shrink-0">
+<div class="size-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center border-2 border-white dark:border-surface-dark relative z-20">
+<span class="material-symbols-outlined text-white text-sm">photo_camera</span>
+</div>
+<div class="size-10 rounded-xl bg-black flex items-center justify-center border-2 border-white dark:border-surface-dark relative z-10">
+<span class="material-symbols-outlined text-white text-sm">music_note</span>
+</div>
+<div class="size-10 rounded-xl bg-blue-500 flex items-center justify-center border-2 border-white dark:border-surface-dark relative z-0">
+<span class="material-symbols-outlined text-white text-sm">social_leaderboard</span>
+</div>
+</div>
+<div class="flex flex-col min-w-0">
+<p class="text-gray-900 dark:text-white text-base font-semibold leading-snug truncate">Instagram, TikTok +2</p>
+<p class="text-gray-500 dark:text-gray-400 text-xs font-medium truncate">Social Media &amp; Entertainment</p>
+</div>
+</div>
+<div class="shrink-0 text-gray-400 dark:text-gray-500">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Time Limit Section (Wheel Picker Style) -->
+<section class="mt-8">
+<h2 class="text-gray-900 dark:text-white tracking-tight text-xl font-bold leading-tight pb-4">Daily Limit</h2>
+<div class="relative h-48 w-full bg-white dark:bg-surface-dark rounded-2xl border border-gray-100 dark:border-white/5 overflow-hidden flex items-center justify-center shadow-inner">
+<!-- Selection Highlight Bar -->
+<div class="absolute w-full h-12 bg-gray-100 dark:bg-surface-highlight border-y border-gray-200 dark:border-white/10 top-1/2 -translate-y-1/2 z-0 pointer-events-none"></div>
+<!-- Hours Column -->
+<div class="flex-1 h-full overflow-hidden relative z-10">
+<div class="flex flex-col items-center justify-center py-16 space-y-4">
+<div class="text-gray-300 dark:text-gray-600 text-lg font-medium">0 h</div>
+<div class="text-gray-900 dark:text-white text-2xl font-bold scale-110">1 h</div>
+<div class="text-gray-300 dark:text-gray-600 text-lg font-medium">2 h</div>
+<div class="text-gray-300 dark:text-gray-600 text-lg font-medium">3 h</div>
+</div>
+<!-- Gradient Masks -->
+<div class="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white dark:from-surface-dark to-transparent pointer-events-none"></div>
+<div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white dark:from-surface-dark to-transparent pointer-events-none"></div>
+</div>
+<!-- Separator -->
+<div class="text-gray-300 dark:text-gray-600 font-bold pb-1 z-10">:</div>
+<!-- Minutes Column -->
+<div class="flex-1 h-full overflow-hidden relative z-10">
+<div class="flex flex-col items-center justify-center py-16 space-y-4">
+<div class="text-gray-300 dark:text-gray-600 text-lg font-medium">15 m</div>
+<div class="text-gray-900 dark:text-primary text-2xl font-bold scale-110">30 m</div>
+<div class="text-gray-300 dark:text-gray-600 text-lg font-medium">45 m</div>
+<div class="text-gray-300 dark:text-gray-600 text-lg font-medium">50 m</div>
+</div>
+<!-- Gradient Masks -->
+<div class="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-white dark:from-surface-dark to-transparent pointer-events-none"></div>
+<div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white dark:from-surface-dark to-transparent pointer-events-none"></div>
+</div>
+</div>
+</section>
+<!-- Strict Mode Section -->
+<section class="mt-8">
+<div class="flex justify-between items-end pb-3">
+<h2 class="text-gray-900 dark:text-white tracking-tight text-xl font-bold leading-tight">Strict Mode</h2>
+<span class="text-xs font-bold uppercase tracking-wider text-primary">Medium</span>
+</div>
+<!-- Custom Segmented Control -->
+<div class="flex p-1 bg-gray-200 dark:bg-black/40 rounded-xl relative">
+<div class="w-1/3 h-full absolute left-1/3 top-0 px-1 py-1 transition-all duration-300">
+<div class="w-full h-full bg-white dark:bg-surface-highlight rounded-lg shadow-sm border border-gray-200 dark:border-white/10"></div>
+</div>
+<button class="flex-1 relative z-10 py-2.5 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                        Easy
+                    </button>
+<button class="flex-1 relative z-10 py-2.5 text-sm font-bold text-gray-900 dark:text-white transition-colors">
+                        Medium
+                    </button>
+<button class="flex-1 relative z-10 py-2.5 text-sm font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                        Hard
+                    </button>
+</div>
+<!-- Mode Description Card -->
+<div class="mt-4 p-4 rounded-xl bg-primary/10 border border-primary/20 flex gap-3 items-start">
+<span class="material-symbols-outlined text-primary mt-0.5" style="font-variation-settings: 'FILL' 1">info</span>
+<div>
+<h3 class="text-gray-900 dark:text-white text-sm font-bold mb-1">Flexible enforcement</h3>
+<p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                            You can take 1 short break (5m) every hour after hitting the limit.
+                        </p>
+</div>
+</div>
+</section>
+<!-- Additional Settings -->
+<section class="mt-8 mb-8 space-y-4">
+<div class="flex items-center justify-between py-2">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-gray-100 dark:bg-surface-dark flex items-center justify-center text-gray-900 dark:text-white">
+<span class="material-symbols-outlined">calendar_month</span>
+</div>
+<div class="flex flex-col">
+<span class="text-gray-900 dark:text-white font-semibold">Schedule</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">Apply every day of the week</span>
+</div>
+</div>
+<!-- Toggle Switch -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between py-2">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-gray-100 dark:bg-surface-dark flex items-center justify-center text-gray-900 dark:text-white">
+<span class="material-symbols-outlined">notifications_off</span>
+</div>
+<div class="flex flex-col">
+<span class="text-gray-900 dark:text-white font-semibold">Block Notifications</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">Hide alerts during block</span>
+</div>
+</div>
+<!-- Toggle Switch -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none dark:bg-gray-700 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</section>
+</main>
+<!-- Fixed Footer -->
+<div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark dark:to-transparent z-20 pb-8 pt-12">
+<button class="w-full h-14 bg-primary hover:bg-[#10d452] active:bg-[#0eb847] text-background-dark text-lg font-bold rounded-2xl shadow-lg shadow-primary/20 flex items-center justify-center transition-all transform active:scale-[0.98]">
+                Create Block
+            </button>
+</div>
+</div>
+</body></html>

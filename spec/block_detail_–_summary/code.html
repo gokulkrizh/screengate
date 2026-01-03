@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Block Detail – Summary</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-dark": "#1c2e22", 
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hide for cleaner UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased">
+<div class="relative flex h-full min-h-screen w-full flex-col bg-background-light dark:bg-background-dark font-display text-[#111813] dark:text-white overflow-x-hidden">
+<!-- Top Navigation -->
+<div class="sticky top-0 z-50 flex items-center bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md p-4 pb-2 justify-between border-b border-transparent dark:border-white/5">
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[#111813] dark:text-white" style="font-size: 24px;">arrow_back</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Block Details</h2>
+<button class="flex w-12 items-center justify-end">
+<p class="text-primary text-base font-bold leading-normal tracking-[0.015em]">Edit</p>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto pb-32">
+<!-- Hero Status Card -->
+<div class="p-4 pt-2">
+<div class="relative overflow-hidden flex flex-col items-center justify-center gap-4 rounded-2xl bg-surface-light dark:bg-surface-dark p-6 shadow-sm border border-black/5 dark:border-white/5">
+<!-- Status Pulse Indicator -->
+<div class="absolute top-4 right-4 flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1">
+<div class="h-2 w-2 rounded-full bg-primary animate-pulse"></div>
+<span class="text-xs font-bold text-primary uppercase tracking-wide">Active</span>
+</div>
+<div class="mt-2 flex size-16 items-center justify-center rounded-full bg-primary/20 text-primary">
+<span class="material-symbols-outlined" style="font-size: 32px;">shield_lock</span>
+</div>
+<div class="text-center space-y-1 z-10">
+<h1 class="text-2xl font-bold leading-tight">Deep Work Morning</h1>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Scheduled Block</p>
+</div>
+<!-- Visual separation or texture -->
+<div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50"></div>
+</div>
+</div>
+<!-- Stats Row -->
+<div class="px-4 pb-2">
+<div class="flex items-center gap-4 rounded-xl bg-surface-light dark:bg-surface-dark p-5 border border-black/5 dark:border-white/5">
+<div class="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary shrink-0">
+<span class="material-symbols-outlined" style="font-size: 24px;">hourglass_top</span>
+</div>
+<div class="flex flex-col">
+<p class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-wider">Time Saved This Week</p>
+<p class="text-2xl font-bold leading-tight tabular-nums">4h 15m</p>
+</div>
+</div>
+</div>
+<!-- Configuration Section -->
+<div class="mt-4">
+<h3 class="text-gray-900 dark:text-white text-lg font-bold leading-tight px-4 pb-3">Configuration</h3>
+<div class="flex flex-col gap-1 px-4">
+<!-- Schedule Item -->
+<div class="flex items-center gap-4 rounded-xl bg-surface-light dark:bg-surface-dark p-4 border border-black/5 dark:border-white/5">
+<div class="flex items-center justify-center rounded-lg bg-black/5 dark:bg-white/5 shrink-0 size-10 text-gray-700 dark:text-gray-300">
+<span class="material-symbols-outlined" style="font-size: 20px;">calendar_month</span>
+</div>
+<div class="flex flex-col flex-1 justify-center">
+<p class="text-base font-bold leading-normal">Schedule</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium line-clamp-1">Mon-Fri • 09:00 - 12:00</p>
+</div>
+<span class="material-symbols-outlined text-gray-400" style="font-size: 20px;">chevron_right</span>
+</div>
+<!-- Strictness Item -->
+<div class="flex items-center gap-4 rounded-xl bg-surface-light dark:bg-surface-dark p-4 border border-black/5 dark:border-white/5">
+<div class="flex items-center justify-center rounded-lg bg-black/5 dark:bg-white/5 shrink-0 size-10 text-gray-700 dark:text-gray-300">
+<span class="material-symbols-outlined" style="font-size: 20px;">lock</span>
+</div>
+<div class="flex flex-col flex-1 justify-center">
+<p class="text-base font-bold leading-normal">Strictness</p>
+<p class="text-primary text-sm font-medium line-clamp-1">Hardcore Mode</p>
+</div>
+<span class="material-symbols-outlined text-gray-400" style="font-size: 20px;">chevron_right</span>
+</div>
+<!-- Blocked Apps Item -->
+<div class="flex flex-col gap-3 rounded-xl bg-surface-light dark:bg-surface-dark p-4 border border-black/5 dark:border-white/5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center rounded-lg bg-black/5 dark:bg-white/5 shrink-0 size-10 text-gray-700 dark:text-gray-300">
+<span class="material-symbols-outlined" style="font-size: 20px;">apps</span>
+</div>
+<div class="flex flex-col justify-center">
+<p class="text-base font-bold leading-normal">Blocked Apps</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">8 apps selected</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-gray-400" style="font-size: 20px;">chevron_right</span>
+</div>
+<!-- Horizontal Scroll of Apps -->
+<div class="flex gap-3 overflow-x-auto no-scrollbar pt-2 pl-14">
+<!-- App 1 -->
+<div class="shrink-0 flex flex-col items-center gap-1 w-12">
+<div class="size-12 rounded-xl bg-gray-200 dark:bg-gray-700 bg-cover bg-center" data-alt="Facebook app icon" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCvCD1WdbhV806CTzSUlqOTjHTe4yNcK4VCyzq0axUm1qlgRJWMQ78FzHfxxQdiDlhYLxGe2Fzg-0-P286WYPoFzGIDnI2GoQ97Iq130B2NpGCQgP6ESVW9kEmWBnZ1rpO_3KvcOTeYUlWMoHbmktIlRZvn6s93iKrwdPliWv-9Hl0hzUlKB_ePYC1gs6gZ3fd7trZu0BB1Vy2ho_jdR3GrPl8Jm2Gx6kuNX1zPTnkvZHA2v0US0sB8xtdVoU8Up0j_vAaLHSJ8QYU');"></div>
+<span class="text-[10px] text-gray-400 font-medium">Social</span>
+</div>
+<!-- App 2 -->
+<div class="shrink-0 flex flex-col items-center gap-1 w-12">
+<div class="size-12 rounded-xl bg-gray-200 dark:bg-gray-700 bg-cover bg-center" data-alt="Instagram app icon" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA88QCE3HfcUI7tB-ySbntE6gv9EV67L0iRYMaPQ_GwN652nqKh9LA3SExtYAw6DUkOsUPE375Im9adKsSqHNALhYGm1PUG8zOoUb1VeYkGZGsLoHxrGyKv1qm5879O2IyMkzzvgwBzL1fNcRt11fpFf7HLxeciYUMHw8QVxsVANXExhOy3eRjmP_yDPzt_Bxs3qLehvzLkfqvroR1dRY-iDwYCCK-QDZegrsTM4AibzVt6jOTqRty_KHYGWb6Wis1cJMrZ5LreNsA');"></div>
+<span class="text-[10px] text-gray-400 font-medium">Social</span>
+</div>
+<!-- App 3 -->
+<div class="shrink-0 flex flex-col items-center gap-1 w-12">
+<div class="size-12 rounded-xl bg-gray-200 dark:bg-gray-700 bg-cover bg-center" data-alt="YouTube app icon" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAYPH_1QNAKY5wl921HBneHhqxwJGTpHsmW0f9GbdTnWIDE5a9SIz-I7cX637s3putPlSJSepb1mul09yhLjgLey94HbZIXruKTl8u5TDfPSnXYsvWG6ohvarRdhlIgfa7uQqj7LgDD_rryo3J-G72J5N3GltJajVk2pwyo_BB-Aq3VffCcBfTE7J8afOcIINkDHpZHg4lIDSndNzLlOlF5t40yrz0njERdhsWmVDbyQVl5onjdi7sqi6J6Qvyb1drfTjBiNt7qZL4');"></div>
+<span class="text-[10px] text-gray-400 font-medium">Video</span>
+</div>
+<!-- App 4 -->
+<div class="shrink-0 flex flex-col items-center gap-1 w-12">
+<div class="size-12 rounded-xl bg-gray-200 dark:bg-gray-700 bg-cover bg-center" data-alt="TikTok app icon" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBAHd0YW70j_Qbe1w2NcGDibHJWn2QQ2iJ9QSMBX7Zx36lLRnuJuW2oV9-redB96ICbtXarT0lMNv3Wyfs2azU_UHaaHxE7tsQtUSItvEyoORFKyG8TDLONsUkzTXS4iGCpEIi0Nog7dcIuaJJlwu49eQfZ6MAGJq6x6VxIuWsCrFZHImY1JVrEZQ-f_VyKsXPsikvRNCol6vRiSxD9kvpSuIAzaQ7XSIio9wbt-pLlNSy1DSxbHA6OGrGjkSqTIkhrNOsTqsql9Bk');"></div>
+<span class="text-[10px] text-gray-400 font-medium">Video</span>
+</div>
+<!-- More indicator -->
+<div class="shrink-0 flex flex-col items-center gap-1 w-12 justify-start">
+<div class="size-12 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex items-center justify-center">
+<span class="text-xs font-bold text-gray-400">+4</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Bottom Action Bar -->
+<div class="fixed bottom-0 w-full left-0 p-4 bg-gradient-to-t from-background-light dark:from-background-dark via-background-light dark:via-background-dark to-transparent pt-10">
+<div class="flex flex-col gap-3">
+<button class="w-full flex items-center justify-center gap-2 rounded-xl bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 p-4 active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined text-gray-900 dark:text-white" style="font-size: 20px;">pause</span>
+<span class="text-gray-900 dark:text-white text-base font-bold">Pause Block</span>
+</button>
+<button class="w-full py-2 flex items-center justify-center">
+<span class="text-red-500 text-sm font-bold">Delete Block</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

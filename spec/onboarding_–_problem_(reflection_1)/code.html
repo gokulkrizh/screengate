@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Screendiet Onboarding - Problem</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for cleaner mobile look if content overflows */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white transition-colors duration-300">
+<div class="relative flex h-screen w-full flex-col overflow-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- Header: Progress Indicators -->
+<div class="flex w-full flex-row items-center justify-start gap-2 px-6 pt-12 pb-4">
+<!-- Active Step: Elongated for emphasis -->
+<div class="h-1.5 w-8 rounded-full bg-primary transition-all duration-300"></div>
+<!-- Inactive Steps -->
+<div class="h-1.5 w-2 rounded-full bg-slate-300 dark:bg-slate-800/50"></div>
+<div class="h-1.5 w-2 rounded-full bg-slate-300 dark:bg-slate-800/50"></div>
+<div class="h-1.5 w-2 rounded-full bg-slate-300 dark:bg-slate-800/50"></div>
+</div>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col justify-center relative z-10">
+<!-- Hero Image / Graphic -->
+<div class="@container w-full px-6 mb-8">
+<div class="relative aspect-[4/3] w-full overflow-hidden rounded-2xl bg-neutral-900 border border-slate-800/50 shadow-[0_0_30px_-10px_rgba(19,236,91,0.15)]">
+<!-- Background Image -->
+<div class="absolute inset-0 bg-cover bg-center opacity-90 transition-transform hover:scale-105 duration-700" data-alt="Abstract dark cyberpunk digital glitch art representing fragmented focus" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBQYREkBKwz3MRr5vfqxJY9EFGCMCjoWH_l2e7KhjzaCyyKtW2igfYJ9gjfsRIemGZju0XjHCHSyMVh1YH204XXTgPmUNE2pKahRboAX9_IHnGhHGZ3QLfuzzJCn3V39AhQIZsr3Oxo1FX25ceiBJQ-bREM8gUPkWXSjgbP6unfqKXuPmXiYjBZXmhEgRFPqwvHyHyzB0aZVqz4AwGfi0fmd25zYWOo4rmVC8OqqobtPuPhbnk4TtI1NU0FjIumaBJ6rzVEUNEfMSU');">
+</div>
+<!-- Overlay Gradient -->
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/20 to-transparent"></div>
+<!-- Floating Icon Element (Visual hook) -->
+<div class="absolute bottom-4 left-4 bg-background-dark/80 backdrop-blur-md border border-white/10 p-3 rounded-xl shadow-lg">
+<span class="material-symbols-outlined text-primary text-3xl">notification_important</span>
+</div>
+</div>
+</div>
+<!-- Text Content -->
+<div class="flex flex-col px-6">
+<!-- Meta Label -->
+<p class="text-primary text-xs font-bold tracking-[0.2em] uppercase mb-4 pl-1">The Problem</p>
+<!-- Headline -->
+<h1 class="text-slate-900 dark:text-white tracking-tight text-4xl font-extrabold leading-[1.1] mb-6">
+                    Your attention is being <span class="text-primary selection:bg-primary selection:text-background-dark">auctioned</span>.
+                </h1>
+<!-- Body Text -->
+<p class="text-slate-600 dark:text-slate-400 text-lg font-medium leading-relaxed">
+                    Constant notifications and endless feeds fragment your focus. Do you remember the last time you focused on one thing for an hour?
+                </p>
+</div>
+</div>
+<!-- Footer: Action Area -->
+<div class="relative w-full px-6 py-8 flex flex-col items-center justify-end gap-6 bg-background-light dark:bg-background-dark">
+<!-- Swipe Prompt -->
+<div class="flex flex-col items-center gap-3 opacity-90 group cursor-pointer">
+<p class="text-slate-500 dark:text-slate-500 text-xs font-bold tracking-widest uppercase group-hover:text-primary transition-colors">Swipe to reflect</p>
+<!-- Animated Arrow Container -->
+<div class="relative flex items-center justify-center h-12 w-12 rounded-full bg-slate-200 dark:bg-slate-800/50 text-slate-900 dark:text-white group-hover:bg-primary group-hover:text-background-dark transition-all duration-300">
+<span class="material-symbols-outlined animate-pulse text-xl">arrow_forward</span>
+</div>
+</div>
+</div>
+<!-- Background Decor: Subtle Glow -->
+<div class="absolute top-1/4 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none -z-0 translate-x-1/2"></div>
+<div class="absolute bottom-0 left-0 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none -z-0 -translate-x-1/3 translate-y-1/3"></div>
+</div>
+</body></html>

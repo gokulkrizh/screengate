@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Screendiet - Upcoming Blocks</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-dark": "#18281e",
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem", 
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 10px;
+        }
+        
+        .timeline-line-gradient {
+            background: linear-gradient(to bottom, transparent, #13ec5b 20%, #13ec5b 80%, transparent);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white min-h-screen selection:bg-primary selection:text-background-dark">
+<!-- Main Container -->
+<div class="relative flex h-full min-h-screen w-full max-w-md mx-auto flex-col overflow-hidden shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-black/5 dark:border-white/5 transition-all duration-300">
+<div class="flex items-center justify-between px-6 py-5">
+<!-- Back Button -->
+<button class="group flex size-10 shrink-0 items-center justify-center rounded-full bg-transparent hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-white transition-transform group-hover:-translate-x-0.5" style="font-size: 24px;">arrow_back</span>
+</button>
+<!-- Title -->
+<h2 class="text-xl font-bold leading-tight tracking-tight text-center flex-1">Upcoming Blocks</h2>
+<!-- Add Button -->
+<button class="group flex size-10 items-center justify-center rounded-full bg-primary text-background-dark hover:bg-primary/90 transition-all shadow-[0_0_15px_rgba(19,236,91,0.3)] hover:shadow-[0_0_20px_rgba(19,236,91,0.5)]">
+<span class="material-symbols-outlined font-bold" style="font-size: 24px;">add</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<main class="flex-1 flex flex-col p-6 pb-24">
+<!-- Section Header: Today -->
+<div class="mb-2">
+<div class="flex items-center justify-between pb-4">
+<h3 class="text-2xl font-bold tracking-tight">Today</h3>
+<span class="text-sm font-medium text-slate-500 dark:text-slate-400">Wed, Oct 24</span>
+</div>
+</div>
+<!-- Timeline Block 1 -->
+<div class="group/item grid grid-cols-[50px_1fr] gap-x-0 relative">
+<!-- Timeline Graphic -->
+<div class="flex flex-col items-center h-full relative">
+<!-- Top Line -->
+<div class="w-[2px] h-6 bg-slate-200 dark:bg-white/10 mb-1 rounded-full"></div>
+<!-- Icon -->
+<div class="size-10 rounded-full bg-surface-light dark:bg-surface-dark border-2 border-primary text-primary flex items-center justify-center z-10 shadow-sm shrink-0">
+<span class="material-symbols-outlined" style="font-size: 20px;">work</span>
+</div>
+<!-- Bottom Line (connects to next) -->
+<div class="w-[2px] h-full bg-slate-200 dark:bg-white/10 -mt-1 rounded-full"></div>
+</div>
+<!-- Content Card -->
+<div class="pb-8 pl-2">
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-white/5 active:scale-[0.98] transition-transform duration-200 cursor-pointer relative overflow-hidden group/card">
+<!-- Active Indicator Strip -->
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="flex justify-between items-start mb-2 pl-2">
+<div>
+<h4 class="text-lg font-bold text-slate-900 dark:text-white leading-tight mb-1">Morning Focus</h4>
+<p class="text-xs font-semibold uppercase tracking-wider text-primary">In Progress</p>
+</div>
+<button class="text-slate-400 hover:text-white transition-colors p-1">
+<span class="material-symbols-outlined" style="font-size: 20px;">more_horiz</span>
+</button>
+</div>
+<div class="flex items-center gap-4 pl-2 mt-3">
+<div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 bg-black/5 dark:bg-white/5 px-2 py-1 rounded-lg">
+<span class="material-symbols-outlined" style="font-size: 16px;">schedule</span>
+<span class="text-sm font-medium">09:00 AM - 11:00 AM</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline Block 2 -->
+<div class="group/item grid grid-cols-[50px_1fr] gap-x-0 relative">
+<div class="flex flex-col items-center h-full relative">
+<div class="w-[2px] h-full bg-slate-200 dark:bg-white/10 absolute top-[-20px] bottom-0 z-0"></div>
+<div class="size-10 rounded-full bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-white/10 text-slate-400 dark:text-slate-400 flex items-center justify-center z-10 shadow-sm shrink-0 mt-2">
+<span class="material-symbols-outlined" style="font-size: 20px;">block</span>
+</div>
+<div class="flex-1"></div>
+</div>
+<div class="pb-8 pl-2 pt-2">
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-white/5 active:scale-[0.98] transition-transform duration-200 cursor-pointer relative group/card">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h4 class="text-lg font-bold text-slate-900 dark:text-white leading-tight mb-1">No Social Media</h4>
+<p class="text-sm text-slate-500 dark:text-slate-400">Detox session</p>
+</div>
+<div class="bg-slate-100 dark:bg-white/5 p-1.5 rounded-lg text-slate-400 group-hover/card:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">chevron_right</span>
+</div>
+</div>
+<div class="flex items-center gap-4 mt-3">
+<div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined" style="font-size: 18px;">schedule</span>
+<span class="text-sm font-medium">01:00 PM - 02:00 PM</span>
+</div>
+<div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 border-l border-slate-200 dark:border-white/10 pl-4">
+<span class="material-symbols-outlined" style="font-size: 18px;">hourglass_empty</span>
+<span class="text-sm font-medium">1h</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Timeline Block 3 -->
+<div class="group/item grid grid-cols-[50px_1fr] gap-x-0 relative">
+<div class="flex flex-col items-center h-full relative">
+<!-- Line continues from above -->
+<div class="w-[2px] h-full bg-slate-200 dark:bg-white/10 absolute top-[-32px] bottom-0 z-0"></div>
+<!-- End cap for Today section line -->
+<div class="w-[6px] h-[6px] rounded-full bg-slate-300 dark:bg-white/20 mt-[-10px] z-10 mb-8"></div>
+</div>
+<!-- Empty right side to account for space -->
+<div class="pb-8 pl-2 pt-2"></div>
+</div>
+<!-- Section Header: Tomorrow -->
+<div class="mb-4 mt-2">
+<div class="flex items-center justify-between pb-4">
+<h3 class="text-2xl font-bold tracking-tight">Tomorrow</h3>
+<span class="text-sm font-medium text-slate-500 dark:text-slate-400">Thu, Oct 25</span>
+</div>
+</div>
+<!-- Timeline Block 3 (Tomorrow) -->
+<div class="group/item grid grid-cols-[50px_1fr] gap-x-0 relative">
+<div class="flex flex-col items-center h-full relative">
+<!-- Start new line for tomorrow -->
+<div class="w-[2px] h-6 bg-slate-200 dark:bg-white/10 mb-1 rounded-full opacity-50"></div>
+<div class="size-10 rounded-full bg-surface-light dark:bg-surface-dark border border-slate-200 dark:border-white/10 text-slate-400 dark:text-slate-400 flex items-center justify-center z-10 shadow-sm shrink-0">
+<span class="material-symbols-outlined" style="font-size: 20px;">bedtime</span>
+</div>
+<div class="w-[2px] h-full bg-gradient-to-b from-slate-200 to-transparent dark:from-white/10 dark:to-transparent -mt-1 rounded-full opacity-50"></div>
+</div>
+<div class="pb-8 pl-2">
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-white/5 active:scale-[0.98] transition-transform duration-200 cursor-pointer relative group/card opacity-80 hover:opacity-100">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h4 class="text-lg font-bold text-slate-900 dark:text-white leading-tight mb-1">Sleep Mode</h4>
+<p class="text-sm text-slate-500 dark:text-slate-400">Recurring • Daily</p>
+</div>
+<div class="bg-slate-100 dark:bg-white/5 p-1.5 rounded-lg text-slate-400 group-hover/card:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
+</div>
+</div>
+<div class="flex items-center gap-4 mt-3">
+<div class="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+<span class="material-symbols-outlined" style="font-size: 18px;">schedule</span>
+<span class="text-sm font-medium">10:00 PM - 07:00 AM</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State / Add Suggestion -->
+<div class="mt-4 flex flex-col items-center justify-center p-8 rounded-2xl border border-dashed border-slate-300 dark:border-white/10 bg-slate-50/50 dark:bg-white/5">
+<div class="size-12 rounded-full bg-primary/20 flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-primary" style="font-size: 24px;">calendar_add_on</span>
+</div>
+<p class="text-center text-sm font-medium text-slate-600 dark:text-slate-300 mb-4">Plan ahead to stay focused.</p>
+<button class="text-primary text-sm font-bold hover:underline">
+                    Schedule a new block
+                </button>
+</div>
+</main>
+<!-- Floating Action Button (Alternative placement if header button is not enough, usually nice for mobile) -->
+<!-- 
+        <div class="fixed bottom-6 right-6 z-50">
+            <button class="flex items-center gap-2 bg-primary text-background-dark px-5 py-3 rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all">
+                <span class="material-symbols-outlined">add</span>
+                <span>New Block</span>
+            </button>
+        </div> 
+        -->
+</div>
+</body></html>

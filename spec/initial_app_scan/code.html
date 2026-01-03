@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Screendiet - Initial App Scan</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#13ec5b",
+              "background-light": "#f6f8f6",
+              "background-dark": "#102216",
+            },
+            fontFamily: {
+              "display": ["Manrope", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            boxShadow: {
+              'glow': '0 0 20px rgba(19, 236, 91, 0.5)',
+              'glow-sm': '0 0 10px rgba(19, 236, 91, 0.3)',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen flex flex-col items-center justify-between overflow-x-hidden relative selection:bg-primary selection:text-background-dark">
+<!-- Ambient Background Effects -->
+<div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+<div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[100px]"></div>
+</div>
+<!-- Header -->
+<header class="w-full flex items-center justify-center p-6 pb-2 relative z-10">
+<h2 class="text-white/70 text-sm font-semibold tracking-[0.2em] uppercase text-center">Initial App Scan</h2>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 w-full max-w-md flex flex-col items-center justify-center p-6 relative z-10 gap-8">
+<!-- Scanner Visualization -->
+<div class="relative w-72 h-72 flex items-center justify-center">
+<!-- Outer Rings -->
+<div class="absolute inset-0 rounded-full border border-primary/20"></div>
+<div class="absolute inset-8 rounded-full border border-primary/10 border-dashed"></div>
+<div class="absolute inset-16 rounded-full border border-primary/30 shadow-glow-sm"></div>
+<!-- Radar Sweep Gradient (Static Visual) -->
+<div class="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-primary/5 to-transparent rotate-45"></div>
+<!-- Central Hub -->
+<div class="relative w-32 h-32 bg-background-dark rounded-full border-2 border-primary flex items-center justify-center shadow-glow z-20">
+<span class="material-symbols-outlined text-6xl text-primary">smartphone</span>
+</div>
+<!-- Floating App Icons (Visualizing 'Found' items) -->
+<div class="absolute top-4 right-10 bg-[#1a2e22] p-2 rounded-xl border border-primary/30 shadow-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-xl">chat_bubble</span>
+</div>
+<div class="absolute bottom-12 left-4 bg-[#1a2e22] p-2 rounded-xl border border-primary/30 shadow-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-xl">videogame_asset</span>
+</div>
+<div class="absolute -bottom-2 right-16 bg-[#1a2e22] p-2 rounded-xl border border-primary/30 shadow-lg flex items-center justify-center opacity-60">
+<span class="material-symbols-outlined text-white text-xl">mail</span>
+</div>
+</div>
+<!-- Progress & Status -->
+<div class="w-full flex flex-col gap-6">
+<!-- Percentage Display -->
+<div class="flex flex-col items-center">
+<div class="flex items-baseline">
+<span class="text-7xl font-extrabold text-white tracking-tighter leading-none">45</span>
+<span class="text-3xl font-bold text-primary ml-1">%</span>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="w-full px-4">
+<div class="flex justify-between mb-2">
+<span class="text-primary text-xs font-semibold uppercase tracking-wider">Scanning...</span>
+<span class="text-white/50 text-xs font-medium">120/265 Apps</span>
+</div>
+<div class="h-2 w-full rounded-full bg-white/10 overflow-hidden">
+<div class="h-full bg-primary rounded-full shadow-glow" style="width: 45%;"></div>
+</div>
+</div>
+<!-- Text Updates -->
+<div class="flex flex-col items-center text-center gap-1">
+<h2 class="text-white tracking-tight text-2xl font-bold leading-tight px-4">Analyzing your phone usage...</h2>
+<p class="text-white/60 text-base font-normal leading-normal px-4">Found 12 social media apps so far</p>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full p-6 pb-8 relative z-10 flex justify-center">
+<div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-sm">
+<span class="material-symbols-outlined text-primary text-sm">lock</span>
+<span class="text-xs text-white/80 font-medium">Your data stays private on this device</span>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Screendiet Onboarding - Reflection</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-dark": "#1c2a21", // Slightly lighter than background-dark for cards
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                },
+            },
+        }
+    </script>
+<style>.custom-checkbox:checked + div {
+            border-color: #13ec5b;
+            background-color: rgba(19, 236, 91, 0.08);
+            box-shadow: 0 4px 20px rgba(19, 236, 91, 0.05);
+        }
+        .custom-checkbox:checked + div .checkbox-icon {
+            background-color: #13ec5b;
+            border-color: #13ec5b;
+            color: #000;
+        }.custom-checkbox {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display min-h-screen flex flex-col overflow-x-hidden antialiased selection:bg-primary selection:text-black">
+<header class="sticky top-0 z-50 pt-safe-top">
+<div class="flex items-center px-6 py-4">
+<button class="text-slate-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full bg-white/50 dark:bg-surface-dark/50 hover:bg-black/5 dark:hover:bg-white/10 transition-colors backdrop-blur-md">
+<span class="material-symbols-outlined" style="font-size: 20px;">arrow_back</span>
+</button>
+</div>
+</header>
+<main class="flex-1 flex flex-col px-6 pb-40 max-w-lg mx-auto w-full">
+<div class="mt-4 mb-10 animate-fade-in-up text-center">
+<h1 class="text-3xl md:text-4xl font-bold leading-tight tracking-tight mb-4 text-slate-900 dark:text-white">
+                When do you find yourself using your phone the most?
+            </h1>
+<p class="text-slate-600 dark:text-slate-400 text-lg font-medium leading-relaxed">
+                Reflecting on your habits helps us tailor your diet. Select all that apply.
+            </p>
+</div>
+<div class="flex flex-col gap-4">
+<label class="relative group cursor-pointer transform transition-transform duration-200 active:scale-[0.99]">
+<input class="custom-checkbox" name="usage_time" type="checkbox" value="waking_up"/>
+<div class="flex items-center p-5 rounded-3xl border border-slate-200 dark:border-surface-dark bg-white dark:bg-surface-dark/40 transition-all duration-300 hover:border-primary/30 dark:hover:border-primary/30 hover:bg-slate-50 dark:hover:bg-surface-dark/80">
+<div class="flex-1 pr-4">
+<p class="text-lg font-semibold text-slate-800 dark:text-slate-100">Right after waking up 🌅</p>
+</div>
+<div class="checkbox-icon h-6 w-6 rounded-full border-[1.5px] border-slate-300 dark:border-slate-600 flex items-center justify-center transition-all duration-300">
+<span class="material-symbols-outlined text-[16px] opacity-0 group-has-[:checked]:opacity-100 font-bold">check</span>
+</div>
+</div>
+</label>
+<label class="relative group cursor-pointer transform transition-transform duration-200 active:scale-[0.99]">
+<input checked="" class="custom-checkbox" name="usage_time" type="checkbox" value="breaks"/>
+<div class="flex items-center p-5 rounded-3xl border border-slate-200 dark:border-surface-dark bg-white dark:bg-surface-dark/40 transition-all duration-300 hover:border-primary/30 dark:hover:border-primary/30 hover:bg-slate-50 dark:hover:bg-surface-dark/80">
+<div class="flex-1 pr-4">
+<p class="text-lg font-semibold text-slate-800 dark:text-slate-100">During work/study breaks ☕</p>
+</div>
+<div class="checkbox-icon h-6 w-6 rounded-full border-[1.5px] border-slate-300 dark:border-slate-600 flex items-center justify-center transition-all duration-300">
+<span class="material-symbols-outlined text-[16px] opacity-0 group-has-[:checked]:opacity-100 font-bold">check</span>
+</div>
+</div>
+</label>
+<label class="relative group cursor-pointer transform transition-transform duration-200 active:scale-[0.99]">
+<input class="custom-checkbox" name="usage_time" type="checkbox" value="tv"/>
+<div class="flex items-center p-5 rounded-3xl border border-slate-200 dark:border-surface-dark bg-white dark:bg-surface-dark/40 transition-all duration-300 hover:border-primary/30 dark:hover:border-primary/30 hover:bg-slate-50 dark:hover:bg-surface-dark/80">
+<div class="flex-1 pr-4">
+<p class="text-lg font-semibold text-slate-800 dark:text-slate-100">While watching TV 📺</p>
+</div>
+<div class="checkbox-icon h-6 w-6 rounded-full border-[1.5px] border-slate-300 dark:border-slate-600 flex items-center justify-center transition-all duration-300">
+<span class="material-symbols-outlined text-[16px] opacity-0 group-has-[:checked]:opacity-100 font-bold">check</span>
+</div>
+</div>
+</label>
+<label class="relative group cursor-pointer transform transition-transform duration-200 active:scale-[0.99]">
+<input class="custom-checkbox" name="usage_time" type="checkbox" value="sleep"/>
+<div class="flex items-center p-5 rounded-3xl border border-slate-200 dark:border-surface-dark bg-white dark:bg-surface-dark/40 transition-all duration-300 hover:border-primary/30 dark:hover:border-primary/30 hover:bg-slate-50 dark:hover:bg-surface-dark/80">
+<div class="flex-1 pr-4">
+<p class="text-lg font-semibold text-slate-800 dark:text-slate-100">Right before sleep 🌙</p>
+</div>
+<div class="checkbox-icon h-6 w-6 rounded-full border-[1.5px] border-slate-300 dark:border-slate-600 flex items-center justify-center transition-all duration-300">
+<span class="material-symbols-outlined text-[16px] opacity-0 group-has-[:checked]:opacity-100 font-bold">check</span>
+</div>
+</div>
+</label>
+<label class="relative group cursor-pointer transform transition-transform duration-200 active:scale-[0.99]">
+<input class="custom-checkbox" name="usage_time" type="checkbox" value="all_day"/>
+<div class="flex items-center p-5 rounded-3xl border border-slate-200 dark:border-surface-dark bg-white dark:bg-surface-dark/40 transition-all duration-300 hover:border-primary/30 dark:hover:border-primary/30 hover:bg-slate-50 dark:hover:bg-surface-dark/80">
+<div class="flex-1 pr-4">
+<p class="text-lg font-semibold text-slate-800 dark:text-slate-100">All day long 🔄</p>
+</div>
+<div class="checkbox-icon h-6 w-6 rounded-full border-[1.5px] border-slate-300 dark:border-slate-600 flex items-center justify-center transition-all duration-300">
+<span class="material-symbols-outlined text-[16px] opacity-0 group-has-[:checked]:opacity-100 font-bold">check</span>
+</div>
+</div>
+</label>
+</div>
+</main>
+<div class="fixed bottom-0 left-0 w-full p-6 bg-gradient-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark dark:to-transparent z-40 pb-10">
+<div class="max-w-lg mx-auto">
+<button class="w-full bg-primary hover:bg-[#10d650] text-black font-bold text-lg h-14 rounded-2xl shadow-[0_0_20px_rgba(19,236,91,0.2)] hover:shadow-[0_0_30px_rgba(19,236,91,0.4)] transition-all duration-300 transform active:scale-[0.98] flex items-center justify-center gap-2">
+                Continue
+                <span class="material-symbols-outlined text-[20px] font-bold">arrow_forward</span>
+</button>
+</div>
+</div>
+
+</body></html>

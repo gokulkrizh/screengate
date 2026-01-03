@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Screendiet - Edit Block</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;family=Noto+Sans:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-dark": "#1a2c22",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for cleaner mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Custom switch styling */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #13ec5b;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #13ec5b;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 flex items-center justify-between bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md px-4 py-3 border-b border-gray-200 dark:border-white/5">
+<button class="text-slate-500 dark:text-[#9db9a6] text-base font-medium leading-normal tracking-[0.015em] shrink-0 hover:text-slate-800 dark:hover:text-white transition-colors">
+                Cancel
+            </button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] absolute left-1/2 -translate-x-1/2">
+                Edit Block
+            </h2>
+<button class="text-primary text-base font-bold leading-normal tracking-[0.015em] shrink-0 hover:brightness-110 transition-colors">
+                Save
+            </button>
+</header>
+<main class="flex-1 flex flex-col p-4 gap-6">
+<!-- Block Identity Section -->
+<section class="space-y-4">
+<div class="flex items-end gap-3">
+<div class="flex-1">
+<label class="block text-sm font-semibold text-slate-500 dark:text-[#9db9a6] mb-2 pl-1">Block Name</label>
+<input class="w-full bg-white dark:bg-surface-dark border-0 rounded-xl px-4 py-3.5 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary/50 text-lg font-medium shadow-sm" type="text" value="Deep Work"/>
+</div>
+<button class="shrink-0 size-[52px] bg-white dark:bg-surface-dark rounded-xl flex items-center justify-center border border-transparent hover:border-primary/50 transition-colors shadow-sm group">
+<span class="material-symbols-outlined text-3xl text-primary group-hover:scale-110 transition-transform">rocket_launch</span>
+</button>
+</div>
+</section>
+<!-- Schedule Section -->
+<section>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white mb-3 px-1">Schedule</h3>
+<div class="bg-white dark:bg-surface-dark rounded-xl overflow-hidden shadow-sm">
+<!-- Start/End Time -->
+<div class="flex border-b border-gray-100 dark:border-white/5">
+<div class="flex-1 p-4 border-r border-gray-100 dark:border-white/5">
+<span class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-[#9db9a6] block mb-1">Start</span>
+<div class="flex items-center gap-2">
+<span class="text-xl font-bold text-slate-900 dark:text-white">09:00</span>
+<span class="text-sm font-medium text-slate-500 dark:text-gray-400">AM</span>
+</div>
+</div>
+<div class="flex-1 p-4">
+<span class="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-[#9db9a6] block mb-1">End</span>
+<div class="flex items-center gap-2">
+<span class="text-xl font-bold text-slate-900 dark:text-white">11:30</span>
+<span class="text-sm font-medium text-slate-500 dark:text-gray-400">AM</span>
+</div>
+</div>
+</div>
+<!-- Days of Week -->
+<div class="p-4">
+<span class="text-sm font-medium text-slate-500 dark:text-[#9db9a6] mb-3 block">Repeat on</span>
+<div class="flex justify-between items-center">
+<button class="size-9 rounded-full bg-primary text-background-dark font-bold text-sm flex items-center justify-center shadow-md shadow-primary/20">M</button>
+<button class="size-9 rounded-full bg-primary text-background-dark font-bold text-sm flex items-center justify-center shadow-md shadow-primary/20">T</button>
+<button class="size-9 rounded-full bg-primary text-background-dark font-bold text-sm flex items-center justify-center shadow-md shadow-primary/20">W</button>
+<button class="size-9 rounded-full bg-primary text-background-dark font-bold text-sm flex items-center justify-center shadow-md shadow-primary/20">T</button>
+<button class="size-9 rounded-full bg-primary text-background-dark font-bold text-sm flex items-center justify-center shadow-md shadow-primary/20">F</button>
+<button class="size-9 rounded-full bg-gray-100 dark:bg-white/10 text-slate-400 dark:text-gray-400 font-medium text-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-white/20 transition-colors">S</button>
+<button class="size-9 rounded-full bg-gray-100 dark:bg-white/10 text-slate-400 dark:text-gray-400 font-medium text-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-white/20 transition-colors">S</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Restrictions Section -->
+<section>
+<h3 class="text-lg font-bold text-slate-900 dark:text-white mb-3 px-1">Restrictions</h3>
+<div class="bg-white dark:bg-surface-dark rounded-xl overflow-hidden shadow-sm divide-y divide-gray-100 dark:divide-white/5">
+<!-- App Selection -->
+<div class="p-4 flex items-center justify-between group cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-3 overflow-hidden">
+<div class="bg-orange-500/20 p-2 rounded-lg shrink-0">
+<span class="material-symbols-outlined text-orange-500 text-2xl">apps</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-base font-semibold text-slate-900 dark:text-white">Blocked Apps</span>
+<div class="flex items-center gap-1 mt-1">
+<div class="flex -space-x-1.5">
+<div class="size-5 rounded-full bg-gradient-to-tr from-yellow-400 to-orange-500 border border-white dark:border-surface-dark" data-alt="Instagram icon placeholder"></div>
+<div class="size-5 rounded-full bg-black border border-white dark:border-surface-dark flex items-center justify-center" data-alt="TikTok icon placeholder">
+<span class="text-[8px] text-white font-bold">T</span>
+</div>
+<div class="size-5 rounded-full bg-blue-500 border border-white dark:border-surface-dark" data-alt="Facebook icon placeholder"></div>
+</div>
+<span class="text-xs text-slate-500 dark:text-gray-400 ml-1 truncate">+ 5 others</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400 dark:text-gray-500">chevron_right</span>
+</div>
+<!-- Strict Mode -->
+<div class="p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="bg-red-500/20 p-2 rounded-lg shrink-0">
+<span class="material-symbols-outlined text-red-500 text-2xl">lock</span>
+</div>
+<div class="flex flex-col">
+<span class="text-base font-semibold text-slate-900 dark:text-white">Strict Mode</span>
+<span class="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Cannot cancel once started</span>
+</div>
+</div>
+<!-- Toggle Switch -->
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-slate-200 dark:border-gray-600 checked:border-primary transition-all duration-200" id="strict-toggle" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-200 dark:bg-gray-700 cursor-pointer transition-colors duration-200" for="strict-toggle"></label>
+</div>
+</div>
+<!-- Notification Level -->
+<div class="p-4 flex flex-col gap-3">
+<div class="flex items-center gap-3 mb-1">
+<div class="bg-blue-500/20 p-2 rounded-lg shrink-0">
+<span class="material-symbols-outlined text-blue-500 text-2xl">notifications_off</span>
+</div>
+<span class="text-base font-semibold text-slate-900 dark:text-white">Intervention Style</span>
+</div>
+<div class="flex bg-slate-100 dark:bg-black/40 p-1 rounded-lg">
+<button class="flex-1 py-1.5 px-3 rounded text-sm font-medium text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors">Gentle</button>
+<button class="flex-1 py-1.5 px-3 rounded bg-white dark:bg-surface-dark text-slate-900 dark:text-white shadow-sm text-sm font-bold transition-all">Strict</button>
+<button class="flex-1 py-1.5 px-3 rounded text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-colors">Annoying</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Danger Zone -->
+<div class="mt-4 pb-8 flex justify-center">
+<button class="flex items-center gap-2 px-6 py-3 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors w-full justify-center">
+<span class="material-symbols-outlined text-xl">delete</span>
+<span class="font-bold text-base">Delete Block</span>
+</button>
+</div>
+</main>
+</div>
+</body></html>

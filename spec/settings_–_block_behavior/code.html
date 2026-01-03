@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Screendiet - Block Behavior</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-dark": "#1A2C22",
+                        "text-secondary": "#9db9a6",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #28392e;
+            border-radius: 20px;
+        }
+        
+        /* Toggle Switch Animation */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #13ec5b;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #13ec5b;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen font-display text-white selection:bg-primary selection:text-background-dark">
+<div class="relative flex h-full w-full flex-col overflow-x-hidden max-w-md mx-auto min-h-screen shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between border-b border-white/5 backdrop-blur-md bg-opacity-90 dark:bg-opacity-90">
+<button class="text-white hover:text-primary transition-colors flex size-10 shrink-0 items-center justify-center rounded-full active:bg-white/10">
+<span class="material-symbols-outlined text-2xl">arrow_back_ios_new</span>
+</button>
+<h2 class="text-black dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Block Behavior</h2>
+</header>
+<!-- Content Scroll Area -->
+<main class="flex-1 px-4 py-2 pb-12">
+<!-- SECTION 1: STRICTNESS -->
+<div class="mt-6">
+<h3 class="text-gray-500 dark:text-text-secondary text-xs font-bold uppercase tracking-wider px-3 pb-2 ml-1">Strictness</h3>
+<div class="flex flex-col overflow-hidden rounded-xl bg-white dark:bg-surface-dark shadow-sm">
+<!-- Item: Strict Mode -->
+<div class="flex items-center gap-4 px-4 py-3.5 justify-between border-b border-gray-100 dark:border-white/5">
+<div class="flex flex-col justify-center flex-1 mr-4">
+<p class="text-gray-900 dark:text-white text-base font-semibold leading-normal">Strict Mode</p>
+<p class="text-gray-500 dark:text-text-secondary text-sm font-medium leading-snug">Cannot edit active blocks</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[30px] w-[50px] cursor-pointer items-center rounded-full border-none bg-gray-300 dark:bg-[#28392e] p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-colors duration-200">
+<div class="h-[26px] w-[26px] rounded-full bg-white shadow-sm transform transition-transform duration-200"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+<!-- Item: Prevent Force Quit -->
+<div class="flex items-center gap-4 px-4 py-3.5 justify-between border-b border-gray-100 dark:border-white/5">
+<div class="flex flex-col justify-center flex-1 mr-4">
+<p class="text-gray-900 dark:text-white text-base font-medium leading-normal">Prevent Force Quit</p>
+<p class="text-gray-500 dark:text-text-secondary text-sm font-medium leading-snug">Keeps app running in background</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[30px] w-[50px] cursor-pointer items-center rounded-full border-none bg-gray-300 dark:bg-[#28392e] p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-colors duration-200">
+<div class="h-[26px] w-[26px] rounded-full bg-white shadow-sm transform transition-transform duration-200"></div>
+<input class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+<!-- Item: Uninstall Protection -->
+<button class="flex items-center gap-4 px-4 py-3.5 justify-between w-full text-left active:bg-gray-100 dark:active:bg-white/5 transition-colors group">
+<div class="flex flex-col justify-center flex-1">
+<p class="text-gray-900 dark:text-white text-base font-medium leading-normal">Uninstall Protection</p>
+<p class="text-gray-500 dark:text-text-secondary text-sm font-medium leading-snug">Requires advanced setup</p>
+</div>
+<div class="shrink-0 text-gray-400 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl pt-1">chevron_right</span>
+</div>
+</button>
+</div>
+<p class="px-4 pt-2 text-xs text-gray-500 dark:text-text-secondary/70 leading-relaxed">
+                    Strict mode prevents changes to ongoing sessions. Use carefully if you need frequent access.
+                </p>
+</div>
+<!-- SECTION 2: EMERGENCY ACCESS -->
+<div class="mt-8">
+<h3 class="text-gray-500 dark:text-text-secondary text-xs font-bold uppercase tracking-wider px-3 pb-2 ml-1">Emergency Access</h3>
+<div class="flex flex-col overflow-hidden rounded-xl bg-white dark:bg-surface-dark shadow-sm">
+<!-- Item: Allow Breaks -->
+<div class="flex items-center gap-4 px-4 py-3.5 justify-between border-b border-gray-100 dark:border-white/5">
+<div class="flex flex-col justify-center flex-1 mr-4">
+<p class="text-gray-900 dark:text-white text-base font-medium leading-normal">Allow Breaks</p>
+<p class="text-gray-500 dark:text-text-secondary text-sm font-medium leading-snug">Permit short pauses</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[30px] w-[50px] cursor-pointer items-center rounded-full border-none bg-gray-300 dark:bg-[#28392e] p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-colors duration-200">
+<div class="h-[26px] w-[26px] rounded-full bg-white shadow-sm transform transition-transform duration-200"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+<!-- Item: Break Duration -->
+<button class="flex items-center gap-4 px-4 py-3.5 justify-between w-full text-left border-b border-gray-100 dark:border-white/5 active:bg-gray-100 dark:active:bg-white/5 transition-colors">
+<p class="text-gray-900 dark:text-white text-base font-medium leading-normal">Break Duration</p>
+<div class="flex items-center gap-2">
+<span class="text-gray-500 dark:text-text-secondary text-base">5 min</span>
+<span class="material-symbols-outlined text-xl text-gray-400 pt-0.5">unfold_more</span>
+</div>
+</button>
+<!-- Item: Emergency Contact -->
+<button class="flex items-center gap-4 px-4 py-3.5 justify-between w-full text-left active:bg-gray-100 dark:active:bg-white/5 transition-colors group">
+<div class="flex flex-col justify-center flex-1">
+<p class="text-gray-900 dark:text-white text-base font-medium leading-normal">Emergency Contact</p>
+<p class="text-gray-500 dark:text-text-secondary text-sm font-medium leading-snug">Can unlock device remotely</p>
+</div>
+<div class="shrink-0 text-gray-400 group-hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-xl pt-1">chevron_right</span>
+</div>
+</button>
+</div>
+</div>
+<!-- SECTION 3: INTERFERENCE -->
+<div class="mt-8">
+<h3 class="text-gray-500 dark:text-text-secondary text-xs font-bold uppercase tracking-wider px-3 pb-2 ml-1">Interference</h3>
+<div class="flex flex-col overflow-hidden rounded-xl bg-white dark:bg-surface-dark shadow-sm">
+<!-- Item: Dim Screen -->
+<div class="flex items-center gap-4 px-4 py-3.5 justify-between border-b border-gray-100 dark:border-white/5">
+<div class="flex flex-col justify-center flex-1 mr-4">
+<div class="flex items-center gap-2 mb-0.5">
+<span class="material-symbols-outlined text-lg text-primary">brightness_6</span>
+<p class="text-gray-900 dark:text-white text-base font-medium leading-normal">Dim Screen</p>
+</div>
+<p class="text-gray-500 dark:text-text-secondary text-sm font-medium leading-snug pl-7">Lowers brightness during blocks</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[30px] w-[50px] cursor-pointer items-center rounded-full border-none bg-gray-300 dark:bg-[#28392e] p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-colors duration-200">
+<div class="h-[26px] w-[26px] rounded-full bg-white shadow-sm transform transition-transform duration-200"></div>
+<input class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+<!-- Item: Block Notifications -->
+<div class="flex items-center gap-4 px-4 py-3.5 justify-between">
+<div class="flex flex-col justify-center flex-1 mr-4">
+<div class="flex items-center gap-2 mb-0.5">
+<span class="material-symbols-outlined text-lg text-primary">notifications_off</span>
+<p class="text-gray-900 dark:text-white text-base font-medium leading-normal">Block Notifications</p>
+</div>
+<p class="text-gray-500 dark:text-text-secondary text-sm font-medium leading-snug pl-7">Hide banners from blocked apps</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[30px] w-[50px] cursor-pointer items-center rounded-full border-none bg-gray-300 dark:bg-[#28392e] p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-colors duration-200">
+<div class="h-[26px] w-[26px] rounded-full bg-white shadow-sm transform transition-transform duration-200"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION 4: MOTIVATION -->
+<div class="mt-8">
+<h3 class="text-gray-500 dark:text-text-secondary text-xs font-bold uppercase tracking-wider px-3 pb-2 ml-1">Motivation</h3>
+<div class="flex flex-col overflow-hidden rounded-xl bg-white dark:bg-surface-dark shadow-sm">
+<!-- Item: Show Quote -->
+<div class="flex items-center gap-4 px-4 py-3.5 justify-between">
+<div class="flex flex-col justify-center flex-1 mr-4">
+<p class="text-gray-900 dark:text-white text-base font-medium leading-normal">Show Quote on Block</p>
+<p class="text-gray-500 dark:text-text-secondary text-sm font-medium leading-snug">Displays motivational text</p>
+</div>
+<div class="shrink-0">
+<label class="relative flex h-[30px] w-[50px] cursor-pointer items-center rounded-full border-none bg-gray-300 dark:bg-[#28392e] p-0.5 has-[:checked]:justify-end has-[:checked]:bg-primary transition-colors duration-200">
+<div class="h-[26px] w-[26px] rounded-full bg-white shadow-sm transform transition-transform duration-200"></div>
+<input checked="" class="invisible absolute" type="checkbox"/>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Info -->
+<div class="mt-8 mb-6 flex items-center justify-center gap-2 opacity-50">
+<span class="material-symbols-outlined text-sm text-text-secondary">shield</span>
+<p class="text-center text-xs text-text-secondary">Screendiet Protection v2.4</p>
+</div>
+</main>
+</div>
+</body></html>

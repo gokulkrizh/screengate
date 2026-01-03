@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Settings – Preferences</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-dark": "#1c3024", // Slightly lighter than background for cards
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display min-h-screen flex flex-col antialiased">
+<!-- Header -->
+<header class="sticky top-0 z-50 bg-background-light dark:bg-background-dark/95 backdrop-blur-md border-b border-gray-200 dark:border-white/5">
+<div class="flex items-center justify-between px-4 h-14">
+<button class="flex items-center justify-center w-10 h-10 -ml-2 text-slate-900 dark:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight absolute left-1/2 -translate-x-1/2">Preferences</h1>
+<div class="w-10"></div> <!-- Spacer for alignment -->
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 px-4 pt-4 pb-12 space-y-8 overflow-y-auto">
+<!-- Section: Interface -->
+<section>
+<h2 class="px-4 pb-2 text-xs font-semibold tracking-wider text-slate-500 dark:text-[#9db9a6] uppercase">Interface</h2>
+<div class="bg-white dark:bg-surface-dark rounded-xl overflow-hidden shadow-sm dark:shadow-none divide-y divide-gray-100 dark:divide-white/5">
+<!-- List Item: Default Launch View -->
+<div class="flex items-center justify-between p-4 cursor-pointer active:bg-black/5 dark:active:bg-white/5 transition-colors group">
+<div class="flex items-center gap-3">
+<div class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined text-lg">dashboard</span>
+</div>
+<span class="text-base font-medium">Default Launch View</span>
+</div>
+<div class="flex items-center gap-2 text-slate-400 dark:text-white/50">
+<span class="text-sm">Dashboard</span>
+<span class="material-symbols-outlined text-xl">chevron_right</span>
+</div>
+</div>
+<!-- List Item: App Icon -->
+<div class="flex items-center justify-between p-4 cursor-pointer active:bg-black/5 dark:active:bg-white/5 transition-colors group">
+<div class="flex items-center gap-3">
+<div class="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400">
+<span class="material-symbols-outlined text-lg">app_shortcut</span>
+</div>
+<span class="text-base font-medium">App Icon</span>
+</div>
+<div class="flex items-center gap-2 text-slate-400 dark:text-white/50">
+<span class="text-sm">Default</span>
+<span class="material-symbols-outlined text-xl">chevron_right</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Feedback & Haptics -->
+<section>
+<h2 class="px-4 pb-2 text-xs font-semibold tracking-wider text-slate-500 dark:text-[#9db9a6] uppercase">Feedback &amp; Haptics</h2>
+<div class="bg-white dark:bg-surface-dark rounded-xl overflow-hidden shadow-sm dark:shadow-none divide-y divide-gray-100 dark:divide-white/5">
+<!-- Toggle: Haptic Feedback -->
+<div class="flex items-center justify-between p-4">
+<div class="flex flex-col">
+<span class="text-base font-medium">Haptic Feedback</span>
+</div>
+<!-- Toggle Switch ON -->
+<div class="relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out bg-primary">
+<span class="translate-x-5 pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+</div>
+</div>
+<!-- Slider: Haptic Intensity -->
+<div class="flex flex-col gap-3 p-4 pt-2 pb-5">
+<div class="flex justify-between items-center">
+<span class="text-sm text-slate-500 dark:text-white/60">Haptic Intensity</span>
+<span class="text-sm font-medium text-primary">High</span>
+</div>
+<div class="relative w-full h-6 flex items-center">
+<!-- Track Background -->
+<div class="absolute w-full h-1.5 bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden">
+<!-- Filled Track -->
+<div class="h-full bg-primary w-[80%] rounded-full"></div>
+</div>
+<!-- Thumb -->
+<div class="absolute left-[80%] w-6 h-6 bg-white rounded-full shadow-md border border-gray-100 cursor-pointer hover:scale-110 transition-transform -translate-x-3"></div>
+</div>
+<div class="flex justify-between px-1">
+<span class="material-symbols-outlined text-xs text-slate-400 dark:text-white/30">vibration</span>
+<span class="material-symbols-outlined text-sm text-slate-400 dark:text-white/30">smartphone</span>
+</div>
+</div>
+<!-- Toggle: Sound Effects -->
+<div class="flex items-center justify-between p-4">
+<div class="flex flex-col">
+<span class="text-base font-medium">Sound Effects</span>
+<span class="text-xs text-slate-500 dark:text-white/40 mt-0.5">Play sounds on timer completion</span>
+</div>
+<!-- Toggle Switch OFF -->
+<div class="relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out bg-gray-200 dark:bg-white/10">
+<span class="translate-x-0 pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Behavior -->
+<section>
+<h2 class="px-4 pb-2 text-xs font-semibold tracking-wider text-slate-500 dark:text-[#9db9a6] uppercase">Behavior</h2>
+<div class="bg-white dark:bg-surface-dark rounded-xl overflow-hidden shadow-sm dark:shadow-none divide-y divide-gray-100 dark:divide-white/5">
+<!-- Toggle: Prevent Auto-Lock -->
+<div class="flex items-center justify-between p-4">
+<div class="flex flex-col max-w-[80%]">
+<span class="text-base font-medium">Prevent Auto-Lock</span>
+<span class="text-xs text-slate-500 dark:text-white/40 mt-0.5">Keep screen awake during active timer sessions</span>
+</div>
+<!-- Toggle Switch ON -->
+<div class="relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out bg-primary">
+<span class="translate-x-5 pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+</div>
+</div>
+<!-- Toggle: Strict Mode -->
+<div class="flex items-center justify-between p-4">
+<div class="flex flex-col max-w-[80%]">
+<div class="flex items-center gap-2">
+<span class="text-base font-medium">Strict Mode</span>
+<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-primary border border-primary/30 uppercase">Pro</span>
+</div>
+<span class="text-xs text-slate-500 dark:text-white/40 mt-0.5">Increases difficulty to cancel a focus session</span>
+</div>
+<!-- Toggle Switch OFF -->
+<div class="relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out bg-gray-200 dark:bg-white/10">
+<span class="translate-x-0 pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: Data -->
+<section>
+<h2 class="px-4 pb-2 text-xs font-semibold tracking-wider text-slate-500 dark:text-[#9db9a6] uppercase">Data &amp; Formatting</h2>
+<div class="bg-white dark:bg-surface-dark rounded-xl overflow-hidden shadow-sm dark:shadow-none divide-y divide-gray-100 dark:divide-white/5">
+<!-- List Item: Week Start Day -->
+<div class="flex items-center justify-between p-4 cursor-pointer active:bg-black/5 dark:active:bg-white/5 transition-colors group">
+<span class="text-base font-medium">Week Start Day</span>
+<div class="flex items-center gap-2 text-slate-400 dark:text-white/50">
+<span class="text-sm text-slate-900 dark:text-white">Monday</span>
+<span class="material-symbols-outlined text-xl">chevron_right</span>
+</div>
+</div>
+<!-- List Item: Export Data -->
+<div class="flex items-center justify-between p-4 cursor-pointer active:bg-black/5 dark:active:bg-white/5 transition-colors group">
+<span class="text-base font-medium text-slate-900 dark:text-white">Export My Data</span>
+<div class="flex items-center gap-2 text-slate-400 dark:text-white/50">
+<span class="text-sm">CSV</span>
+<span class="material-symbols-outlined text-xl">download</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer Info -->
+<div class="pt-4 pb-8 flex flex-col items-center justify-center text-center">
+<p class="text-xs text-slate-400 dark:text-white/30">Screendiet Version 2.4.0 (Build 1042)</p>
+<p class="text-xs text-slate-400 dark:text-white/30 mt-1">Made with focus in San Francisco</p>
+</div>
+</main>
+</body></html>

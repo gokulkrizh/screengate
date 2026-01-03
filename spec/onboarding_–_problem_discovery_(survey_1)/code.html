@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Screen Diet - Onboarding</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-dark": "#1A281F", 
+                        "surface-highlight": "#233328",
+                        "accent-soft": "rgba(19, 236, 91, 0.1)",
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "2xl": "1rem",
+                        "3xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    boxShadow: {
+                        'glow': '0 0 20px rgba(19, 236, 91, 0.15)',
+                    }
+                },
+            },
+        }
+    </script>
+<style>.custom-radio:checked + div {
+            border-color: #13ec5b;
+            background-color: rgba(19, 236, 91, 0.08);
+            box-shadow: 0 0 15px rgba(19, 236, 91, 0.1);
+        }
+        .custom-radio:checked + div .radio-indicator {
+            background-color: #13ec5b;
+            border-color: #13ec5b;
+            transform: scale(1.1);
+        }
+        .custom-radio:checked + div .radio-indicator::after {
+            opacity: 1;
+        }
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }.bg-gradient-subtle {
+            background: radial-gradient(circle at top right, rgba(19, 236, 91, 0.08), transparent 40%),
+                        radial-gradient(circle at bottom left, rgba(19, 236, 91, 0.03), transparent 40%);
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white min-h-screen flex flex-col overflow-x-hidden antialiased selection:bg-primary selection:text-background-dark bg-gradient-subtle">
+<header class="pt-6 px-6 fade-in">
+<button class="p-2 -ml-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-slate-400 dark:text-slate-500">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+</header>
+<main class="flex-1 px-6 pb-36 fade-in max-w-lg mx-auto w-full">
+<div class="mt-4 mb-10">
+<div class="inline-block px-3 py-1 mb-4 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
+                Discovery
+            </div>
+<h1 class="text-3xl md:text-4xl font-bold leading-tight tracking-tight mb-4 text-slate-900 dark:text-white">
+                Let's start your journey. <br/>
+<span class="text-slate-400 dark:text-slate-400 font-medium">What is your main reason for joining Screen Diet?</span>
+</h1>
+</div>
+<div class="flex flex-col gap-3" role="radiogroup">
+<label class="group relative cursor-pointer touch-manipulation">
+<input checked="" class="custom-radio peer sr-only" name="goal" type="radio"/>
+<div class="flex items-center gap-4 rounded-3xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/5 backdrop-blur-sm p-5 transition-all duration-300 hover:border-primary/30 dark:hover:border-primary/30 hover:bg-white/80 dark:hover:bg-white/10">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-500/10 text-blue-500 dark:text-blue-400">
+<span class="material-symbols-outlined text-[28px]">smartphone</span>
+</div>
+<div class="flex flex-col grow">
+<span class="text-lg font-semibold text-slate-800 dark:text-white leading-snug">Social Media Detox</span>
+<span class="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">I scroll too much on apps</span>
+</div>
+<div class="radio-indicator h-6 w-6 rounded-full border-2 border-slate-300 dark:border-white/20 relative flex items-center justify-center transition-all duration-300">
+<span class="material-symbols-outlined text-background-dark text-[14px] opacity-0 transition-opacity after:content-['check'] font-bold"></span>
+</div>
+</div>
+</label>
+<label class="group relative cursor-pointer touch-manipulation">
+<input class="custom-radio peer sr-only" name="goal" type="radio"/>
+<div class="flex items-center gap-4 rounded-3xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/5 backdrop-blur-sm p-5 transition-all duration-300 hover:border-primary/30 dark:hover:border-primary/30 hover:bg-white/80 dark:hover:bg-white/10">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-500/10 text-orange-500 dark:text-orange-400">
+<span class="material-symbols-outlined text-[28px]">work</span>
+</div>
+<div class="flex flex-col grow">
+<span class="text-lg font-semibold text-slate-800 dark:text-white leading-snug">Focus &amp; Productivity</span>
+<span class="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">I can't focus on work/study</span>
+</div>
+<div class="radio-indicator h-6 w-6 rounded-full border-2 border-slate-300 dark:border-white/20 relative flex items-center justify-center transition-all duration-300">
+<span class="material-symbols-outlined text-background-dark text-[14px] opacity-0 transition-opacity after:content-['check'] font-bold"></span>
+</div>
+</div>
+</label>
+<label class="group relative cursor-pointer touch-manipulation">
+<input class="custom-radio peer sr-only" name="goal" type="radio"/>
+<div class="flex items-center gap-4 rounded-3xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/5 backdrop-blur-sm p-5 transition-all duration-300 hover:border-primary/30 dark:hover:border-primary/30 hover:bg-white/80 dark:hover:bg-white/10">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-purple-500/10 text-purple-500 dark:text-purple-400">
+<span class="material-symbols-outlined text-[28px]">bedtime</span>
+</div>
+<div class="flex flex-col grow">
+<span class="text-lg font-semibold text-slate-800 dark:text-white leading-snug">Better Sleep</span>
+<span class="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">My sleep quality is suffering</span>
+</div>
+<div class="radio-indicator h-6 w-6 rounded-full border-2 border-slate-300 dark:border-white/20 relative flex items-center justify-center transition-all duration-300">
+<span class="material-symbols-outlined text-background-dark text-[14px] opacity-0 transition-opacity after:content-['check'] font-bold"></span>
+</div>
+</div>
+</label>
+<label class="group relative cursor-pointer touch-manipulation">
+<input class="custom-radio peer sr-only" name="goal" type="radio"/>
+<div class="flex items-center gap-4 rounded-3xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/5 backdrop-blur-sm p-5 transition-all duration-300 hover:border-primary/30 dark:hover:border-primary/30 hover:bg-white/80 dark:hover:bg-white/10">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-teal-500/10 text-teal-500 dark:text-teal-400">
+<span class="material-symbols-outlined text-[28px]">psychology</span>
+</div>
+<div class="flex flex-col grow">
+<span class="text-lg font-semibold text-slate-800 dark:text-white leading-snug">Mental Clarity</span>
+<span class="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">I want to clear my mind</span>
+</div>
+<div class="radio-indicator h-6 w-6 rounded-full border-2 border-slate-300 dark:border-white/20 relative flex items-center justify-center transition-all duration-300">
+<span class="material-symbols-outlined text-background-dark text-[14px] opacity-0 transition-opacity after:content-['check'] font-bold"></span>
+</div>
+</div>
+</label>
+<label class="group relative cursor-pointer touch-manipulation">
+<input class="custom-radio peer sr-only" name="goal" type="radio"/>
+<div class="flex items-center gap-4 rounded-3xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/5 backdrop-blur-sm p-5 transition-all duration-300 hover:border-primary/30 dark:hover:border-primary/30 hover:bg-white/80 dark:hover:bg-white/10">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-pink-500/10 text-pink-500 dark:text-pink-400">
+<span class="material-symbols-outlined text-[28px]">family_restroom</span>
+</div>
+<div class="flex flex-col grow">
+<span class="text-lg font-semibold text-slate-800 dark:text-white leading-snug">Child's Screen Time</span>
+<span class="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">Manage my child's usage</span>
+</div>
+<div class="radio-indicator h-6 w-6 rounded-full border-2 border-slate-300 dark:border-white/20 relative flex items-center justify-center transition-all duration-300">
+<span class="material-symbols-outlined text-background-dark text-[14px] opacity-0 transition-opacity after:content-['check'] font-bold"></span>
+</div>
+</div>
+</label>
+</div>
+</main>
+<div class="fixed bottom-0 left-0 right-0 z-20 p-6 pointer-events-none bg-gradient-to-t from-background-light via-background-light/90 to-transparent dark:from-background-dark dark:via-background-dark/90 pb-8 pt-12">
+<div class="max-w-lg mx-auto w-full pointer-events-auto">
+<button class="w-full group relative flex items-center justify-between rounded-2xl h-16 bg-primary px-6 text-background-dark text-lg font-bold tracking-tight shadow-[0_0_30px_rgba(19,236,91,0.3)] hover:shadow-[0_0_40px_rgba(19,236,91,0.5)] active:scale-[0.98] transition-all duration-300 overflow-hidden">
+<span class="relative z-10">Continue</span>
+<div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
+<span class="material-symbols-outlined relative z-10 text-2xl font-bold group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+
+</body></html>
