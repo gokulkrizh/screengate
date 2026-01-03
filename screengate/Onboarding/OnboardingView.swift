@@ -22,24 +22,28 @@ struct OnboardingView: View {
                     case 3:
                         OnboardingScreen3ProcessUnderstanding(data: data)
                     case 4:
-                        OnboardingScreen1(data: data)
+                        OnboardingScreen4BehaviorInsight(data: data)
                     case 5:
+                        OnboardingScreen1(data: data)
+                    case 6:
                         OnboardingScreen2(data: data)
                     case 6:
-                        OnboardingScreen3(data: data)
+                        OnboardingScreen2(data: data)
                     case 7:
-                        OnboardingScreen4(data: data)
+                        OnboardingScreen3(data: data)
                     case 8:
-                        OnboardingScreen5(data: data)
+                        OnboardingScreen4(data: data)
                     case 9:
-                        OnboardingScreen6(data: data)
+                        OnboardingScreen5(data: data)
                     case 10:
-                        OnboardingScreen7(data: data)
+                        OnboardingScreen6(data: data)
                     case 11:
-                        OnboardingScreen8(data: data)
+                        OnboardingScreen7(data: data)
                     case 12:
-                        OnboardingScreen9(data: data)
+                        OnboardingScreen8(data: data)
                     case 13:
+                        OnboardingScreen9(data: data)
+                    case 14:
                         OnboardingScreen10(data: data)
                     default:
                         OnboardingScreen10(data: data)

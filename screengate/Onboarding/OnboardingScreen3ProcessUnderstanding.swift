@@ -106,6 +106,7 @@ struct OnboardingScreen3ProcessUnderstanding: View {
                 
                 Spacer()
             }
+            .zIndex(10)
             
             // Bottom button
             VStack(spacing: 0) {
@@ -128,7 +129,7 @@ struct OnboardingScreen3ProcessUnderstanding: View {
                             title: "Continue",
                             icon: "arrow.right"
                         ) {
-                            data.currentScreen = 3
+                            data.currentScreen = 4
                         }
                     }
                     .padding(.horizontal, appTheme.spacing.large)
@@ -137,6 +138,7 @@ struct OnboardingScreen3ProcessUnderstanding: View {
                 }
                 .zIndex(20)
             }
+            .zIndex(20)
             .ignoresSafeArea(.keyboard)
         }
     }

@@ -103,12 +103,12 @@ struct OnboardingScreen2Discovery: View {
                         }
                     }
                     .padding(.horizontal, appTheme.spacing.large)
-                    .padding(.vertical, appTheme.spacing.large)
+                    .padding(.bottom, 140)
                 }
                 
                 Spacer()
             }
-            //.zIndex(10)
+            .zIndex(10)
             
             // Bottom button
             VStack(spacing: 0) {
@@ -131,7 +131,7 @@ struct OnboardingScreen2Discovery: View {
                             title: "Continue",
                             icon: "arrow.right"
                         ) {
-                            data.currentScreen = 2
+                            data.currentScreen = 3
                         }
                     }
                     .padding(.horizontal, appTheme.spacing.large)
@@ -140,6 +140,7 @@ struct OnboardingScreen2Discovery: View {
                 }
                 .zIndex(20)
             }
+            .zIndex(20)
             .ignoresSafeArea(.keyboard)
         }
     }
