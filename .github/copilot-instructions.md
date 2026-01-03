@@ -36,6 +36,17 @@ mcp__XcodeBuildMCP__build_run_device()
 mcp__XcodeBuildMCP__build_run_sim()
 ```
 
+### Development Workflow with XcodeBuildMCP
+When making code changes, always follow this workflow:
+
+1. **Make code changes** to the desired file(s)
+2. **Build the app** using XcodeBuildMCP:
+   ```bash
+   mcp__XcodeBuildMCP__build_run_sim()  # or build_device() for physical device
+   ```
+3. **Verify build success** - Check for any compilation errors
+4. **Test the changes** - Interact with the app in simulator/device
+
 **Important**: Physical device testing is essential—Family Controls and DeviceActivity threshold events don't work properly on simulators.
 
 ### Current Testing Status
