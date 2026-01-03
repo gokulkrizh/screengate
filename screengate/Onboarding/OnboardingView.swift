@@ -14,7 +14,7 @@ struct OnboardingView: View {
                 Group {
                     switch data.currentScreen {
                     case 0:
-                        GetStartedView(data: data)
+                        OnboardingScreen7ProcessingReport(data: data)
                     case 1:
                         OnboardingScreen1Problem(data: data)
                     case 2:
@@ -24,26 +24,38 @@ struct OnboardingView: View {
                     case 4:
                         OnboardingScreen4BehaviorInsight(data: data)
                     case 5:
-                        OnboardingScreen1(data: data)
+                        OnboardingScreen5DailyScreenTime(data: data)
                     case 6:
+                        OnboardingScreen6Age(data: data)
+                    case 7:
+                        OnboardingScreen7ProcessingReport(data: data)
+                    case 8:
+                        OnboardingScreen1(data: data)
+                    case 9:
                         OnboardingScreen2(data: data)
                     case 6:
                         OnboardingScreen2(data: data)
                     case 7:
-                        OnboardingScreen3(data: data)
+                        OnboardingScreen2(data: data)
                     case 8:
-                        OnboardingScreen4(data: data)
+                        OnboardingScreen2(data: data)
                     case 9:
-                        OnboardingScreen5(data: data)
+                        OnboardingScreen2(data: data)
                     case 10:
-                        OnboardingScreen6(data: data)
+                        OnboardingScreen3(data: data)
                     case 11:
-                        OnboardingScreen7(data: data)
+                        OnboardingScreen4(data: data)
                     case 12:
-                        OnboardingScreen8(data: data)
+                        OnboardingScreen5(data: data)
                     case 13:
-                        OnboardingScreen9(data: data)
+                        OnboardingScreen6(data: data)
                     case 14:
+                        OnboardingScreen7(data: data)
+                    case 15:
+                        OnboardingScreen8(data: data)
+                    case 16:
+                        OnboardingScreen9(data: data)
+                    case 17:
                         OnboardingScreen10(data: data)
                     default:
                         OnboardingScreen10(data: data)
