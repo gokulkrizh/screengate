@@ -3,7 +3,6 @@ import SwiftUI
 /// Animated radial gradient background with dark, blue, and white mix colors
 struct GradientAnimationBackground: View {
     @State private var animateGradient = false
-    @Environment(\.theme) var theme
     
     var body: some View {
         ZStack {

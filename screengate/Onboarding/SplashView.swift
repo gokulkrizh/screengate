@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct SplashView: View {
-    @Environment(\.theme) var theme
     @State private var isAnimating = false
     @State private var textOpacity = 0.0
     @State private var proceed = false
@@ -9,8 +8,8 @@ struct SplashView: View {
     
     var body: some View {
         ZStack {
-            // Themed background
-            theme.colors.background
+            // Dark background
+            Color(red: 0.06, green: 0.06, blue: 0.07)
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -23,8 +22,8 @@ struct SplashView: View {
                         .fill(
                             RadialGradient(
                                 gradient: Gradient(colors: [
-                                    theme.colors.primary.opacity(0.3),
-                                    theme.colors.primary.opacity(0)
+                                    Color(red: 0, green: 1, blue: 0.39).opacity(0.3),
+                                    Color(red: 0, green: 1, blue: 0.39).opacity(0)
                                 ]),
                                 center: .center,
                                 startRadius: 40,
@@ -37,7 +36,7 @@ struct SplashView: View {
                     // Brain icon
                     Image(systemName: "brain.head.profile")
                         .font(.system(size: 80, weight: .thin))
-                        .foregroundColor(theme.colors.primary)
+                        .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                         .scaleEffect(isAnimating ? 1.05 : 1.0)
                 }
                 .frame(height: 200)
@@ -45,16 +44,16 @@ struct SplashView: View {
                 Spacer()
                 
                 // App name
-                VStack(spacing: theme.spacing.small) {
+                VStack(spacing: 8) {
                     Text("BRAIN DIET")
-                        .font(theme.fonts.displaySmall)
+                        .font(Font.custom("Manrope", size: 36).weight(.bold))
                         .tracking(2)
-                        .foregroundColor(theme.colors.text)
+                        .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                     
                     Text("Feed Your Mind Better")
-                        .font(theme.fonts.bodyMedium)
+                        .font(Font.custom("Manrope", size: 14).weight(.regular))
                         .tracking(1)
-                        .foregroundColor(theme.colors.textSecondary)
+                        .foregroundColor(Color(red: 0.47, green: 0.47, blue: 0.49))
                 }
                 .opacity(textOpacity)
                 

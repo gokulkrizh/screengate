@@ -1,7 +1,6 @@
 import SwiftUI
 
 struct OnboardingView: View {
-    @Environment(\.theme) var theme
     @StateObject private var data = OnboardingData()
     @Environment(\.dismiss) var dismiss
     var onCompletion: () -> Void = {}

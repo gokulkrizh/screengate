@@ -16,7 +16,6 @@ import FamilyControls
 
 // MARK: - Modern Base Layout
 struct ModernOnboardingContainer<Content: View>: View {
-    @Environment(\.theme) var theme
     let content: Content
     let action: () -> Void
     let actionLabel: String
@@ -51,10 +50,10 @@ struct ModernOnboardingContainer<Content: View>: View {
                 ScrollView {
                     VStack(spacing: 0) {
                         content
-                            .padding(.horizontal, theme.spacing.large)
-                            .padding(.vertical, theme.spacing.extraLarge)
+                            .padding(.horizontal, 24)
+                            .padding(.vertical, 32)
                         
-                        Spacer(minLength: theme.spacing.huge)
+                        Spacer(minLength: 48)
                     }
                 }
                 
@@ -64,51 +63,51 @@ struct ModernOnboardingContainer<Content: View>: View {
             VStack {
                 Spacer()
                 
-                VStack(spacing: theme.spacing.small) {
+                VStack(spacing: 8) {
                     Button(action: action) {
                         Text(actionLabel)
-                            .font(theme.fonts.titleMedium)
+                            .font(Font.custom("Manrope", size: 16).weight(.semibold))
                             .frame(maxWidth: .infinity)
                             .frame(height: 54)
                             .background(
                                 LinearGradient(
                                     gradient: Gradient(colors: [
-                                        theme.colors.primary,
-                                        theme.colors.primaryDark
+                                        Color(red: 0, green: 1, blue: 0.39),
+                                        Color(red: 0, green: 0.8, blue: 0.31)
                                     ]),
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
                             )
                             .foregroundColor(.white)
-                            .cornerRadius(theme.spacing.cornerRadiusLarge)
-                            .shadow(color: theme.colors.primary.opacity(0.3), radius: 12, x: 0, y: 8)
+                            .cornerRadius(16)
+                            .shadow(color: Color(red: 0, green: 1, blue: 0.39).opacity(0.3), radius: 12, x: 0, y: 8)
                     }
                     
                     if showSecondaryAction, let secondaryAction = secondaryAction {
                         Button(action: secondaryAction) {
                             Text(secondaryLabel)
-                                .font(theme.fonts.titleMedium)
+                                .font(Font.custom("Manrope", size: 16).weight(.semibold))
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 54)
-                                .background(theme.colors.surface.opacity(0.6))
-                                .foregroundColor(theme.colors.primary)
-                                .cornerRadius(theme.spacing.cornerRadiusLarge)
+                                .background(Color(red: 0.09, green: 0.09, blue: 0.10).opacity(0.6))
+                                .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
+                                .cornerRadius(16)
                         }
                     }
                     
                     if progress.total > 0 {
                         ProgressIndicator(current: progress.current, total: progress.total)
-                            .padding(.top, theme.spacing.small)
+                            .padding(.top, 8)
                     }
                 }
-                .padding(.horizontal, theme.spacing.large)
-                .padding(.vertical, theme.spacing.medium)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 16)
                 .background(
                     LinearGradient(
                         gradient: Gradient(colors: [
-                            theme.colors.surface.opacity(0.7),
-                            theme.colors.surface.opacity(0.5)
+                            Color(red: 0.09, green: 0.09, blue: 0.10).opacity(0.7),
+                            Color(red: 0.09, green: 0.09, blue: 0.10).opacity(0.5)
                         ]),
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -121,20 +120,19 @@ struct ModernOnboardingContainer<Content: View>: View {
 
 // MARK: - Screen 1: Welcome & Theme
 struct OnboardingScreen1: View {
-    @Environment(\.theme) var theme
     @ObservedObject var data: OnboardingData
     
     var body: some View {
         ModernOnboardingContainer(
             content: {
-                VStack(spacing: theme.spacing.extraLarge) {
+                VStack(spacing: 32) {
                     ZStack {
                         Circle()
                             .fill(
                                 LinearGradient(
                                     gradient: Gradient(colors: [
-                                        theme.colors.primaryLight.opacity(0.3),
-                                        theme.colors.primary.opacity(0.1)
+                                        Color(red: 0.2, green: 1, blue: 0.5).opacity(0.3),
+                                        Color(red: 0, green: 1, blue: 0.39).opacity(0.1)
                                     ]),
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
@@ -142,22 +140,22 @@ struct OnboardingScreen1: View {
                             )
                             .frame(height: 160)
                         
-                        VStack(spacing: theme.spacing.medium) {
+                        VStack(spacing: 16) {
                             Image(systemName: "brain.head.profile")
                                 .font(.system(size: 40, weight: .light))
-                                .foregroundColor(theme.colors.primary)
+                                .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                         }
                     }
                     
-                    VStack(spacing: theme.spacing.medium) {
+                    VStack(spacing: 16) {
                         Text("Welcome to Brain Diet")
-                            .font(theme.fonts.headlineSmall)
-                            .foregroundColor(theme.colors.text)
+                            .font(Font.custom("Manrope", size: 24).weight(.bold))
+                            .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                         
-                        VStack(spacing: theme.spacing.small) {
+                        VStack(spacing: 8) {
                             Text("Pause before you tap. Reclaim focus one mindful moment at a time.")
-                                .font(theme.fonts.bodyMedium)
-                                .foregroundColor(theme.colors.textSecondary)
+                                .font(Font.custom("Manrope", size: 14).weight(.regular))
+                                .foregroundColor(Color(red: 0.47, green: 0.47, blue: 0.49))
                                 .lineSpacing(1.5)
                         }
                     }
@@ -176,7 +174,6 @@ struct OnboardingScreen1: View {
 
 // MARK: - Screen 2: Daily Screen Time Estimate
 struct OnboardingScreen2: View {
-    @Environment(\.theme) var theme
     @ObservedObject var data: OnboardingData
     let screenTimeOptions = ["<1h", "1–3h", "3–5h", "5–7h", "7+h"]
     
@@ -197,11 +194,11 @@ struct OnboardingScreen2: View {
                 VStack(spacing: 12) {
                     // Text("Let's understand your habits")
                     //     .font(.system(size: 16, weight: .semibold))
-                    //     .foregroundColor(theme.colors.textSecondary)
+                    //     .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95)Secondary)
                     
                     Text("How much time do you usually spend on your phone each day?")
                         .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(theme.colors.text)
+                        .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                 }
                 
                 VStack(spacing: 16) {
@@ -235,7 +232,7 @@ struct OnboardingScreen2: View {
                                         }) {
                                             Text(option)
                                                 .font(.system(size: 16, weight: .semibold))
-                                                .foregroundColor(isSelected ? theme.colors.primary : .white)
+                                                .foregroundColor(isSelected ? Color(red: 0, green: 1, blue: 0.39) : .white)
                                                 .frame(maxWidth: .infinity)
                                                 .frame(height: 54)
                                                 .background(isSelected ? Color.white : Color.white.opacity(0.15))
@@ -264,7 +261,7 @@ struct OnboardingScreen2: View {
                             .font(.system(size: 16, weight: .semibold))
                             .frame(width: 44, height: 44)
                             //.background(.ultraThinMaterial)
-                            .foregroundColor(theme.colors.primary)
+                            .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                             .glassEffect()
                           //  .cornerRadius(12)
                     }
@@ -281,7 +278,6 @@ struct OnboardingScreen2: View {
 
 // MARK: - Screen 3: Identify Problem Habits
 struct OnboardingScreen3: View {
-    @Environment(\.theme) var theme
     @ObservedObject var data: OnboardingData
     let problems = [
         ("📱", "Social Media"),
@@ -298,11 +294,11 @@ struct OnboardingScreen3: View {
                 VStack(spacing: 8) {
                     Text("What distracts you most?")
                         .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(theme.colors.text)
+                        .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                     
                     // Text("(Select all that apply)")
                     //     .font(.system(size: 14, weight: .regular))
-                    //     .foregroundColor(theme.colors.textSecondary)
+                    //     .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95)Secondary)
                 }
                 
                 VStack(spacing: 12) {
@@ -328,7 +324,7 @@ struct OnboardingScreen3: View {
                                                 
                                                 Text(title)
                                                     .font(.system(size: 13, weight: .semibold))
-                                                    .foregroundColor(isSelected ? theme.colors.primary : .white)
+                                                    .foregroundColor(isSelected ? Color(red: 0, green: 1, blue: 0.39) : .white)
                                                     .lineLimit(2)
                                                     .multilineTextAlignment(.center)
                                             }
@@ -360,7 +356,7 @@ struct OnboardingScreen3: View {
                             .font(.system(size: 16, weight: .semibold))
                             .frame(width: 44, height: 44)
                             //.background(.ultraThinMaterial)
-                            .foregroundColor(theme.colors.primary)
+                            .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                             .cornerRadius(12)
                             .glassEffect()
                     }
@@ -384,7 +380,7 @@ struct OnboardingScreen3: View {
                     .background(
                         data.selectedProblems.isEmpty ?
                         Color.gray.opacity(0.5) :
-                        theme.colors.primary
+                        Color(red: 0, green: 1, blue: 0.39)
                     )
                     .foregroundColor(.white)
                     .cornerRadius(12)
@@ -397,7 +393,6 @@ struct OnboardingScreen3: View {
 
 // MARK: - Screen 4: Personal Goal Selection
 struct OnboardingScreen4: View {
-    @Environment(\.theme) var theme
     @ObservedObject var data: OnboardingData
     let goals = [
         ("🎯", "Focus"),
@@ -412,7 +407,7 @@ struct OnboardingScreen4: View {
                 VStack(spacing: 8) {
                     Text("What's your main goal with Brain Diet?")
                         .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(theme.colors.text)
+                        .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                 }
                 
                 VStack(spacing: 12) {
@@ -437,7 +432,7 @@ struct OnboardingScreen4: View {
                                                 
                                                 Text(title)
                                                     .font(.system(size: 13, weight: .semibold))
-                                                    .foregroundColor(isSelected ? theme.colors.primary : .white)
+                                                    .foregroundColor(isSelected ? Color(red: 0, green: 1, blue: 0.39) : .white)
                                                     .lineLimit(2)
                                                     .multilineTextAlignment(.center)
                                             }
@@ -469,7 +464,7 @@ struct OnboardingScreen4: View {
                             .font(.system(size: 16, weight: .semibold))
                             .frame(width: 44, height: 44)
                            // .background(.ultraThinMaterial)
-                            .foregroundColor(theme.colors.primary)
+                            .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                             .cornerRadius(12)
                             .glassEffect()
                     }
@@ -490,7 +485,7 @@ struct OnboardingScreen4: View {
                 Text("Next")
                     .frame(maxWidth: .infinity)
                     .padding(16)
-                    .background(theme.colors.primary)
+                    .background(Color(red: 0, green: 1, blue: 0.39))
                     .foregroundColor(.white)
                     .cornerRadius(12)
             }
@@ -501,7 +496,6 @@ struct OnboardingScreen4: View {
 
 // MARK: - Screen 5: Quick Personal Survey
 struct OnboardingScreen5: View {
-    @Environment(\.theme) var theme
     @ObservedObject var data: OnboardingData
     
     var body: some View {
@@ -509,13 +503,13 @@ struct OnboardingScreen5: View {
             VStack(alignment: .leading, spacing: 20) {
                 Text("Quick Personal Survey")
                     .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(theme.colors.text)
+                    .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                 
                 // Q1
                 VStack(alignment: .leading, spacing: 12) {
                     Text("How often do you check your phone daily?")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(theme.colors.text)
+                        .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                     
                     HStack(spacing: 10) {
                         ForEach(["Few times", "Several", "Constantly"], id: \.self) { option in
@@ -523,7 +517,7 @@ struct OnboardingScreen5: View {
                             Button(action: { data.phoneCheckFrequency = option }) {
                                 Text(option)
                                     .font(.system(size: 12, weight: .semibold))
-                                    .foregroundColor(isSelected ? theme.colors.primary : .white)
+                                    .foregroundColor(isSelected ? Color(red: 0, green: 1, blue: 0.39) : .white)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 40)
                                     .background(isSelected ? Color.white : Color.white.opacity(0.15))
@@ -537,7 +531,7 @@ struct OnboardingScreen5: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Do notifications distract you?")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(theme.colors.text)
+                        .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                     
                     HStack(spacing: 10) {
                         ForEach(["Not really", "Occasionally", "Often"], id: \.self) { option in
@@ -545,7 +539,7 @@ struct OnboardingScreen5: View {
                             Button(action: { data.notificationDistractionLevel = option }) {
                                 Text(option)
                                     .font(.system(size: 12, weight: .semibold))
-                                    .foregroundColor(isSelected ? theme.colors.primary : .white)
+                                    .foregroundColor(isSelected ? Color(red: 0, green: 1, blue: 0.39) : .white)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 40)
                                     .background(isSelected ? Color.white : Color.white.opacity(0.15))
@@ -559,7 +553,7 @@ struct OnboardingScreen5: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Do you feel phone use affects your sleep?")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(theme.colors.text)
+                        .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                     
                     HStack(spacing: 10) {
                         ForEach(["No", "Sometimes", "Yes"], id: \.self) { option in
@@ -567,7 +561,7 @@ struct OnboardingScreen5: View {
                             Button(action: { data.sleepAffected = option }) {
                                 Text(option)
                                     .font(.system(size: 12, weight: .semibold))
-                                    .foregroundColor(isSelected ? theme.colors.primary : .white)
+                                    .foregroundColor(isSelected ? Color(red: 0, green: 1, blue: 0.39) : .white)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 40)
                                     .background(isSelected ? Color.white : Color.white.opacity(0.15))
@@ -581,7 +575,7 @@ struct OnboardingScreen5: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Do you get frustrated when you scroll too much?")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(theme.colors.text)
+                        .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                     
                     HStack(spacing: 10) {
                         ForEach(["Never", "Sometimes", "Often"], id: \.self) { option in
@@ -589,7 +583,7 @@ struct OnboardingScreen5: View {
                             Button(action: { data.scrollFrustration = option }) {
                                 Text(option)
                                     .font(.system(size: 12, weight: .semibold))
-                                    .foregroundColor(isSelected ? theme.colors.primary : .white)
+                                    .foregroundColor(isSelected ? Color(red: 0, green: 1, blue: 0.39) : .white)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 40)
                                     .background(isSelected ? Color.white : Color.white.opacity(0.15))
@@ -603,7 +597,7 @@ struct OnboardingScreen5: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Which situations do you want Brain Diet to help most?")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(theme.colors.text)
+                        .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                     
                     HStack(spacing: 10) {
                         ForEach(["Work", "Study", "Bedtime"], id: \.self) { option in
@@ -611,7 +605,7 @@ struct OnboardingScreen5: View {
                             Button(action: { data.situationHelp = option }) {
                                 Text(option)
                                     .font(.system(size: 12, weight: .semibold))
-                                    .foregroundColor(isSelected ? theme.colors.primary : .white)
+                                    .foregroundColor(isSelected ? Color(red: 0, green: 1, blue: 0.39) : .white)
                                     .frame(maxWidth: .infinity)
                                     .frame(height: 40)
                                     .background(isSelected ? Color.white : Color.white.opacity(0.15))
@@ -637,7 +631,7 @@ struct OnboardingScreen5: View {
                             .font(.system(size: 16, weight: .semibold))
                             .frame(width: 44, height: 44)
                             //.background(.ultraThinMaterial)
-                            .foregroundColor(theme.colors.primary)
+                            .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                             .cornerRadius(12)
                             .glassEffect()
                     }
@@ -661,7 +655,7 @@ struct OnboardingScreen5: View {
                     .background(
                         (data.phoneCheckFrequency != nil && data.notificationDistractionLevel != nil &&
                          data.sleepAffected != nil && data.scrollFrustration != nil &&
-                         data.situationHelp != nil) ? theme.colors.primary : Color.gray.opacity(0.5)
+                         data.situationHelp != nil) ? Color(red: 0, green: 1, blue: 0.39) : Color.gray.opacity(0.5)
                     )
                     .foregroundColor(.white)
                     .cornerRadius(12)
@@ -676,7 +670,6 @@ struct OnboardingScreen5: View {
 
 // MARK: - Screen 6: Age & Occupation
 struct OnboardingScreen6: View {
-    @Environment(\.theme) var theme
     @ObservedObject var data: OnboardingData
     
     let ageOptions = ["13-18", "19-25", "26-35", "36-45", "46-55", "55+"]
@@ -694,7 +687,7 @@ struct OnboardingScreen6: View {
             VStack(alignment: .leading, spacing: 24) {
                 Text("Tell us a bit about yourself")
                     .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(theme.colors.text)
+                    .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                 
                 // Selected Summary
                 // if data.age != nil || data.occupation != nil {
@@ -702,10 +695,10 @@ struct OnboardingScreen6: View {
                 //         if let age = data.age {
                 //             HStack(spacing: 8) {
                 //                 Image(systemName: "checkmark.circle.fill")
-                //                     .foregroundColor(theme.colors.primary)
+                //                     .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                 //                 Text("Age: \(age)")
                 //                     .font(.system(size: 14, weight: .semibold))
-                //                     .foregroundColor(theme.colors.text)
+                //                     .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                 //                 Spacer()
                 //             }
                 //         }
@@ -713,10 +706,10 @@ struct OnboardingScreen6: View {
                 //         if let occupation = data.occupation {
                 //             HStack(spacing: 8) {
                 //                 Image(systemName: "checkmark.circle.fill")
-                //                     .foregroundColor(theme.colors.primary)
+                //                     .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                 //                 Text("Occupation: \(occupation)")
                 //                     .font(.system(size: 14, weight: .semibold))
-                //                     .foregroundColor(theme.colors.text)
+                //                     .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                 //                 Spacer()
                 //             }
                 //         }
@@ -730,7 +723,7 @@ struct OnboardingScreen6: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Your Age")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(theme.colors.text)
+                        .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                     
                     VStack(spacing: 10) {
                         ForEach(0..<ageOptions.count, id: \.self) { index in
@@ -745,7 +738,7 @@ struct OnboardingScreen6: View {
                                             Button(action: { data.age = option }) {
                                                 Text(option)
                                                     .font(.system(size: 13, weight: .semibold))
-                                                    .foregroundColor(isSelected ? theme.colors.primary : .white)
+                                                    .foregroundColor(isSelected ? Color(red: 0, green: 1, blue: 0.39) : .white)
                                                     .frame(maxWidth: .infinity)
                                                     .frame(height: 44)
                                                     .background(isSelected ? Color.white : Color.white.opacity(0.15))
@@ -763,7 +756,7 @@ struct OnboardingScreen6: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("Your Occupation")
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(theme.colors.text)
+                        .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                     
                     VStack(spacing: 10) {
                         ForEach(0..<occupationOptions.count, id: \.self) { index in
@@ -782,7 +775,7 @@ struct OnboardingScreen6: View {
                                                     
                                                     Text(title)
                                                         .font(.system(size: 12, weight: .semibold))
-                                                        .foregroundColor(isSelected ? theme.colors.primary : .white)
+                                                        .foregroundColor(isSelected ? Color(red: 0, green: 1, blue: 0.39) : .white)
                                                         .lineLimit(2)
                                                         .multilineTextAlignment(.center)
                                                 }
@@ -815,7 +808,7 @@ struct OnboardingScreen6: View {
                             .font(.system(size: 16, weight: .semibold))
                             .frame(width: 44, height: 44)
                             .background(.ultraThinMaterial)
-                            .foregroundColor(theme.colors.primary)
+                            .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                             .cornerRadius(12)
                     }
                     
@@ -835,7 +828,7 @@ struct OnboardingScreen6: View {
                 Text("Next")
                     .frame(maxWidth: .infinity)
                     .padding(16)
-                    .background((data.age != nil && data.occupation != nil) ? theme.colors.primary : Color.gray.opacity(0.5))
+                    .background((data.age != nil && data.occupation != nil) ? Color(red: 0, green: 1, blue: 0.39) : Color.gray.opacity(0.5))
                     .foregroundColor(.white)
                     .cornerRadius(12)
             }
@@ -847,7 +840,6 @@ struct OnboardingScreen6: View {
 
 // MARK: - Screen 7: Screen Time Permission
 struct OnboardingScreen7: View {
-    @Environment(\.theme) var theme
     @ObservedObject var data: OnboardingData
     
     var body: some View {
@@ -856,41 +848,41 @@ struct OnboardingScreen7: View {
                 VStack(spacing: 16) {
                     Image(systemName: "lock.shield.fill")
                         .font(.system(size: 48))
-                        .foregroundColor(theme.colors.primary)
+                        .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                     
                     Text("Screen Time Permission")
                         .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(theme.colors.text)
+                        .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                 }
                 
                 Text("Brain Diet needs permission to track and guide your screen use.")
                     .font(.system(size: 16, weight: .regular))
-                    .foregroundColor(theme.colors.textSecondary)
+                    .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                 
                 VStack(alignment: .leading, spacing: 16) {
                     HStack(spacing: 12) {
                         Text("1.")
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(theme.colors.primary)
+                            .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                         Text("Tap 'Enable Access' below")
                             .font(.system(size: 14))
-                            .foregroundColor(theme.colors.textSecondary)
+                            .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                     }
                     HStack(spacing: 12) {
                         Text("2.")
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(theme.colors.primary)
+                            .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                         Text("iOS will show a permission request")
                             .font(.system(size: 14))
-                            .foregroundColor(theme.colors.textSecondary)
+                            .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                     }
                     HStack(spacing: 12) {
                         Text("3.")
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(theme.colors.primary)
+                            .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                         Text("Tap \"Allow\"")
                             .font(.system(size: 14))
-                            .foregroundColor(theme.colors.textSecondary)
+                            .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                     }
                 }
                 
@@ -900,7 +892,7 @@ struct OnboardingScreen7: View {
                             .font(.system(size: 12))
                         Text("You're always in control. You can disable this in Settings anytime.")
                             .font(.system(size: 13))
-                            .foregroundColor(theme.colors.textSecondary)
+                            .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                     }
                 }
                 
@@ -920,7 +912,7 @@ struct OnboardingScreen7: View {
                             .font(.system(size: 16, weight: .semibold))
                             .frame(width: 44, height: 44)
                            // .background(.ultraThinMaterial)
-                            .foregroundColor(theme.colors.primary)
+                            .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                             .cornerRadius(12)
                             .glassEffect()
                     }
@@ -945,7 +937,7 @@ struct OnboardingScreen7: View {
                     Text("Enable Access")
                         .frame(maxWidth: .infinity)
                         .padding(16)
-                        .background(theme.colors.primary)
+                        .background(Color(red: 0, green: 1, blue: 0.39))
                         .foregroundColor(.white)
                         .cornerRadius(12)
                 }
@@ -958,8 +950,8 @@ struct OnboardingScreen7: View {
                     Text("Skip for now")
                         .frame(maxWidth: .infinity)
                         .padding(16)
-                        .background(theme.colors.primary.opacity(0.1))
-                        .foregroundColor(theme.colors.primary)
+                        .background(Color(red: 0, green: 1, blue: 0.39).opacity(0.1))
+                        .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                         .cornerRadius(12)
                 }
             }
@@ -970,7 +962,6 @@ struct OnboardingScreen7: View {
 
 // MARK: - Screen 8: Personalized Insights
 struct OnboardingScreen8: View {
-    @Environment(\.theme) var theme
     @ObservedObject var data: OnboardingData
     
     var body: some View {
@@ -978,11 +969,11 @@ struct OnboardingScreen8: View {
             VStack(alignment: .leading, spacing: 24) {
                 Text("Your Personalized Projection")
                     .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(theme.colors.text)
+                    .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                 
                 Text("Time lost vs. time you can reclaim")
                     .font(.system(size: 16, weight: .regular))
-                    .foregroundColor(theme.colors.textSecondary)
+                    .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                 
                 // Animated stats
                 VStack(spacing: 16) {
@@ -992,14 +983,14 @@ struct OnboardingScreen8: View {
                                 .font(.system(size: 20))
                             Text("Time Lost This Week")
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(theme.colors.textSecondary)
+                                .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                         }
                         Text("\(Int(data.estimatedScreenTime * 7))+ hours")
                             .font(.system(size: 24, weight: .bold))
-                            .foregroundColor(theme.colors.primary)
+                            .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                     }
                     .padding(16)
-                    .background(theme.colors.surface)
+                    .background(Color(red: 0.09, green: 0.09, blue: 0.10))
                     .cornerRadius(12)
                     
                     VStack(spacing: 8) {
@@ -1008,14 +999,14 @@ struct OnboardingScreen8: View {
                                 .font(.system(size: 20))
                             Text("Time You Can Reclaim")
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(theme.colors.textSecondary)
+                                .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                         }
                         Text("\(Int(data.estimatedScreenTime * 3.5))+ hours/week")
                             .font(.system(size: 24, weight: .bold))
-                            .foregroundColor(theme.colors.primary)
+                            .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                     }
                     .padding(16)
-                    .background(theme.colors.surface)
+                    .background(Color(red: 0.09, green: 0.09, blue: 0.10))
                     .cornerRadius(12)
                 }
                 
@@ -1025,7 +1016,7 @@ struct OnboardingScreen8: View {
                             .font(.system(size: 16))
                         Text("With Brain Diet, you'll unlock better focus, sleep, and presence")
                             .font(.system(size: 14))
-                            .foregroundColor(theme.colors.textSecondary)
+                            .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                     }
                 }
                 
@@ -1045,7 +1036,7 @@ struct OnboardingScreen8: View {
                             .font(.system(size: 16, weight: .semibold))
                             .frame(width: 44, height: 44)
                            // .background(.ultraThinMaterial)
-                            .foregroundColor(theme.colors.primary)
+                            .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                             .cornerRadius(12)
                             .glassEffect()
                     }
@@ -1066,7 +1057,7 @@ struct OnboardingScreen8: View {
                 Text("Next")
                     .frame(maxWidth: .infinity)
                     .padding(16)
-                    .background(theme.colors.primary)
+                    .background(Color(red: 0, green: 1, blue: 0.39))
                     .foregroundColor(.white)
                     .cornerRadius(12)
             }
@@ -1077,7 +1068,6 @@ struct OnboardingScreen8: View {
 
 // MARK: - Screen 9: Notifications & Reflections
 struct OnboardingScreen9: View {
-    @Environment(\.theme) var theme
     @ObservedObject var data: OnboardingData
     
     var body: some View {
@@ -1086,16 +1076,16 @@ struct OnboardingScreen9: View {
                 VStack(spacing: 16) {
                     Image(systemName: "bell.badge.fill")
                         .font(.system(size: 48))
-                        .foregroundColor(theme.colors.primary)
+                        .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                     
                     Text("Daily Reflections")
                         .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(theme.colors.text)
+                        .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                 }
                 
                 Text("Enable daily & weekly reflection nudges.")
                     .font(.system(size: 16, weight: .regular))
-                    .foregroundColor(theme.colors.textSecondary)
+                    .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                 
                 VStack(alignment: .leading, spacing: 16) {
                     VStack(spacing: 8) {
@@ -1104,14 +1094,14 @@ struct OnboardingScreen9: View {
                                 .font(.system(size: 18))
                             Text("Daily Summary")
                                 .font(.system(size: 15, weight: .semibold))
-                                .foregroundColor(theme.colors.text)
+                                .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                         }
                         Text("See your daily screen time & wins")
                             .font(.system(size: 12))
-                            .foregroundColor(theme.colors.textSecondary)
+                            .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                     }
                     .padding(12)
-                    .background(theme.colors.surface)
+                    .background(Color(red: 0.09, green: 0.09, blue: 0.10))
                     .cornerRadius(8)
                     
                     VStack(spacing: 8) {
@@ -1120,25 +1110,25 @@ struct OnboardingScreen9: View {
                                 .font(.system(size: 18))
                             Text("Weekly Insights")
                                 .font(.system(size: 15, weight: .semibold))
-                                .foregroundColor(theme.colors.text)
+                                .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                         }
                         Text("Trend analysis & actionable tips")
                             .font(.system(size: 12))
-                            .foregroundColor(theme.colors.textSecondary)
+                            .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                     }
                     .padding(12)
-                    .background(theme.colors.surface)
+                    .background(Color(red: 0.09, green: 0.09, blue: 0.10))
                     .cornerRadius(8)
                 }
                 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("No spam. No guilt trips. Just helpful guidance.")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(theme.colors.textSecondary)
+                        .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                     
                     Text("You can customize in Settings anytime.")
                         .font(.system(size: 13))
-                        .foregroundColor(theme.colors.textSecondary)
+                        .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                 }
                 
                 Spacer()
@@ -1157,7 +1147,7 @@ struct OnboardingScreen9: View {
                             .font(.system(size: 16, weight: .semibold))
                             .frame(width: 44, height: 44)
                             //.background(.ultraThinMaterial)
-                            .foregroundColor(theme.colors.primary)
+                            .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                             .cornerRadius(12)
                             .glassEffect()
                     }
@@ -1182,7 +1172,7 @@ struct OnboardingScreen9: View {
                     Text("Enable Notifications")
                         .frame(maxWidth: .infinity)
                         .padding(16)
-                        .background(theme.colors.primary)
+                        .background(Color(red: 0, green: 1, blue: 0.39))
                         .foregroundColor(.white)
                         .cornerRadius(12)
                 }
@@ -1195,8 +1185,8 @@ struct OnboardingScreen9: View {
                     Text("Maybe later")
                         .frame(maxWidth: .infinity)
                         .padding(16)
-                        .background(theme.colors.primary.opacity(0.1))
-                        .foregroundColor(theme.colors.primary)
+                        .background(Color(red: 0, green: 1, blue: 0.39).opacity(0.1))
+                        .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                         .cornerRadius(12)
                 }
             }
@@ -1207,7 +1197,6 @@ struct OnboardingScreen9: View {
 
 // MARK: - Screen 10: Completion
 struct OnboardingScreen10: View {
-    @Environment(\.theme) var theme
     @ObservedObject var data: OnboardingData
     
     var body: some View {
@@ -1222,22 +1211,22 @@ struct OnboardingScreen10: View {
                         VStack(spacing: 24) {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.system(size: 64))
-                                .foregroundColor(theme.colors.primary)
+                                .foregroundColor(Color(red: 0, green: 1, blue: 0.39))
                             
                             VStack(spacing: 12) {
                                 Text("You're all set!")
                                     .font(.system(size: 32, weight: .bold))
-                                    .foregroundColor(theme.colors.text)
+                                    .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                                 
                                 Text("Tap less, pause more.")
                                     .font(.system(size: 18, weight: .regular))
-                                    .foregroundColor(theme.colors.textSecondary)
+                                    .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                             }
                         }
                         
                         Spacer(minLength: 40)
                     }
-                    .padding(.horizontal, theme.spacing.large)
+                    .padding(.horizontal, 24)
                 }
                 
                 Spacer()
@@ -1246,41 +1235,41 @@ struct OnboardingScreen10: View {
             VStack {
                 Spacer()
                 
-                VStack(spacing: theme.spacing.small) {
+                VStack(spacing: 8) {
                     Button(action: {
                         withAnimation {
                             data.completeOnboarding()
                         }
                     }) {
                         Text("Go to Dashboard")
-                            .font(theme.fonts.titleMedium)
+                            .font(Font.custom("Manrope", size: 16).weight(.semibold))
                             .frame(maxWidth: .infinity)
                             .frame(height: 54)
                             .background(
                                 LinearGradient(
                                     gradient: Gradient(colors: [
-                                        theme.colors.primary,
-                                        theme.colors.primaryDark
+                                        Color(red: 0, green: 1, blue: 0.39),
+                                        Color(red: 0, green: 1, blue: 0.39)
                                     ]),
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
                             )
                             .foregroundColor(.white)
-                            .cornerRadius(theme.spacing.cornerRadiusLarge)
-                            .shadow(color: theme.colors.primary.opacity(0.3), radius: 12, x: 0, y: 8)
+                            .cornerRadius(16)
+                            .shadow(color: Color(red: 0, green: 1, blue: 0.39).opacity(0.3), radius: 12, x: 0, y: 8)
                     }
                     
                     ProgressIndicator(current: 11, total: 11)
-                        .padding(.top, theme.spacing.small)
+                        .padding(.top, 8)
                 }
-                .padding(.horizontal, theme.spacing.large)
-                .padding(.vertical, theme.spacing.medium)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 16)
                 .background(
                     LinearGradient(
                         gradient: Gradient(colors: [
-                            theme.colors.surface.opacity(0.7),
-                            theme.colors.surface.opacity(0.5)
+                            Color(red: 0.09, green: 0.09, blue: 0.10).opacity(0.7),
+                            Color(red: 0.09, green: 0.09, blue: 0.10).opacity(0.5)
                         ]),
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -1295,7 +1284,6 @@ struct OnboardingScreen10: View {
 struct ProgressIndicator: View {
     let current: Int
     let total: Int
-    @Environment(\.theme) var theme
     
     var body: some View {
         VStack(spacing: 8) {
@@ -1308,8 +1296,8 @@ struct ProgressIndicator: View {
                         .fill(
                             LinearGradient(
                                 gradient: Gradient(colors: [
-                                    theme.colors.primary,
-                                    theme.colors.primaryDark
+                                    Color(red: 0, green: 1, blue: 0.39),
+                                    Color(red: 0, green: 1, blue: 0.39)
                                 ]),
                                 startPoint: .leading,
                                 endPoint: .trailing
@@ -1323,7 +1311,7 @@ struct ProgressIndicator: View {
             HStack {
                 Text("Step \(current) of \(total)")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(theme.colors.textSecondary)
+                    .foregroundColor(Color(red: 0.95, green: 0.95, blue: 0.95))
                 Spacer()
             }
         }

@@ -58,6 +58,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		551538DE2F08CD91008DABB6 /* screendiet-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "screendiet-Info.plist"; sourceTree = "<group>"; };
 		557B516D2EB633C500E46D58 /* screendiet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = screendiet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		557B52322EB6598000E46D58 /* ShieldConfigurationExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShieldConfigurationExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		557B52342EB6598000E46D58 /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettings.framework; path = System/Library/Frameworks/ManagedSettings.framework; sourceTree = SDKROOT; };
@@ -205,6 +206,7 @@
 		557B51642EB633C500E46D58 = {
 			isa = PBXGroup;
 			children = (
+				551538DE2F08CD91008DABB6 /* screendiet-Info.plist */,
 				557B535F2EBA65B900E46D58 /* Shared */,
 				557B516F2EB633C500E46D58 /* screengate */,
 				557B52382EB6598000E46D58 /* ShieldConfigurationExtension */,
@@ -595,6 +597,7 @@
 				DEVELOPMENT_TEAM = 3DCZZ33R7Y;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "screendiet-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -628,6 +631,7 @@
 				DEVELOPMENT_TEAM = 3DCZZ33R7Y;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "screendiet-Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
