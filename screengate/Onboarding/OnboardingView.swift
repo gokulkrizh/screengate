@@ -14,7 +14,7 @@ struct OnboardingView: View {
                 Group {
                     switch data.currentScreen {
                     case 0:
-                        OnboardingScreen7ProcessingReport(data: data)
+                        OnboardingScreen14TrialReminder(data: data)
                     case 1:
                         OnboardingScreen1Problem(data: data)
                     case 2:
@@ -30,35 +30,21 @@ struct OnboardingView: View {
                     case 7:
                         OnboardingScreen7ProcessingReport(data: data)
                     case 8:
-                        OnboardingScreen1(data: data)
+                        OnboardingScreen8DataReport(data: data)
                     case 9:
-                        OnboardingScreen2(data: data)
-                    case 6:
-                        OnboardingScreen2(data: data)
-                    case 7:
-                        OnboardingScreen2(data: data)
-                    case 8:
-                        OnboardingScreen2(data: data)
-                    case 9:
-                        OnboardingScreen2(data: data)
+                        OnboardingScreen9ScreenTimeAccess(data: data)
                     case 10:
-                        OnboardingScreen3(data: data)
+                        OnboardingScreen10GoalSetting(data: data)
                     case 11:
-                        OnboardingScreen4(data: data)
+                        OnboardingScreen11CreatingPlan(data: data)
                     case 12:
-                        OnboardingScreen5(data: data)
+                        OnboardingScreen12SolutionPreview(data: data)
                     case 13:
-                        OnboardingScreen6(data: data)
+                        OnboardingScreen13TryForFree(data: data)
                     case 14:
-                        OnboardingScreen7(data: data)
-                    case 15:
-                        OnboardingScreen8(data: data)
-                    case 16:
-                        OnboardingScreen9(data: data)
-                    case 17:
-                        OnboardingScreen10(data: data)
+                        OnboardingScreen14TrialReminder(data: data)
                     default:
-                        OnboardingScreen10(data: data)
+                        OnboardingScreen14TrialReminder(data: data)
                     }
                 }
                 .transition(.opacity)
