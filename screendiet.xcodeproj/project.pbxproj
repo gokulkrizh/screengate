@@ -115,7 +115,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				"Extensions/TimeInterval+Extensions.swift",
-				Views/FamilyActivitySelectionView.swift,
 			);
 			target = 557B531F2EBA635800E46D58 /* DeviceActivityMonitorExtension */;
 		};

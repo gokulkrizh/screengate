@@ -51,24 +51,8 @@ struct DeviceActivityMonitorDemoApp: App {
     
     var body: some Scene {
         WindowGroup {
-            if false {
-                NavigationStack {
-                    ContentView()
-                        .onOpenURL { url in
-                            handleDeepLink(url)
-                        }
-                        .onReceive(NotificationCenter.default.publisher(for: .showRestrictionLiftedView)) { _ in
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                showRestrictionLifted = true
-                            }
-                        }
-                        .fullScreenCover(isPresented: $showRestrictionLifted) {
-                            RestrictionLiftedView()
-                        }
-                        .onAppear {
-                            setupNotificationDelegate()
-                        }
-                }
+            if hasCompletedOnboarding {
+                HomeScreen()
             } else {
                 NavigationStack {
                     SplashView(onCompletion: {

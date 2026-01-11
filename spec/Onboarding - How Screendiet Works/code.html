@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Screendiet Onboarding</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216", // Deep forest dark green/charcoal mix
+                    },
+                    fontFamily: {
+                        "display": ["Manrope", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-white transition-colors duration-200">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-xl">
+<!-- TopAppBar -->
+<div class="flex items-center p-4 pb-2 justify-between z-10">
+<!-- Back Arrow Placeholder (Optional based on design, keeping empty as per request but maintaining spacing) -->
+<div class="w-12"></div>
+<!-- PageIndicators (Moved into header for cleaner look) -->
+<div class="flex flex-row items-center justify-center gap-2">
+<div class="h-1.5 w-1.5 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+<div class="h-1.5 w-6 rounded-full bg-primary"></div>
+<div class="h-1.5 w-1.5 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+</div>
+<!-- Skip Button -->
+<div class="flex w-12 items-center justify-end cursor-pointer">
+<p class="text-gray-500 dark:text-gray-400 text-sm font-bold leading-normal tracking-[0.015em] hover:text-primary transition-colors">Skip</p>
+</div>
+</div>
+<!-- Scrollable Content Area -->
+<div class="flex-1 flex flex-col items-center">
+<!-- Hero Illustration Area -->
+<div class="w-full px-6 pt-6 pb-2 flex justify-center">
+<div class="relative w-full aspect-[4/3] max-h-[280px] rounded-2xl overflow-hidden bg-gradient-to-b from-primary/10 to-transparent flex items-center justify-center group">
+<!-- Abstract visual representation -->
+<div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent opacity-70"></div>
+<img alt="Abstract focus illustration" class="w-full h-full object-cover mix-blend-overlay opacity-60 dark:opacity-40" data-alt="Abstract neon lights and futuristic focus patterns" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCGNUNpvbfblP79aodQtDDA8upyfhQV_yMHcmkYJqmJNfFaYJZ9uopAmYkNGGosVZcGLzETSVIxKw0MhvFlYQen1AD6xXU21n9a7xg1-zTIzhvdF78DlQe_jeyyxtcdg6VL-dTDjAQoayaGlTXC4yAWn3golbwpXidh2dmXsBiOdTAEeoK33pMe7smupewhEKmP0N3e4UAvbgeKupL4YjBKBbB8sHTcxfNRlo3LyIU9pIM4xjJhqbDgfeS6TzPWw7cQ05RYRNCRGCA"/>
+<span class="material-symbols-outlined absolute text-primary/80 text-[80px] drop-shadow-[0_0_15px_rgba(19,236,91,0.5)]">
+                        smartphone
+                    </span>
+</div>
+</div>
+<!-- HeadlineText -->
+<h1 class="text-gray-900 dark:text-white tracking-tight text-[28px] sm:text-[32px] font-extrabold leading-tight px-6 text-center pt-4 pb-6">
+                How Screendiet Works
+            </h1>
+<!-- Timeline -->
+<div class="w-full max-w-[360px] px-4 pb-8">
+<div class="grid grid-cols-[48px_1fr] gap-x-0">
+<!-- Item 1 -->
+<div class="flex flex-col items-center pt-1">
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary border border-primary/20 shadow-[0_0_10px_rgba(19,236,91,0.1)]">
+<span class="material-symbols-outlined text-[20px]">ads_click</span> <!-- Using ads_click as Target alternative/interaction -->
+</div>
+<div class="w-[2px] bg-gray-200 dark:bg-gray-800 h-full grow my-2 rounded-full"></div>
+</div>
+<div class="flex flex-1 flex-col py-0 pb-8 pl-4">
+<p class="text-gray-900 dark:text-white text-lg font-bold leading-snug mb-1">Define Your Limits</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-relaxed">Set daily caps for specific apps that tend to drain your focus and energy.</p>
+</div>
+<!-- Item 2 -->
+<div class="flex flex-col items-center">
+<div class="w-[2px] bg-gray-200 dark:bg-gray-800 h-2 mb-2 rounded-full"></div> <!-- connecting line top -->
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-gray-400 border border-gray-200 dark:border-white/10">
+<span class="material-symbols-outlined text-[20px]">shield</span>
+</div>
+<div class="w-[2px] bg-gray-200 dark:bg-gray-800 h-full grow my-2 rounded-full"></div>
+</div>
+<div class="flex flex-1 flex-col py-0 pb-8 pl-4">
+<p class="text-gray-900 dark:text-white text-lg font-bold leading-snug mb-1">Deep Focus Mode</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-relaxed">We automatically block distracting notifications during your scheduled focus hours.</p>
+</div>
+<!-- Item 3 -->
+<div class="flex flex-col items-center">
+<div class="w-[2px] bg-gray-200 dark:bg-gray-800 h-2 mb-2 rounded-full"></div>
+<div class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 dark:bg-white/5 text-gray-400 dark:text-gray-400 border border-gray-200 dark:border-white/10">
+<span class="material-symbols-outlined text-[20px]">emoji_events</span> <!-- Trophy -->
+</div>
+</div>
+<div class="flex flex-1 flex-col py-0 pl-4">
+<p class="text-gray-900 dark:text-white text-lg font-bold leading-snug mb-1">Reclaim Your Time</p>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium leading-relaxed">Track your daily progress and gradually build healthier digital habits.</p>
+</div>
+</div>
+</div>
+<!-- Spacer for bottom button area -->
+<div class="h-6"></div>
+</div>
+<!-- Bottom Action Area -->
+<div class="w-full px-6 py-6 bg-background-light dark:bg-background-dark sticky bottom-0 z-20">
+<!-- SingleButton -->
+<button class="w-full cursor-pointer flex items-center justify-center rounded-xl h-14 px-5 bg-primary hover:bg-primary/90 active:scale-[0.98] transition-all duration-200 shadow-[0_4px_14px_rgba(19,236,91,0.3)]">
+<span class="text-background-dark text-[17px] font-extrabold leading-normal tracking-wide">Continue</span>
+</button>
+</div>
+</div>
+</body></html>
