@@ -1281,6 +1281,37 @@ struct OnboardingScreen10: View {
 }
 
 // MARK: - Helper Components
+struct ProgressIndicatorHeader: View {
+    let currentStep: Int
+    let totalSteps: Int
+    
+    private let appTheme = AppTheme.shared
+    
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(0..<totalSteps, id: \.self) { index in
+                if index < currentStep {
+                    // Filled circle for completed steps
+                    Circle()
+                        .fill(appTheme.colors.primary)
+                        .frame(width: 6, height: 6)
+                } else if index == currentStep {
+                    // Bar for current step
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(appTheme.colors.primary)
+                        .frame(height: 6)
+                        .frame(maxWidth: 32)
+                } else {
+                    // Empty circle for upcoming steps
+                    Circle()
+                        .fill(Color.white.opacity(0.3))
+                        .frame(width: 6, height: 6)
+                }
+            }
+        }
+    }
+}
+
 struct ProgressIndicator: View {
     let current: Int
     let total: Int

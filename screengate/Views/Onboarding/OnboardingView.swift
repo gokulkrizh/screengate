@@ -14,7 +14,7 @@ struct OnboardingView: View {
                 Group {
                     switch data.currentScreen {
                     case 0:
-                        OnboardingScreen14TrialReminder(data: data)
+                        GetStartedView(data: data)
                     case 1:
                         OnboardingScreen1Problem(data: data)
                     case 2:

@@ -26,45 +26,19 @@ struct OnboardingScreen12SolutionPreview: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header
+                // Header with back button and centered progress
                 VStack(spacing: 12) {
-                    HStack {
-                        Button(action: {
-                            data.currentScreen -= 1
-                        }) {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.white)
-                                .frame(width: 40, height: 40)
-                                .background(Color.white.opacity(0.1))
-                                .cornerRadius(12)
+                    ZStack {
+                        HStack {
+                            BackButton {
+                                data.currentScreen -= 1
+                            }
+
+                            Spacer()
                         }
                         
-                        Spacer()
-                        
-                        Text("Step 5 of 6")
-                            .font(.system(size: 13, weight: .semibold, design: .default))
-                            .foregroundColor(.white.opacity(0.6))
-                        
-                        Spacer()
-                        
-                        Spacer()
-                            .frame(width: 40)
+                        ProgressIndicatorHeader(currentStep: 11, totalSteps: 10)
                     }
-                    .padding(.horizontal, 20)
-                    
-                    // Progress bar
-                    ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(Color.white.opacity(0.05))
-                        
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(appTheme.colors.primary)
-                            .shadow(color: appTheme.colors.primary.opacity(0.6), radius: 6)
-                            .frame(width: nil, alignment: .leading)
-                    }
-                    .frame(height: 3)
-                    .scaleEffect(x: 0.83, anchor: .leading)
                     .padding(.horizontal, 20)
                 }
                 .padding(.vertical, 12)

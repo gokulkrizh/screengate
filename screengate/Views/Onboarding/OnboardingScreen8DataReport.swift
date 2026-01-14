@@ -27,7 +27,22 @@ struct OnboardingScreen8DataReport: View {
             
             // Main content
             VStack(spacing: 0) {
-                // Header
+                // Header with back button and centered progress
+                ZStack {
+                    HStack {
+                        BackButton {
+                            data.currentScreen = 7
+                        }
+                        
+                        Spacer()
+                    }
+                    
+                    ProgressIndicatorHeader(currentStep: 6, totalSteps: 10)
+                }
+                .padding(.horizontal, appTheme.spacing.large)
+          //      .padding(.vertical, appTheme.spacing.medium)
+                
+                // Report header
                 HStack(spacing: 12) {
                     Circle()
                         .fill(appTheme.colors.primary.opacity(0.2))

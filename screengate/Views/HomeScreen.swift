@@ -370,21 +370,21 @@ struct HomeScreen: View {
                         
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 12) {
-                                templateCard(
+                                TemplateCard(
                                     icon: "brain.head.profile",
                                     title: "Deep Work",
                                     subtitle: "45 min • Strict",
                                     color: .blue
                                 )
                                 
-                                templateCard(
+                                TemplateCard(
                                     icon: "book.fill",
                                     title: "Reading",
                                     subtitle: "30 min • Soft",
                                     color: .purple
                                 )
                                 
-                                templateCard(
+                                TemplateCard(
                                     icon: "moon.stars.fill",
                                     title: "Power Nap",
                                     subtitle: "20 min • Silent",
@@ -446,42 +446,6 @@ struct HomeScreen: View {
         // .ignoresSafeArea()
     }
     
-    // MARK: - Components
-    private func templateCard(
-        icon: String,
-        title: String,
-        subtitle: String,
-        color: Color
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.1))
-                    .frame(width: 32, height: 32)
-                
-                Image(systemName: icon)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(color)
-            }
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.system(size: 13, weight: .bold, design: .default))
-                    .foregroundColor(.white)
-                
-                Text(subtitle)
-                    .font(.system(size: 10, weight: .semibold, design: .default))
-                    .foregroundColor(.white.opacity(0.6))
-            }
-            
-            Spacer()
-        }
-        .frame(width: 144, height: 120, alignment: .topLeading)
-        .padding(12)
-        .background(Color.white.opacity(0.03))
-        .border(Color.white.opacity(0.1), width: 0.5)
-        .cornerRadius(12)
-    }
 }
 #Preview {
     HomeScreen()

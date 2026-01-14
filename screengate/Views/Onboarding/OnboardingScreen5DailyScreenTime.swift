@@ -54,26 +54,18 @@ struct OnboardingScreen5DailyScreenTime: View {
             
             // Main content
             VStack(spacing: 0) {
-                // Header
-                HStack {
-                    BackButton {
-                        data.currentScreen = 4
-                    }
+                // Header with back button and centered progress
+                ZStack {
+                    HStack {
+                        BackButton {
+                            data.currentScreen = 4
+                        }
+                        
+                        Spacer()
+                    }   
                     
-                    Spacer()
-                    
-                    Button(action: {
-                        // Skip action
-                        data.currentScreen = 6
-                    }) {
-                        Text("Skip")
-                            .font(appTheme.fonts.labelLarge)
-                            .fontWeight(.semibold)
-                            .foregroundColor(appTheme.colors.textSecondary)
-                    }
+                    ProgressIndicatorHeader(currentStep: 4, totalSteps: 10)
                 }
-                .padding(.horizontal, appTheme.spacing.large)
-                .padding(.vertical, appTheme.spacing.medium)
                 
                 // Title and subtitle
                 VStack(alignment: .leading, spacing: 8) {

@@ -183,9 +183,9 @@ struct AppUsageDetailView: View {
                         
                         // Stats Grid
                         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-                            statCard(icon: "hand.tap.fill", value: "42", label: "Pickups", color: .white.opacity(0.5))
-                            statCard(icon: "nosign", value: "5", label: "Blocked Attempts", color: .red)
-                            statCard(icon: "timer", value: "35m", label: "Longest Session", color: .white.opacity(0.5))
+                            StatCard(icon: "hand.tap.fill", value: "42", label: "Pickups", color: .white.opacity(0.5))
+                            StatCard(icon: "nosign", value: "5", label: "Blocked Attempts", color: .red)
+                            StatCard(icon: "timer", value: "35m", label: "Longest Session", color: .white.opacity(0.5))
                             
                             // Progress Card
                             VStack(alignment: .leading, spacing: 12) {
@@ -307,34 +307,6 @@ struct AppUsageDetailView: View {
                 .font(.system(size: 10, weight: isHighlight ? .bold : .medium, design: .default))
                 .foregroundColor(isHighlight ? .white : .white.opacity(0.4))
         }
-    }
-    
-    private func statCard(icon: String, value: String, label: String, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 18))
-                .foregroundColor(color)
-                .frame(width: 32, height: 32)
-                .background(color == .red ? Color.red.opacity(0.2) : Color.white.opacity(0.05))
-                .cornerRadius(8)
-            
-            Text(value)
-                .font(.system(size: 32, weight: .bold, design: .default))
-                .foregroundColor(.white)
-            
-            Text(label)
-                .font(.system(size: 12, weight: .medium, design: .default))
-                .foregroundColor(.white.opacity(0.4))
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .frame(height: 128)
-        .background(Color(red: 0.11, green: 0.18, blue: 0.13))
-        .cornerRadius(24)
-        .overlay(
-            RoundedRectangle(cornerRadius: 24)
-                .stroke(Color.white.opacity(0.05), lineWidth: 1)
-        )
     }
     
     private func weekComparisonBar(day: String, thisWeek: CGFloat, lastWeek: CGFloat, time: String, isToday: Bool = false) -> some View {

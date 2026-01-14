@@ -36,7 +36,16 @@ struct OnboardingScreen7ProcessingReport: View {
             
             // Main content
             VStack(spacing: 0) {
-                // Header with logo
+                // Header with progress
+//                HStack {
+//                    Spacer()
+//                    ProgressIndicatorHeader(currentStep: 6, totalSteps: 10)
+//                    Spacer()
+//                }
+//                .padding(.horizontal, appTheme.spacing.large)
+             //   .padding(.vertical, appTheme.spacing.medium)
+                
+                // Header with logo (commented out)
                 // HStack(spacing: 6) {
                 //     Image(systemName: "smartphone.fill")
                 //         .font(.system(size: 16, weight: .bold))

@@ -58,38 +58,20 @@ struct OnboardingScreen4BehaviorInsight: View {
             
             // Main content
             VStack(spacing: 0) {
-                // Header
-                HStack {
-                    BackButton {
-                        data.currentScreen = 3
+                // Header with back button and centered progress
+                ZStack {
+                    HStack {
+                        BackButton {
+                            data.currentScreen = 3
+                        }
+                        
+                        Spacer()
                     }
                     
-                    Spacer()
-                    
-                    // Progress indicator
-                    HStack(spacing: 4) {
-                        Circle()
-                            .fill(appTheme.colors.primary)
-                            .frame(width: 6, height: 6)
-                        
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(appTheme.colors.primary)
-                            .frame(height: 6)
-                            .frame(maxWidth: 32)
-                        
-                        Circle()
-                            .fill(Color.white.opacity(0.3))
-                            .frame(width: 6, height: 6)
-                        
-                        Circle()
-                            .fill(Color.white.opacity(0.3))
-                            .frame(width: 6, height: 6)
-                    }
-                    
-                    Spacer()
+                    ProgressIndicatorHeader(currentStep: 3, totalSteps: 10)
                 }
                 .padding(.horizontal, appTheme.spacing.large)
-                .padding(.vertical, appTheme.spacing.medium)
+            //    .padding(.vertical, appTheme.spacing.medium)
                 
                 // Title and subtitle
                 VStack(alignment: .leading, spacing: 8) {

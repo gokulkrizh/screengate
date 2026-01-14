@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Reusable Back Button Component
-/// Standard back button for navigation
+/// Liquid glass circle button for navigation
 struct BackButton: View {
     private let appTheme = AppTheme.shared
     
@@ -13,8 +13,7 @@ struct BackButton: View {
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(appTheme.colors.textSecondary)
                 .frame(width: 40, height: 40)
-                .background(Color.white.opacity(0.05))
-                .cornerRadius(10)
+                .glassEffect()
         }
     }
 }

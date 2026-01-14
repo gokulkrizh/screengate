@@ -55,15 +55,18 @@ struct OnboardingScreen2Discovery: View {
             
             // Main content
             VStack(spacing: 0) {
-                // Header with back button
-                HStack {
-                    BackButton {
-                        data.currentScreen = 1
+                // Header with back button and centered progress
+                ZStack {
+                    HStack {
+                        BackButton {
+                            data.currentScreen = 1
+                        }
+                        Spacer()
                     }
-                    Spacer()
+                    
+                    ProgressIndicatorHeader(currentStep: 1, totalSteps: 10)
                 }
                 .padding(.horizontal, appTheme.spacing.large)
-                .padding(.vertical, appTheme.spacing.medium)
                 
                 // Badge and heading (fixed, not scrollable)
                 VStack(alignment: .leading, spacing: appTheme.spacing.medium) {

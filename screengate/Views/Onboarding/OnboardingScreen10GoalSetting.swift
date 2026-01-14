@@ -36,48 +36,20 @@ struct OnboardingScreen10GoalSetting: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header
-                HStack {
-                    Button(action: {
-                        data.currentScreen -= 1
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(.white)
-                            .frame(width: 40, height: 40)
-                            .background(Color.white.opacity(0.1))
-                            .cornerRadius(12)
-                    }
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        data.currentScreen = 100
-                    }) {
-                        Text("Skip")
-                            .font(.system(size: 14, weight: .semibold, design: .default))
-                            .foregroundColor(.white.opacity(0.7))
-                    }
-                }
-                .padding(.vertical, 12)
-                
-                // Progress indicator
-                HStack(spacing: 6) {
-                    ForEach(0..<5, id: \.self) { index in
-                        if index == 3 {
-                            Capsule()
-                                .fill(appTheme.colors.primary)
-                                .frame(height: 6)
-                                .frame(maxWidth: 28)
-                                .shadow(color: appTheme.colors.primary.opacity(0.4), radius: 4)
-                        } else {
-                            Circle()
-                                .fill(Color.white.opacity(0.1))
-                                .frame(width: 6, height: 6)
+                // Header with back button and centered progress
+                ZStack {
+                    HStack {
+                        BackButton {
+                            data.currentScreen -= 1
                         }
+                        
+                        Spacer()
                     }
+                    
+                    ProgressIndicatorHeader(currentStep: 7, totalSteps: 10)
                 }
-                .padding(.vertical, 12)
+                .padding(.horizontal, appTheme.spacing.large)
+          //      .padding(.vertical, 12)
                 
                 // Content
                 ScrollView(.vertical, showsIndicators: false) {

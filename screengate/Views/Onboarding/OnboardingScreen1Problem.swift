@@ -46,11 +46,24 @@ struct OnboardingScreen1Problem: View {
             
             // Main content
             VStack(spacing: 0) {
-                // Progress indicator
-                StepProgressIndicator(currentStep: 0, totalSteps: 10)
+                // Header with back button and centered progress
+                ZStack {
+                    HStack {
+                        BackButton {
+                            // Can't go back from first screen, but keeping for consistency
+                        }
+                        .opacity(0.3)
+                        
+                        Spacer()
+                    }
+                    
+                    ProgressIndicatorHeader(currentStep: 0, totalSteps: 10)
+                }
+                .padding(.horizontal, appTheme.spacing.large)
+               // .padding(.vertical, appTheme.spacing.medium)
                 
                 Spacer()
-                    .frame(height: appTheme.spacing.medium)
+                    .frame(height: appTheme.spacing.small)
                 
                 // Hero Image Area
                 ZStack {

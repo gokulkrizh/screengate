@@ -94,34 +94,25 @@ struct HowScreengateWorksView: View {
                     
                     // Timeline steps (compact)
                     VStack(spacing: 0) {
-                        TimelineStep(
-                            number: 1,
+                        TimelineStepView(
                             icon: "target",
                             title: "Define Your Limits",
                             description: "Set daily caps for specific apps that tend to drain your focus and energy.",
-                            isLast: false,
-                            appTheme: appTheme,
-                            isCompact: true
+                            isLast: false
                         )
                         
-                        TimelineStep(
-                            number: 2,
+                        TimelineStepView(
                             icon: "shield.fill",
                             title: "Deep Focus Mode",
                             description: "We automatically block distracting notifications during your scheduled focus hours.",
-                            isLast: false,
-                            appTheme: appTheme,
-                            isCompact: true
+                            isLast: false
                         )
                         
-                        TimelineStep(
-                            number: 3,
+                        TimelineStepView(
                             icon: "trophy.fill",
                             title: "Reclaim Your Time",
                             description: "Track your daily progress and gradually build healthier digital habits.",
-                            isLast: true,
-                            appTheme: appTheme,
-                            isCompact: true
+                            isLast: true
                         )
                     }
                     .padding(.horizontal, 20)
@@ -143,60 +134,6 @@ struct HowScreengateWorksView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
             }
-        }
-    }
-}
-
-// MARK: - Timeline Step Component
-private struct TimelineStep: View {
-    let number: Int
-    let icon: String
-    let title: String
-    let description: String
-    let isLast: Bool
-    let appTheme: AppTheme
-    let isCompact: Bool
-    
-    var body: some View {
-        HStack(alignment: .top, spacing: 16) {
-            // Timeline connector
-            VStack(spacing: 0) {
-                // Icon circle
-                ZStack {
-                    Circle()
-                        .fill(Color(red: 0.12, green: 0.22, blue: 0.16))
-                        .frame(width: 52, height: 52)
-                    
-                    Image(systemName: icon)
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(appTheme.colors.primary)
-                }
-                
-                // Connecting line
-                if !isLast {
-                    Rectangle()
-                        .fill(Color.gray.opacity(0.2))
-                        .frame(width: 1.5)
-                        .frame(height: 60)
-                }
-            }
-            
-            // Content
-            VStack(alignment: .leading, spacing: 8) {
-                Text(title)
-                    .font(.system(size: 18, weight: .semibold, design: .default))
-                    .foregroundColor(.white)
-                
-                Text(description)
-                    .font(.system(size: 14, weight: .regular, design: .default))
-                    .foregroundColor(Color.gray.opacity(0.7))
-                    .lineSpacing(3)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(.top, 8)
-            .padding(.bottom, isLast ? 0 : 8)
-            
-            Spacer()
         }
     }
 }

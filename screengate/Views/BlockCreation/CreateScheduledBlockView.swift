@@ -49,24 +49,11 @@ struct CreateScheduledBlockView: View {
                     VStack(alignment: .leading, spacing: 24) {
                         // Block Name
                         VStack(alignment: .leading, spacing: 12) {
-                            HStack(spacing: 12) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color(red: 0.15, green: 0.12, blue: 0.1))
-                                        .frame(width: 56, height: 56)
-                                    
-                                    Image(systemName: "timer")
-                                        .font(.system(size: 24, weight: .semibold))
-                                        .foregroundColor(appTheme.colors.primary)
-                                }
-                                
-                                TextField("Social Media Focus", text: $blockName)
-                                    .font(.system(size: 18, weight: .semibold, design: .default))
-                                    .foregroundColor(.white)
-                                    .padding()
-                                    .background(Color(red: 0.09, green: 0.16, blue: 0.12))
-                                    .cornerRadius(12)
-                            }
+                            BlockNameTextField(
+                                text: $blockName,
+                                icon: "timer",
+                                placeholder: "Social Media Focus"
+                            )
                         }
                         .padding(.horizontal, 20)
                         .padding(.top, 12)
@@ -146,14 +133,13 @@ struct CreateScheduledBlockView: View {
                                 .foregroundColor(.white)
                             
                             // Start Time
-                            Button(action: { showStartTimePicker = true }) {
-                                timeCard(
-                                    icon: "sun.max.fill",
-                                    iconColor: appTheme.colors.primary,
-                                    label: "START TIME",
-                                    time: formatTime(startTime)
-                                )
-                            }
+                            TimeCard(
+                                icon: "sun.max.fill",
+                                iconColor: appTheme.colors.primary,
+                                label: "START TIME",
+                                time: formatTime(startTime),
+                                action: { showStartTimePicker = true }
+                            )
                             
                             // Connector line
                             Rectangle()
@@ -162,14 +148,13 @@ struct CreateScheduledBlockView: View {
                                 .frame(maxWidth: .infinity)
                             
                             // End Time
-                            Button(action: { showEndTimePicker = true }) {
-                                timeCard(
-                                    icon: "moon.fill",
-                                    iconColor: Color.blue,
-                                    label: "END TIME",
-                                    time: formatTime(endTime)
-                                )
-                            }
+                            TimeCard(
+                                icon: "moon.fill",
+                                iconColor: Color.blue,
+                                label: "END TIME",
+                                time: formatTime(endTime),
+                                action: { showEndTimePicker = true }
+                            )
                         }
                         .padding(.horizontal, 20)
                         
@@ -188,7 +173,7 @@ struct CreateScheduledBlockView: View {
                                             selectedDays.insert(day)
                                         }
                                     }) {
-                                        dayButton(day: dayLabel(day), isSelected: selectedDays.contains(day))
+                                        DayButton(day: dayLabel(day), isSelected: selectedDays.contains(day))
                                     }
                                 }
                             }
@@ -202,28 +187,34 @@ struct CreateScheduledBlockView: View {
                                 .foregroundColor(.white)
                             
                             VStack(spacing: 12) {
-                                strictModeCard(
+                                StrictModeCard(
                                     mode: .easy,
                                     icon: "cup.and.saucer.fill",
                                     iconColor: appTheme.colors.primary,
                                     title: "Easy",
-                                    description: "Allow short breaks after limit"
+                                    description: "Allow short breaks after limit",
+                                    isSelected: strictMode == .easy,
+                                    action: { strictMode = .easy }
                                 )
                                 
-                                strictModeCard(
+                                StrictModeCard(
                                     mode: .medium,
                                     icon: "timer",
                                     iconColor: Color(red: 1.0, green: 0.8, blue: 0.0),
                                     title: "Medium",
-                                    description: "15s breathing delay on open"
+                                    description: "15s breathing delay on open",
+                                    isSelected: strictMode == .medium,
+                                    action: { strictMode = .medium }
                                 )
                                 
-                                strictModeCard(
+                                StrictModeCard(
                                     mode: .hard,
                                     icon: "lock.fill",
                                     iconColor: Color(red: 1.0, green: 0.4, blue: 0.4),
                                     title: "Hard",
-                                    description: "Strict cutoff. No entry after limit."
+                                    description: "Strict cutoff. No entry after limit.",
+                                    isSelected: strictMode == .hard,
+                                    action: { strictMode = .hard }
                                 )
                             }
                         }
@@ -265,114 +256,10 @@ struct CreateScheduledBlockView: View {
         }
     }
     
-    private func timeCard(icon: String, iconColor: Color, label: String, time: String) -> some View {
-        HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(iconColor.opacity(0.2))
-                    .frame(width: 40, height: 40)
-                
-                Image(systemName: icon)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(iconColor)
-            }
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(label)
-                    .font(.system(size: 11, weight: .semibold, design: .default))
-                    .foregroundColor(.white.opacity(0.5))
-                    .tracking(0.5)
-                
-                Text(time)
-                    .font(.system(size: 20, weight: .bold, design: .default))
-                    .foregroundColor(.white)
-            }
-            
-            Spacer()
-            
-            Image(systemName: "chevron.down")
-                .font(.system(size: 16))
-                .foregroundColor(.white.opacity(0.4))
-        }
-        .padding(16)
-        .background(Color(red: 0.09, green: 0.16, blue: 0.12))
-        .cornerRadius(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.white.opacity(0.05), lineWidth: 1)
-        )
-    }
-    
-    private func dayLabel(_ day: Int) -> String {
-        ["M", "T", "W", "T", "F", "S", "S"][day - 1]
-    }
-    
     private func formatTime(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "hh:mm a"
         return formatter.string(from: date).uppercased()
-    }
-    
-    private func dayButton(day: String, isSelected: Bool) -> some View {
-        Text(day)
-            .font(.system(size: 14, weight: .bold, design: .default))
-            .foregroundColor(isSelected ? Color(red: 0.06, green: 0.13, blue: 0.09) : .white.opacity(0.4))
-            .frame(width: 40, height: 40)
-            .background(isSelected ? appTheme.colors.primary : Color.white.opacity(0.1))
-            .cornerRadius(20)
-            .shadow(color: isSelected ? appTheme.colors.primary.opacity(0.4) : Color.clear, radius: 8, x: 0, y: 0)
-    }
-    
-    private func strictModeCard(mode: StrictMode, icon: String, iconColor: Color, title: String, description: String) -> some View {
-        Button(action: { strictMode = mode }) {
-            HStack(spacing: 16) {
-                // Icon
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(red: 0.15, green: 0.12, blue: 0.1))
-                        .frame(width: 56, height: 56)
-                    
-                    Image(systemName: icon)
-                        .font(.system(size: 24, weight: .semibold))
-                        .foregroundColor(iconColor)
-                }
-                
-                // Text
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(.system(size: 18, weight: .bold, design: .default))
-                        .foregroundColor(.white)
-                    
-                    Text(description)
-                        .font(.system(size: 14, weight: .regular, design: .default))
-                        .foregroundColor(.white.opacity(0.6))
-                        .multilineTextAlignment(.leading)
-                }
-                
-                Spacer()
-                
-                // Radio Button
-                ZStack {
-                    Circle()
-                        .stroke(strictMode == mode ? appTheme.colors.primary : Color.white.opacity(0.3), lineWidth: 2)
-                        .frame(width: 24, height: 24)
-                    
-                    if strictMode == mode {
-                        Circle()
-                            .fill(appTheme.colors.primary)
-                            .frame(width: 16, height: 16)
-                    }
-                }
-            }
-            .padding(16)
-            .background(Color(red: 0.09, green: 0.16, blue: 0.12))
-            .cornerRadius(16)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(strictMode == mode ? appTheme.colors.primary : Color.white.opacity(0.1), lineWidth: strictMode == mode ? 2 : 1)
-            )
-        }
-        .buttonStyle(PlainButtonStyle())
     }
 }
 

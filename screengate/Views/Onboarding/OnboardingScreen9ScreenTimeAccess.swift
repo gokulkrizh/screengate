@@ -33,6 +33,15 @@ struct OnboardingScreen9ScreenTimeAccess: View {
             
             // Main content
             VStack(spacing: 0) {
+                // Header with progress
+                HStack {
+                    Spacer()
+                    ProgressIndicatorHeader(currentStep: 6, totalSteps: 10)
+                    Spacer()
+                }
+                .padding(.horizontal, appTheme.spacing.large)
+         //       .padding(.vertical, appTheme.spacing.medium)
+                
                 // Top spacing
                 VStack(spacing: 24) {
                     // Icon with glow

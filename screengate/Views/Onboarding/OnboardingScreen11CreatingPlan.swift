@@ -36,6 +36,15 @@ struct OnboardingScreen11CreatingPlan: View {
             
             // Main content
             VStack(spacing: 0) {
+                // Header with progress
+//                HStack {
+//                    Spacer()
+//                    ProgressIndicatorHeader(currentStep: 8, totalSteps: 10)
+//                    Spacer()
+//                }
+//                .padding(.horizontal, appTheme.spacing.large)
+          //      .padding(.vertical, appTheme.spacing.medium)
+                
                 Spacer()
                 
                 // Animated loading circle

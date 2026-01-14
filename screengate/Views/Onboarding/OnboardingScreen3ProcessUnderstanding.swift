@@ -55,15 +55,19 @@ struct OnboardingScreen3ProcessUnderstanding: View {
             
             // Main content
             VStack(spacing: 0) {
-                // Header with back button
-                HStack {
-                    BackButton {
-                        data.currentScreen = 2
+                // Header with back button and centered progress
+                ZStack {
+                    HStack {
+                        BackButton {
+                            data.currentScreen = 2
+                        }
+                        Spacer()
                     }
-                    Spacer()
+                    
+                    ProgressIndicatorHeader(currentStep: 2, totalSteps: 10)
                 }
                 .padding(.horizontal, appTheme.spacing.large)
-                .padding(.vertical, appTheme.spacing.medium)
+              //  .padding(.vertical, appTheme.spacing.medium)
                 
                 // Title and subtitle (fixed, not scrollable)
                 VStack(alignment: .center, spacing: appTheme.spacing.medium) {

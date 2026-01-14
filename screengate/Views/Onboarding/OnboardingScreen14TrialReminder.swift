@@ -26,23 +26,14 @@ struct OnboardingScreen14TrialReminder: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Progress indicators
-                HStack(spacing: 8) {
-                    ForEach(0..<3, id: \.self) { index in
-                        if index == 1 {
-                            Capsule()
-                                .fill(appTheme.colors.primary)
-                                .frame(height: 6)
-                                .shadow(color: appTheme.colors.primary.opacity(0.6), radius: 4)
-                        } else {
-                            Capsule()
-                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                                .frame(height: 6)
-                        }
-                    }
+                // Header with progress
+                HStack {
+                    Spacer()
+                    ProgressIndicatorHeader(currentStep: 13, totalSteps: 10)
+                    Spacer()
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 16)
+                .padding(.horizontal, appTheme.spacing.large)
+         //       .padding(.vertical, appTheme.spacing.medium)
                 
                 // Content
                 ScrollView(.vertical, showsIndicators: false) {

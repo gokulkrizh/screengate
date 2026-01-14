@@ -49,15 +49,19 @@ struct OnboardingScreen6Age: View {
             
             // Main content
             VStack(spacing: 0) {
-                // Header
-                HStack {
-                    BackButton {
-                        data.currentScreen = 5
+                // Header with back button and centered progress
+                ZStack {
+                    HStack {
+                        BackButton {
+                            data.currentScreen = 5
+                        }
+                        Spacer()
                     }
-                    Spacer()
+                    
+                    ProgressIndicatorHeader(currentStep: 5, totalSteps: 10)
                 }
                 .padding(.horizontal, appTheme.spacing.large)
-                .padding(.vertical, appTheme.spacing.medium)
+            //    .padding(.vertical, appTheme.spacing.medium)
                 
                 // Title
                 VStack(alignment: .leading, spacing: 8) {
@@ -84,59 +88,18 @@ struct OnboardingScreen6Age: View {
                             .font(.system(size: 20, weight: .medium))
                             .foregroundColor(appTheme.colors.textSecondary)
                         
-                        // Age Wheel
-                        GeometryReader { geometry in
-                            ScrollViewReader { proxy in
-                                ScrollView(.vertical, showsIndicators: false) {
-                                    VStack(spacing: 0) {
-                                        // Top padding
-                                        Color.clear.frame(height: 96)
-                                        
-                                        // Age options
-                                        ForEach(ageRange, id: \.self) { age in
-                                            VStack {
-                                                Text("\(age)")
-                                                    .font(.system(size: selectedAge == age ? 56 : 32, weight: selectedAge == age ? .bold : .semibold))
-                                                    .foregroundColor(selectedAge == age ? appTheme.colors.primary : appTheme.colors.textSecondary)
-                                                    .frame(height: 64)
-                                                    .scaleEffect(selectedAge == age ? 1.0 : 0.7)
-                                                    .opacity(selectedAge == age ? 1.0 : 0.4)
-                                            }
-                                            .id(age)
-                                        }
-                                        
-                                        // Bottom padding
-                                        Color.clear.frame(height: 96)
-                                    }
-                                }
-                                .scrollTargetBehavior(.viewAligned)
-                                .onScrollGeometryChange(for: CGFloat.self) { geometry in
-                                    geometry.contentOffset.y
-                                } action: { oldValue, newValue in
-                                    let offset = newValue
-                                    let itemHeight: CGFloat = 64
-                                    let index = Int(round(offset / itemHeight))
-                                    let age = ageRange.lowerBound + index
-                                    if ageRange.contains(age) {
-                                        selectedAge = age
-                                    }
-                                }
-                                .onAppear {
-                                    proxy.scrollTo(selectedAge, anchor: .center)
-                                }
+                        Picker("Age", selection: $selectedAge) {
+                            ForEach(ageRange, id: \.self) { age in
+                                Text("\(age)")
+                                    .font(.system(size: age == selectedAge ? 36 : 28, weight: age == selectedAge ? .bold : .semibold))
+                                    .foregroundColor(appTheme.colors.primary)
+                                    .scaleEffect(age == selectedAge ? 1.0 : 0.7)
+                                    .opacity(age == selectedAge ? 1.0 : 0.4)
+                                    .tag(age)
                             }
                         }
-                        .frame(width: 80)
-                        .frame(height: 256)
-                        .mask(
-                            VStack(spacing: 0) {
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color.clear, Color.black, Color.black, Color.clear]),
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            }
-                        )
+                        .pickerStyle(.wheel)
+                        .frame(width: 100, height: 200)
                         
                         Text("years old.")
                             .font(.system(size: 20, weight: .medium))
