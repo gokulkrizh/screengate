@@ -11,37 +11,6 @@ struct HowScreengateWorksView: View {
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header
-                HStack {
-                    Spacer()
-                    
-                    // Page indicators
-                    HStack(spacing: 6) {
-                        Circle()
-                            .fill(Color.gray.opacity(0.4))
-                            .frame(width: 6, height: 6)
-                        
-                        Capsule()
-                            .fill(appTheme.colors.primary)
-                            .frame(width: 24, height: 6)
-                        
-                        Circle()
-                            .fill(Color.gray.opacity(0.4))
-                            .frame(width: 6, height: 6)
-                    }
-                    
-                    Spacer()
-                    
-                    // Skip button
-                    Button(action: { dismiss() }) {
-                        Text("Skip")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color.gray)
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 20)
                 
                 // Compact content layout
                 VStack(spacing: 16) {
@@ -83,6 +52,7 @@ struct HowScreengateWorksView: View {
                     }
                     .frame(height: 280)
                     .padding(.horizontal, 20)
+                    .padding(.top, 40)
                     
                     // Headline (compact)
                     Text("How Screendiet Works")

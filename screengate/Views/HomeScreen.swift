@@ -76,19 +76,22 @@ struct HomeScreen: View {
                         Image(systemName: "info.circle")
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.white)
+                            .glassEffect()
+                            
                     }
                     
                     Button(action: {}) {
                         Image(systemName: "gear")
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.white)
+                            .glassEffect()
                     }
                 }
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
             .sheet(isPresented: $showHowItWorks) {
-                HowScreengateWorksView()
+                HowScreengateWorksView().presentationDragIndicator(.visible)
             }
             
             // Content
