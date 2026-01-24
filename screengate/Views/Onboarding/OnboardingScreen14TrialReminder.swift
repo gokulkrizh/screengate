@@ -150,13 +150,14 @@ struct OnboardingScreen14TrialReminder: View {
                 if let error = error {
                     print("Notification authorization error: \(error)")
                 }
-                
+
                 if granted {
                     print("Notification permission granted")
                 }
-                
-                // Move to next screen regardless of permission result
-                data.currentScreen += 1
+
+                // Save user's notification preference and complete onboarding to navigate to Home
+                data.notificationsEnabled = granted
+                data.completeOnboarding()
                 isRequestingNotifications = false
             }
         }
