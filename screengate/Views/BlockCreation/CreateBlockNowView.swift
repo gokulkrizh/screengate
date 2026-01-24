@@ -5,11 +5,11 @@ struct CreateBlockNowView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(BlockManager.self) private var blockManager
     
-    @State private var blockName = ""
+    @State private var blockName = "Focus Session"
     @State private var selectedHours = 0
-    @State private var selectedMinutes = 20
+    @State private var selectedMinutes = 5
     @State private var strictMode: StrictMode = .medium
-    @State private var selectedPreset: Int? = 25
+    @State private var selectedPreset: Int? = nil
     @State private var showDurationPicker = false
     @State private var showActivityPicker = false
     @State private var activitySelection: FamilyActivitySelection = FamilyActivitySelection()
@@ -17,6 +17,13 @@ struct CreateBlockNowView: View {
     @State private var isCreating = false
     
     private let appTheme = AppTheme.shared
+    
+    private var isButtonEnabled: Bool {
+        !isCreating && 
+        !blockName.trimmingCharacters(in: .whitespaces).isEmpty && 
+        !activitySelection.applicationTokens.isEmpty &&
+        (selectedHours > 0 || selectedMinutes > 0)
+    }
     
     var body: some View {
         ZStack {
@@ -294,10 +301,10 @@ struct CreateBlockNowView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
-                .background(appTheme.colors.primary)
+                .background(isButtonEnabled ? appTheme.colors.primary : appTheme.colors.primary.opacity(0.5))
                 .cornerRadius(12)
-                .shadow(color: appTheme.colors.primary.opacity(0.25), radius: 12, x: 0, y: 0)
-                .disabled(isCreating || blockName.isEmpty || activitySelection.applicationTokens.isEmpty)
+                .shadow(color: isButtonEnabled ? appTheme.colors.primary.opacity(0.25) : Color.clear, radius: 12, x: 0, y: 0)
+                .disabled(!isButtonEnabled)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
             }
@@ -322,7 +329,7 @@ struct CreateBlockNowView: View {
     
     @MainActor
     private func createBlockNow() async {
-        guard !blockName.isEmpty else {
+        guard !blockName.trimmingCharacters(in: .whitespaces).isEmpty else {
             error = "Please enter a block name"
             return
         }
@@ -332,7 +339,13 @@ struct CreateBlockNowView: View {
             return
         }
         
+        guard (selectedHours > 0 || selectedMinutes > 0) else {
+            error = "Please set a duration greater than 0"
+            return
+        }
+        
         isCreating = true
+        defer { isCreating = false }
         
         let duration = TimeInterval((selectedHours * 3600) + (selectedMinutes * 60))
         let schedule = Block.BlockSchedule(
@@ -356,12 +369,13 @@ struct CreateBlockNowView: View {
         do {
             try blockManager.createBlock(block)
             try await blockManager.activateBlock(block)
-            dismiss()
+            DispatchQueue.main.async {
+                dismiss()
+            }
         } catch {
-            self.error = error.localizedDescription
+            print("Error creating block: \(error)")
+            self.error = "Failed to create block: \(error.localizedDescription)"
         }
-        
-        isCreating = false
     }
     
     private func presetButton(_ minutes: Int, selected: Bool) -> some View {
