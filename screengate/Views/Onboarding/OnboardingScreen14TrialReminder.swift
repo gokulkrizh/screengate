@@ -35,87 +35,84 @@ struct OnboardingScreen14TrialReminder: View {
                 .padding(.top, appTheme.spacing.large)
 
                 // Content
-                GeometryReader { geometry in
-                    ScrollView(.vertical, showsIndicators: false) {
-                        
-                        VStack(spacing: 50) {
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 50) {
+                        // Timeline
+                        HStack(alignment: .top) {
+                            Spacer()
                             
-                            // Timeline
-                            HStack {
-                                Spacer()
+                            // Timeline items with dynamic line overlay
+                            VStack(spacing: 40) {
+                                // Day 0: Today
+                                TimelineItemView(
+                                    icon: "lock.open.fill",
+                                    title: "Today",
+                                    subtitle: "Start free 7-day trial",
+                                    isActive: false,
+                                    isCompleted: true
+                                ).padding(.leading, 5)
                                 
-                                ZStack(alignment: .topLeading) {
-                                // Vertical connector line (behind items)
-                                VStack(spacing: 30) {
-                                    // Spacer for first item height (56) + spacing (28)
-                                    Spacer()
-                                        .frame(height: 55)
-                                    
-                                    // Gradient line (increased height)
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            appTheme.colors.primary,
-                                            appTheme.colors.primary.opacity(0.4),
-                                            Color.white.opacity(0.1)
-                                        ]),
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    )
-                                    .frame(width: 2, height: 270)
-                                }
-                                .padding(.leading, 48)
-                                
-                                // Timeline items
-                                VStack(spacing: 40) {
-                                    // Day 0: Today
+                                // Day 5: Reminder
+                                VStack(alignment: .leading, spacing: 22) {
                                     TimelineItemView(
-                                        icon: "lock.open.fill",
-                                        title: "Today",
-                                        subtitle: "Start free 7-day trial",
-                                        isActive: false,
-                                        isCompleted: true
-                                    )
-                                    
-                                    // Day 5: Reminder
-                                    VStack(alignment: .leading, spacing: 22) {
-                                        TimelineItemView(
-                                            icon: "bell.fill",
-                                            title: "Day 5",
-                                            subtitle: "We'll remind you",
-                                            isActive: true,
-                                            isCompleted: false
-                                        )
-                                        
-                                        // Notification preview card
-                                        NotificationPreviewCard(
-                                            title: "Trial Ending Soon",
-                                            message: "Your trial ends in 2 days. Cancel now if you don't want to be charged."
-                                        )
-                                        .padding(.leading, 48)
-                                    }
-                                    
-                                    // Day 7: Subscription begins
-                                    TimelineItemView(
-                                        icon: "star.fill",
-                                        title: "Day 7",
-                                        subtitle: "Premium subscription begins",
-                                        isActive: false,
+                                        icon: "bell.fill",
+                                        title: "Day 5",
+                                        subtitle: "We'll remind you",
+                                        isActive: true,
                                         isCompleted: false
                                     )
+                                    
+                                    // Notification preview card
+                                    NotificationPreviewCard(
+                                        title: "Trial Ending Soon",
+                                        message: "Your trial ends in 2 days. Cancel now if you don't want to be charged."
+                                    )
+                                    .padding(.leading, 48)
                                 }
-                                .padding(.horizontal, 20)
-                                .padding(.top, 20)
+                                
+                                // Day 7: Subscription begins
+                                TimelineItemView(
+                                    icon: "star.fill",
+                                    title: "Day 7",
+                                    subtitle: "Premium subscription begins",
+                                    isActive: false,
+                                    isCompleted: false
+                                ).padding(.leading, 5)
                             }
-                            
-                            Spacer()
+                            .padding(.horizontal, 20)
+                            .padding(.top, 20)
+                            .background(
+                                // Dynamic vertical line using GeometryReader
+                                GeometryReader { geo in
+                                    VStack(spacing: 0) {
+                                        // Offset to start below first item
+                                        Color.clear
+                                            .frame(height: 65)
+                                        
+                                        // Dynamic line that extends to second-to-last item
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [
+                                                appTheme.colors.primary,
+                                                appTheme.colors.primary.opacity(0.4),
+                                                Color.white.opacity(0.1)
+                                            ]),
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
+                                        .frame(width: 2)
+                                        .frame(maxHeight: geo.size.height - 65 - 48)
+                                    }
+                                    .frame(width: 2)
+                                    .offset(x: 47)
+                                }
+                            )
                         }
                         
-                        }
-                        .padding(.bottom, 32)
-                        .frame(maxWidth: .infinity, minHeight: geometry.size.height)
+                        Spacer(minLength: 100)
                     }
-                    .scrollDisabled(true)
+                    .padding(.bottom, 32)
                 }
+                .scrollDisabled(true)
 
                 BottomGradientContainer {
                     VStack(spacing: 8) {

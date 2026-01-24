@@ -14,8 +14,8 @@ struct GoalCheckbox: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(title)
-                        .font(.system(size: 16, weight: .bold, design: .default))
-                        .foregroundColor(.white)
+                        .font(appTheme.fonts.titleMedium)
+                        .foregroundColor(appTheme.colors.text)
                 }
                 
                 Spacer()

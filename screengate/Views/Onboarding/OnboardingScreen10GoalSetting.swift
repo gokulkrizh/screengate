@@ -24,81 +24,45 @@ struct OnboardingScreen10GoalSetting: View {
                 .ignoresSafeArea()
             
             // Decorative gradient blobs
-            VStack {
-                HStack {
-                    VStack(spacing: 0) {
-                        Circle()
-                            .fill(appTheme.colors.primary.opacity(0.05))
-                            .blur(radius: 120)
-                            .frame(width: 320, height: 320)
-                        Spacer()
-                    }
-                    .offset(x: 120, y: -100)
-                    
-                    Spacer()
-                }
-                
-                Spacer()
-                
-                HStack {
-                    Spacer()
-                    VStack {
-                        Spacer()
-                        Circle()
-                            .fill(appTheme.colors.primary.opacity(0.08))
-                            .blur(radius: 100)
-                            .frame(width: 280, height: 280)
-                    }
-                    .offset(x: 80, y: 80)
-                }
-            }
-            .ignoresSafeArea()
+            DecorativeGradientBlobs()
             
+            // Main content
             VStack(spacing: 0) {
                 // Header with back button and centered progress
-                ZStack {
-                    HStack {
-                        BackButton {
-                            data.currentScreen -= 1
-                        }
-                        
-                        Spacer()
-                    }
-                    
-                    ProgressIndicatorHeader(currentStep: 7, totalSteps: 10)
+                OnboardingHeader(
+                    currentStep: 7,
+                    totalSteps: 10
+                ) {
+                    data.currentScreen -= 1
                 }
-                .padding(.horizontal, 0)
-               // .padding(.vertical, 12)
                 
-                // Content
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 20) {
-                        // Title and description
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("What would success look like for you?")
-                                .font(appTheme.fonts.displaySmall)
-                                .foregroundColor(appTheme.colors.text)
-                                .lineLimit(3)
-                            
-                            Text("Select all that apply to personalize your journey.")
-                                .font(appTheme.fonts.bodyLarge)
-                                .foregroundColor(appTheme.colors.textSecondary)
-                        }
-                        .padding(.top, 12)
-                        
-                        // Goal options
-                        VStack(spacing: 12) {
-                            ForEach(predefinedGoals, id: \.id) { goal in
-                                GoalCheckbox(
-                                    id: goal.id,
-                                    title: goal.title,
-                                    isSelected: selectedGoals.contains(goal.id)
-                                ) {
-                                    if selectedGoals.contains(goal.id) {
-                                        selectedGoals.remove(goal.id)
-                                    } else {
-                                        selectedGoals.insert(goal.id)
-                                    }
+                // Title and subtitle (fixed, not scrollable)
+                VStack(alignment: .leading, spacing: appTheme.spacing.medium) {
+                    Text("What would success look like for you?")
+                        .font(appTheme.fonts.displaySmall)
+                        .foregroundColor(appTheme.colors.text)
+                    
+                    Text("Select all that apply to personalize your journey.")
+                        .font(appTheme.fonts.bodyLarge)
+                        .foregroundColor(appTheme.colors.textSecondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, appTheme.spacing.large)
+                .padding(.vertical, appTheme.spacing.large)
+                
+                // Scrollable options
+                ScrollView {
+                    VStack(spacing: 12) {
+                        ForEach(predefinedGoals, id: \.id) { goal in
+                            GoalCheckbox(
+                                id: goal.id,
+                                title: goal.title,
+                                isSelected: selectedGoals.contains(goal.id)
+                            ) {
+                                if selectedGoals.contains(goal.id) {
+                                    selectedGoals.remove(goal.id)
+                                } else {
+                                    selectedGoals.insert(goal.id)
                                 }
                             }
                         }
@@ -119,25 +83,33 @@ struct OnboardingScreen10GoalSetting: View {
                             .border(Color.white.opacity(0.1), width: 0.5)
                             .cornerRadius(12)
                         }
-                        .padding(.bottom, 32)
                     }
-                   //.padding(.horizontal, 20)
+                    .padding(.horizontal, appTheme.spacing.large)
+                    .padding(.bottom, 140)
+                    .padding(.top, appTheme.spacing.small)
                 }
                 
                 Spacer()
+            }
+            .zIndex(10)
+            
+            // Bottom button
+            VStack(spacing: 0) {
+                Spacer()
                 
-                // Continue button
-                VStack(spacing: 12) {
-                    PrimaryButton(
-                        title: "Continue",
-                        action: {
+                BottomGradientContainer {
+                    VStack(spacing: appTheme.spacing.medium) {
+                        PrimaryButton(
+                            title: "Continue"
+                        ) {
                             data.currentScreen += 1
                         }
-                    )
+                    }
+                    .padding(.horizontal, appTheme.spacing.large)
                 }
-                .padding(.vertical, 20)
             }
-            .padding(.horizontal, 24)
+            .zIndex(20)
+            .ignoresSafeArea(.keyboard)
         }
     }
 }
