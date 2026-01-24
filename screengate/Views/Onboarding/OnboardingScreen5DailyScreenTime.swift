@@ -22,51 +22,17 @@ struct OnboardingScreen5DailyScreenTime: View {
                 .ignoresSafeArea()
             
             // Decorative gradient blobs
-            VStack {
-                HStack {
-                    VStack(spacing: 0) {
-                        Circle()
-                            .fill(appTheme.colors.primary.opacity(0.05))
-                            .blur(radius: 120)
-                            .frame(width: 320, height: 320)
-                        Spacer()
-                    }
-                    .offset(x: 120, y: -100)
-                    
-                    Spacer()
-                }
-                
-                Spacer()
-                
-                HStack {
-                    Spacer()
-                    VStack {
-                        Spacer()
-                        Circle()
-                            .fill(appTheme.colors.primary.opacity(0.08))
-                            .blur(radius: 100)
-                            .frame(width: 280, height: 280)
-                    }
-                    .offset(x: 80, y: 80)
-                }
-            }
-            .ignoresSafeArea()
+            DecorativeGradientBlobs()
             
             // Main content
             VStack(spacing: 0) {
                 // Header with back button and centered progress
-                ZStack {
-                    HStack {
-                        BackButton {
-                            data.currentScreen = 4
-                        }
-                        
-                        Spacer()
-                    }   
-                    
-                    ProgressIndicatorHeader(currentStep: 4, totalSteps: 10)
+                OnboardingHeader(
+                    currentStep: 4,
+                    totalSteps: 10
+                ) {
+                    data.currentScreen = 4
                 }
-                .padding(.horizontal, appTheme.spacing.large)
                 .padding(.bottom, appTheme.spacing.medium)
 
                 // Title and subtitle
@@ -116,18 +82,7 @@ struct OnboardingScreen5DailyScreenTime: View {
             VStack(spacing: 0) {
                 Spacer()
                 
-                VStack(spacing: 0) {
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color.clear,
-                            Color(red: 0.06, green: 0.13, blue: 0.09),
-                            Color(red: 0.06, green: 0.13, blue: 0.09)
-                        ]),
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .frame(height: 20)
-                    
+                BottomGradientContainer {
                     VStack(spacing: appTheme.spacing.medium) {
                         PrimaryButton(
                             title: "Continue",
@@ -137,10 +92,7 @@ struct OnboardingScreen5DailyScreenTime: View {
                         }
                     }
                     .padding(.horizontal, appTheme.spacing.large)
-                   // .padding(.bottom, appTheme.spacing.large)
-                    .background(Color(red: 0.06, green: 0.13, blue: 0.09))
                 }
-                .zIndex(20)
             }
             .zIndex(20)
             .ignoresSafeArea(.keyboard)

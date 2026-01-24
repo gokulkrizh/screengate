@@ -89,11 +89,17 @@ struct OnboardingScreen10GoalSetting: View {
                         // Goal options
                         VStack(spacing: 12) {
                             ForEach(predefinedGoals, id: \.id) { goal in
-                                goalCheckbox(
+                                GoalCheckbox(
                                     id: goal.id,
                                     title: goal.title,
                                     isSelected: selectedGoals.contains(goal.id)
-                                )
+                                ) {
+                                    if selectedGoals.contains(goal.id) {
+                                        selectedGoals.remove(goal.id)
+                                    } else {
+                                        selectedGoals.insert(goal.id)
+                                    }
+                                }
                             }
                         }
                         
@@ -132,53 +138,6 @@ struct OnboardingScreen10GoalSetting: View {
                 .padding(.vertical, 20)
             }
             .padding(.horizontal, 24)
-        }
-    }
-    
-    // MARK: - Goal Checkbox Component
-    private func goalCheckbox(id: String, title: String, isSelected: Bool) -> some View {
-        Button(action: {
-            if selectedGoals.contains(id) {
-                selectedGoals.remove(id)
-            } else {
-                selectedGoals.insert(id)
-            }
-        }) {
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 0) {
-                    Text(title)
-                        .font(.system(size: 16, weight: .bold, design: .default))
-                        .foregroundColor(.white)
-                }
-                
-                Spacer()
-                
-                // Checkbox circle
-                Circle()
-                    .fill(isSelected ? appTheme.colors.primary : Color.white.opacity(0.1))
-                    .frame(width: 24, height: 24)
-                    .overlay(
-                        isSelected ?
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(Color(red: 0.06, green: 0.13, blue: 0.09))
-                        : nil
-                    )
-                    .scaleEffect(isSelected ? 1.1 : 1.0)
-            }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.white.opacity(isSelected ? 0.1 : 0.05))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(
-                                isSelected ? appTheme.colors.primary : Color.white.opacity(0.1),
-                                lineWidth: 1.5
-                            )
-                    )
-            )
-            .cornerRadius(12)
         }
     }
 }

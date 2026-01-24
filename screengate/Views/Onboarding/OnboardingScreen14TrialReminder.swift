@@ -14,16 +14,7 @@ struct OnboardingScreen14TrialReminder: View {
                 .ignoresSafeArea()
             
             // Decorative gradient blob
-            VStack {
-                Circle()
-                    .fill(appTheme.colors.primary.opacity(0.08))
-                    .blur(radius: 150)
-                //    .frame(width: 500, height: 500)
-                    .offset(y: -150)
-                
-                Spacer()
-            }
-            .ignoresSafeArea()
+            DecorativeGradientBlobs()
             
             VStack {
                 // Title and description
@@ -77,7 +68,7 @@ struct OnboardingScreen14TrialReminder: View {
                                 // Timeline items
                                 VStack(spacing: 40) {
                                     // Day 0: Today
-                                    timelineItem(
+                                    TimelineItemView(
                                         icon: "lock.open.fill",
                                         title: "Today",
                                         subtitle: "Start free 7-day trial",
@@ -87,7 +78,7 @@ struct OnboardingScreen14TrialReminder: View {
                                     
                                     // Day 5: Reminder
                                     VStack(alignment: .leading, spacing: 22) {
-                                        timelineItem(
+                                        TimelineItemView(
                                             icon: "bell.fill",
                                             title: "Day 5",
                                             subtitle: "We'll remind you",
@@ -96,52 +87,15 @@ struct OnboardingScreen14TrialReminder: View {
                                         )
                                         
                                         // Notification preview card
-                                        VStack(alignment: .leading, spacing: 10) {
-                                            HStack(spacing: 12) {
-                                                // App icon
-                                                RoundedRectangle(cornerRadius: 8)
-                                                    .fill(appTheme.colors.primary)
-                                                    .frame(width: 40, height: 40)
-                                                    .overlay(
-                                                        Image(systemName: "smartphone.fill")
-                                                            .font(.system(size: 16, weight: .semibold))
-                                                            .foregroundColor(Color(red: 0.06, green: 0.13, blue: 0.09))
-                                                    )
-                                                
-                                                VStack(alignment: .leading, spacing: 4) {
-                                                    HStack(spacing: 8) {
-                                                        Text("SCREENDIET")
-                                                            .font(.system(size: 10, weight: .bold, design: .default))
-                                                            .tracking(0.5)
-                                                            .foregroundColor(.white.opacity(0.5))
-                                                        
-                                                        Spacer()
-                                                        
-                                                        Text("now")
-                                                            .font(.system(size: 9, weight: .semibold, design: .default))
-                                                            .foregroundColor(.white.opacity(0.4))
-                                                    }
-                                                    
-                                                    Text("Trial Ending Soon")
-                                                        .font(.system(size: 13, weight: .bold, design: .default))
-                                                        .foregroundColor(.white)
-                                                }
-                                            }
-                                            
-                                            Text("Your trial ends in 2 days. Cancel now if you don't want to be charged.")
-                                                .font(.system(size: 11, weight: .semibold, design: .default))
-                                                .foregroundColor(.white.opacity(0.6))
-                                                .lineLimit(2)
-                                        }
-                                        .padding(12)
-                                        .background(Color.white.opacity(0.03))
-                                        .border(Color.white.opacity(0.1), width: 0.5)
-                                        .cornerRadius(12)
+                                        NotificationPreviewCard(
+                                            title: "Trial Ending Soon",
+                                            message: "Your trial ends in 2 days. Cancel now if you don't want to be charged."
+                                        )
                                         .padding(.leading, 48)
                                     }
                                     
                                     // Day 7: Subscription begins
-                                    timelineItem(
+                                    TimelineItemView(
                                         icon: "star.fill",
                                         title: "Day 7",
                                         subtitle: "Premium subscription begins",
@@ -163,18 +117,7 @@ struct OnboardingScreen14TrialReminder: View {
                     .scrollDisabled(true)
                 }
 
-                VStack(spacing: 0) {
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color.clear,
-                            Color(red: 0.06, green: 0.13, blue: 0.09),
-                            Color(red: 0.06, green: 0.13, blue: 0.09)
-                        ]),
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                    .frame(height: 20)
-                    
+                BottomGradientContainer {
                     VStack(spacing: 8) {
                         PrimaryButton(
                             title: "Enable remainders",
@@ -193,66 +136,8 @@ struct OnboardingScreen14TrialReminder: View {
                         }
                     }
                     .padding(.horizontal, appTheme.spacing.large)
-                    .background(Color(red: 0.06, green: 0.13, blue: 0.09))
                 }
-                .zIndex(20)
-                .ignoresSafeArea(.keyboard)
             }
-        }
-    }
-    
-    // MARK: - Timeline Item Component
-    private func timelineItem(
-        icon: String,
-        title: String,
-        subtitle: String,
-        isActive: Bool,
-        isCompleted: Bool
-    ) -> some View {
-        HStack(alignment: .top, spacing: 16) {
-            // Circle node
-            ZStack {
-                if isActive {
-                    Circle()
-                        .fill(appTheme.colors.primary)
-                        .frame(width: 56, height: 56)
-                        .shadow(color: appTheme.colors.primary.opacity(0.3), radius: 8)
-                } else if isCompleted {
-                    Circle()
-                        .stroke(appTheme.colors.primary, lineWidth: 2)
-                        .frame(width: 56, height: 56)
-                } else {
-                    Circle()
-                        .fill(Color.white.opacity(0.05))
-                        .frame(width: 36, height: 36)
-                       // .border(Color.white.opacity(0.1), width: 2)
-                }
-                
-                Image(systemName: icon)
-                    .font(.system(size: (!isActive && !isCompleted) ? 12 : 22, weight: .semibold))
-                    .foregroundColor(
-                        isActive ? Color(red: 0.06, green: 0.13, blue: 0.09) :
-                        isCompleted ? appTheme.colors.primary :
-                        Color.white.opacity(0.4)
-                    )
-            }
-            .frame(width: 56, height: 56)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.system(size: 18, weight: .bold, design: .default))
-                    .foregroundColor(.white)
-                
-                Text(subtitle)
-                    .font(.system(size: 14, weight: .semibold, design: .default))
-                    .foregroundColor(
-                        isActive ? appTheme.colors.primary :
-                        Color.white.opacity(0.6)
-                    )
-            }
-            .padding(.top, 4)
-            
-            Spacer()
         }
     }
 }

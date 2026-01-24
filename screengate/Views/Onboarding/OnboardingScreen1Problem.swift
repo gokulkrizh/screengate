@@ -14,52 +14,18 @@ struct OnboardingScreen1Problem: View {
                 .ignoresSafeArea()
             
             // Decorative gradient blobs
-            VStack {
-                HStack {
-                    VStack(spacing: 0) {
-                        Circle()
-                            .fill(appTheme.colors.primary.opacity(0.05))
-                            .blur(radius: 120)
-                            .frame(width: 320, height: 320)
-                        Spacer()
-                    }
-                    .offset(x: 120, y: -100)
-                    
-                    Spacer()
-                }
-                
-                Spacer()
-                
-                HStack {
-                    Spacer()
-                    VStack {
-                        Spacer()
-                        Circle()
-                            .fill(appTheme.colors.primary.opacity(0.08))
-                            .blur(radius: 100)
-                            .frame(width: 280, height: 280)
-                    }
-                    .offset(x: 80, y: 80)
-                }
-            }
-            .ignoresSafeArea()
+            DecorativeGradientBlobs()
             
             // Main content
             VStack(spacing: 0) {
                 // Header with back button and centered progress
-                ZStack {
-                    HStack {
-                        // BackButton {
-                        //     // Can't go back from first screen, but keeping for consistency
-                        // }
-                        // .opacity(0.3)
-                        
-                        Spacer()
-                    }
-                    
-                    ProgressIndicatorHeader(currentStep: 0, totalSteps: 10)
+                OnboardingHeader(
+                    currentStep: 0,
+                    totalSteps: 10,
+                    showBackButton: false
+                ) {
+                    // No back action on first screen
                 }
-                .padding(.horizontal, appTheme.spacing.large)
                 .padding(.vertical, appTheme.spacing.medium)
                 
                 Spacer()
