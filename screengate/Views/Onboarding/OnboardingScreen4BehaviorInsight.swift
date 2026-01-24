@@ -104,6 +104,14 @@ struct OnboardingScreen4BehaviorInsight: View {
                             icon: nil,
                             isDisabled: selectedCategories.isEmpty
                         ) {
+                            // Capture response
+                            let selected = selectedCategories.sorted().map { categories[$0].label }
+                            data.saveQuestionResponse(
+                                screenNumber: 4,
+                                question: "Which app categories steal most of your time?",
+                                availableOptions: categories.map { $0.label },
+                                selectedOptions: selected
+                            )
                             data.currentScreen = 5
                         }
                     }

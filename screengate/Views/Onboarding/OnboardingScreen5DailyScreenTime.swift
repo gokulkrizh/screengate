@@ -89,6 +89,15 @@ struct OnboardingScreen5DailyScreenTime: View {
                             icon: nil,
                             isDisabled: selectedOption == nil
                         ) {
+                            // Capture response
+                            if let selected = selectedOption {
+                                data.saveQuestionResponse(
+                                    screenNumber: 5,
+                                    question: "Honestly, how much time do you spend staring at screens each day?",
+                                    availableOptions: options.map { $0.title },
+                                    selectedOptions: [options[selected].title]
+                                )
+                            }
                             data.currentScreen = 6
                         }
                     }

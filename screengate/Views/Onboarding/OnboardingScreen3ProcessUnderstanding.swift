@@ -89,6 +89,14 @@ struct OnboardingScreen3ProcessUnderstanding: View {
                             icon: "arrow.right",
                             isDisabled: selectedOptions.isEmpty
                         ) {
+                            // Capture response
+                            let selected = selectedOptions.sorted().map { options[$0] }
+                            data.saveQuestionResponse(
+                                screenNumber: 3,
+                                question: "When do you find yourself using your phone the most?",
+                                availableOptions: options,
+                                selectedOptions: selected
+                            )
                             data.currentScreen = 4
                         }
                     }

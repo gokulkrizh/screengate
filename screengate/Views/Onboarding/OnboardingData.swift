@@ -1,8 +1,20 @@
 import Foundation
 import Combine
 
+// Structure to hold question responses
+struct QuestionResponse: Codable {
+    let screenNumber: Int
+    let question: String
+    let availableOptions: [String]?
+    let selectedOptions: [String]
+    let timestamp: Date
+}
+
 class OnboardingData: ObservableObject {
     @Published var currentScreen = 0
+    
+    // Array to store all question responses in JSON format
+    @Published var questionResponses: [QuestionResponse] = []
     
     // Screen 1: Welcome & Theme (no data needed)
     
@@ -80,5 +92,58 @@ class OnboardingData: ObservableObject {
     
     static func resetOnboarding() {
         UserDefaults.standard.set(false, forKey: "isOnboardingCompleted")
+    }
+    
+    // MARK: - Question Response Capture
+    
+    /// Save a question response with all relevant data
+    func saveQuestionResponse(
+        screenNumber: Int,
+        question: String,
+        availableOptions: [String]? = nil,
+        selectedOptions: [String]
+    ) {
+        let response = QuestionResponse(
+            screenNumber: screenNumber,
+            question: question,
+            availableOptions: availableOptions,
+            selectedOptions: selectedOptions,
+            timestamp: Date()
+        )
+        questionResponses.append(response)
+        
+        // Print JSON for debugging (single response)
+        if let jsonData = try? JSONEncoder().encode(response),
+           let jsonString = String(data: jsonData, encoding: .utf8) {
+            print("📊 Question Response JSON: \(jsonString)")
+        }
+        
+        // Print all responses as pretty JSON for easier inspection
+        if let allJsonData = try? JSONEncoder().encode(questionResponses),
+           let jsonObject = try? JSONSerialization.jsonObject(with: allJsonData),
+           let prettyData = try? JSONSerialization.data(withJSONObject: jsonObject, options: .prettyPrinted),
+           let prettyString = String(data: prettyData, encoding: .utf8) {
+            print("📊 All Responses JSON (pretty):\n\(prettyString)")
+        } else if let allJson = getAllResponsesAsJSON() {
+            print("📊 All Responses JSON: \(allJson)")
+        }
+    }
+    
+    /// Get all responses as JSON string
+    func getAllResponsesAsJSON() -> String? {
+        guard let jsonData = try? JSONEncoder().encode(questionResponses),
+              let jsonString = String(data: jsonData, encoding: .utf8) else {
+            return nil
+        }
+        return jsonString
+    }
+    
+    /// Get all responses as dictionary array
+    func getAllResponsesAsDictionary() -> [[String: Any]]? {
+        guard let jsonData = try? JSONEncoder().encode(questionResponses),
+              let jsonObject = try? JSONSerialization.jsonObject(with: jsonData) as? [[String: Any]] else {
+            return nil
+        }
+        return jsonObject
     }
 }

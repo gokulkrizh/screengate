@@ -115,6 +115,15 @@ struct OnboardingScreen6Age: View {
                             icon: nil,
                             isDisabled: selectedAge == nil
                         ) {
+                            // Capture response
+                            if let age = selectedAge {
+                                data.saveQuestionResponse(
+                                    screenNumber: 6,
+                                    question: "Let's customize your plan - Age",
+                                    availableOptions: nil,
+                                    selectedOptions: ["\(age) years old"]
+                                )
+                            }
                             data.currentScreen = 9
                         }
                     }

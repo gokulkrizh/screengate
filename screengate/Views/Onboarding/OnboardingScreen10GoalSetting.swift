@@ -103,6 +103,20 @@ struct OnboardingScreen10GoalSetting: View {
                             title: "Continue",
                             isDisabled: selectedGoals.isEmpty && customGoal.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                         ) {
+                            // Capture response
+                            var selected: [String] = selectedGoals.compactMap { goalId in
+                                predefinedGoals.first(where: { $0.id == goalId })?.title
+                            }
+                            let trimmedCustom = customGoal.trimmingCharacters(in: .whitespacesAndNewlines)
+                            if !trimmedCustom.isEmpty {
+                                selected.append("Custom: \(trimmedCustom)")
+                            }
+                            data.saveQuestionResponse(
+                                screenNumber: 10,
+                                question: "What would success look like for you?",
+                                availableOptions: predefinedGoals.map { $0.title } + ["Custom goal option"],
+                                selectedOptions: selected
+                            )
                             data.currentScreen += 1
                         }
                     }

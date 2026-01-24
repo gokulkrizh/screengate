@@ -92,6 +92,15 @@ struct OnboardingScreen2Discovery: View {
                             icon: "arrow.right",
                             isDisabled: selectedOption == nil
                         ) {
+                            // Capture response
+                            if let selected = selectedOption {
+                                data.saveQuestionResponse(
+                                    screenNumber: 2,
+                                    question: "What is your main reason for joining Screendiet?",
+                                    availableOptions: options.map { $0.title },
+                                    selectedOptions: [options[selected].title]
+                                )
+                            }
                             data.currentScreen = 3
                         }
                     }
