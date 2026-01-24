@@ -3,9 +3,12 @@ import SwiftUI
 /// HomeScreen - Main focus/home screen after onboarding
 /// Shows active session, metrics, and quick templates
 struct HomeScreen: View {
+    @Environment(BlockManager.self) private var blockManager
     @State private var selectedTab = 0
     @State private var showFocusSession = false
     @State private var showHowItWorks = false
+    @State private var elapsedTime: TimeInterval = 0
+    @State private var timer: Timer?
     private let appTheme = AppTheme.shared
     
     var body: some View {
@@ -98,89 +101,131 @@ struct HomeScreen: View {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 24) {
                     // Active Session Card
-                    VStack(spacing: 0) {
-                        HStack(spacing: 12) {
-                            // Icon badge
+                    if let activeBlock = blockManager.activeBlock {
+                        VStack(spacing: 0) {
+                            HStack(spacing: 12) {
+                                // Icon badge
+                                ZStack {
+                                    Circle()
+                                        .fill(appTheme.colors.primary.opacity(0.1))
+                                        .frame(width: 44, height: 44)
+                                        .border(appTheme.colors.primary.opacity(0.3), width: 1)
+                                    
+                                    Image(systemName: "brain.head.profile")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(appTheme.colors.primary)
+                                    
+                                    // Pulse indicator
+                                    VStack {
+                                        HStack {
+                                            Spacer()
+                                            VStack {
+                                                ZStack {
+                                                    Circle()
+                                                        .fill(appTheme.colors.primary)
+                                                        .frame(width: 10, height: 10)
+                                                        .shadow(color: appTheme.colors.primary, radius: 3)
+                                                    
+                                                    Circle()
+                                                        .stroke(appTheme.colors.primary.opacity(0.5), lineWidth: 2)
+                                                        .frame(width: 14, height: 14)
+                                                        .scaleEffect(1.2)
+                                                        .opacity(0.7)
+                                                }
+                                                Spacer()
+                                            }
+                                        }
+                                        Spacer()
+                                    }
+                                    .frame(width: 44, height: 44)
+                                }
+                                
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(activeBlock.name)
+                                        .font(.system(size: 14, weight: .bold, design: .default))
+                                        .foregroundColor(.white)
+                                        .lineLimit(1)
+                                    
+                                    Text(blockManager.isPaused ? "PAUSED" : "ACTIVE SESSION")
+                                        .font(.system(size: 10, weight: .bold, design: .default))
+                                        .tracking(0.5)
+                                        .foregroundColor(blockManager.isPaused ? .orange : appTheme.colors.primary)
+                                }
+                                
+                                Spacer()
+                                
+                                VStack(alignment: .trailing, spacing: 2) {
+                                    Text(formatTime(elapsedTime))
+                                        .font(.system(size: 20, weight: .bold, design: .default))
+                                        .foregroundColor(.white)
+                                    
+                                    if let duration = activeBlock.schedule.duration {
+                                        Text("of \(formatTime(duration)) Total")
+                                            .font(.system(size: 10, weight: .semibold, design: .default))
+                                            .foregroundColor(.white.opacity(0.6))
+                                    }
+                                }
+                            }
+                            .padding(16)
+                            
+                            // Progress bar
+                            ZStack(alignment: .leading) {
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(Color.white.opacity(0.1))
+                                    .frame(height: 4)
+                                
+                                if let duration = activeBlock.schedule.duration, duration > 0 {
+                                    let progress = min(elapsedTime / duration, 1.0)
+                                    RoundedRectangle(cornerRadius: 2)
+                                        .fill(appTheme.colors.primary)
+                                        .frame(width: CGFloat(progress * 268), height: 4)
+                                        .shadow(color: appTheme.colors.primary.opacity(0.8), radius: 4)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 12)
+                        }
+                        .background(Color.white.opacity(0.03))
+                        .border(appTheme.colors.primary.opacity(0.2), width: 1)
+                        .cornerRadius(16)
+                        .padding(.horizontal, 20)
+                        .onTapGesture {
+                            showFocusSession = true
+                        }
+                        .onAppear {
+                            startTimer()
+                        }
+                        .onDisappear {
+                            stopTimer()
+                        }
+                    } else {
+                        // No active block - show empty state
+                        VStack(spacing: 16) {
                             ZStack {
                                 Circle()
                                     .fill(appTheme.colors.primary.opacity(0.1))
-                                    .frame(width: 44, height: 44)
-                                    .border(appTheme.colors.primary.opacity(0.3), width: 1)
+                                    .frame(width: 56, height: 56)
                                 
-                                Image(systemName: "brain.head.profile")
-                                    .font(.system(size: 16, weight: .semibold))
-                                    .foregroundColor(appTheme.colors.primary)
-                                
-                                // Pulse indicator
-                                VStack {
-                                    HStack {
-                                        Spacer()
-                                        VStack {
-                                            ZStack {
-                                                Circle()
-                                                    .fill(appTheme.colors.primary)
-                                                    .frame(width: 10, height: 10)
-                                                    .shadow(color: appTheme.colors.primary, radius: 3)
-                                                
-                                                Circle()
-                                                    .stroke(appTheme.colors.primary.opacity(0.5), lineWidth: 2)
-                                                    .frame(width: 14, height: 14)
-                                                    .scaleEffect(1.2)
-                                                    .opacity(0.7)
-                                            }
-                                            Spacer()
-                                        }
-                                    }
-                                    Spacer()
-                                }
-                                .frame(width: 44, height: 44)
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Deep Work")
-                                    .font(.system(size: 14, weight: .bold, design: .default))
-                                    .foregroundColor(.white)
-                                
-                                Text("ACTIVE SESSION")
-                                    .font(.system(size: 10, weight: .bold, design: .default))
-                                    .tracking(0.5)
+                                Image(systemName: "play.circle.fill")
+                                    .font(.system(size: 28, weight: .semibold))
                                     .foregroundColor(appTheme.colors.primary)
                             }
                             
-                            Spacer()
+                            Text("No Active Block")
+                                .font(.system(size: 16, weight: .bold, design: .default))
+                                .foregroundColor(.white)
                             
-                            VStack(alignment: .trailing, spacing: 2) {
-                                Text("24:12")
-                                    .font(.system(size: 20, weight: .bold, design: .default))
-                                    .foregroundColor(.white)
-                                
-                                Text("of 45:00 Total")
-                                    .font(.system(size: 10, weight: .semibold, design: .default))
-                                    .foregroundColor(.white.opacity(0.6))
-                            }
+                            Text("Create or start a block to begin your focus session")
+                                .font(.system(size: 12, weight: .regular, design: .default))
+                                .foregroundColor(.white.opacity(0.6))
+                                .multilineTextAlignment(.center)
                         }
-                        .padding(16)
-                        
-                        // Progress bar
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 2)
-                                .fill(Color.white.opacity(0.1))
-                                .frame(height: 4)
-                            
-                            RoundedRectangle(cornerRadius: 2)
-                                .fill(appTheme.colors.primary)
-                                .frame(width: 134, height: 4)
-                                .shadow(color: appTheme.colors.primary.opacity(0.8), radius: 4)
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 12)
-                    }
-                    .background(Color.white.opacity(0.03))
-                    .border(appTheme.colors.primary.opacity(0.2), width: 1)
-                    .cornerRadius(16)
-                    .padding(.horizontal, 20)
-                    .onTapGesture {
-                        showFocusSession = true
+                        .frame(maxWidth: .infinity)
+                        .padding(24)
+                        .background(Color.white.opacity(0.03))
+                        .border(appTheme.colors.primary.opacity(0.2), width: 1)
+                        .cornerRadius(16)
+                        .padding(.horizontal, 20)
                     }
                     
                     // Focus Metrics
@@ -449,6 +494,50 @@ struct HomeScreen: View {
         // .ignoresSafeArea()
     }
     
+    // MARK: - Timer Management
+    
+    private func startTimer() {
+        stopTimer()
+        
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            guard let activeBlock = blockManager.activeBlock else {
+                stopTimer()
+                return
+            }
+            
+            // Calculate elapsed time based on when block was activated
+            if let activatedAt = activeBlock.createdAt as Date? {
+                let elapsed = Date().timeIntervalSince(activatedAt)
+                
+                // Account for pause state
+                if let pausedUntil = blockManager.pausedUntil, pausedUntil > Date() {
+                    // Don't count time while paused
+                    elapsedTime = elapsed - (pausedUntil.timeIntervalSince(Date()))
+                } else {
+                    elapsedTime = elapsed
+                }
+            }
+        }
+    }
+    
+    private func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+    }
+    
+    // MARK: - Helper Functions
+    
+    private func formatTime(_ timeInterval: TimeInterval) -> String {
+        let hours = Int(timeInterval) / 3600
+        let minutes = (Int(timeInterval) % 3600) / 60
+        let seconds = Int(timeInterval) % 60
+        
+        if hours > 0 {
+            return String(format: "%d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            return String(format: "%d:%02d", minutes, seconds)
+        }
+    }
 }
 #Preview {
     HomeScreen()

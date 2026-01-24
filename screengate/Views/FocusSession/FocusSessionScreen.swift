@@ -1,20 +1,21 @@
 import SwiftUI
 import Combine
+import FamilyControls
 
 /// FocusSessionScreen - Active focus session running screen
 /// Shows timer, restricted apps, and session controls
 struct FocusSessionScreen: View {
+    @Environment(BlockManager.self) private var blockManager
     @Binding var isPresented: Bool
     @State private var timeRemaining: Int = 1499 // 24:59 in seconds
     @State private var isPaused = false
     @State private var showPauseOptions = false
-    @State private var restrictedAppsCount = 12
     @State private var slideOffset: CGFloat = 0
     @State private var selectedPauseDuration: Int = 15 // minutes
     @State private var showFocusInterruptedModal = false
+    @State private var elapsedTime: TimeInterval = 0
+    @State private var timer: Timer?
     private let appTheme = AppTheme.shared
-    
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var body: some View {
         ZStack {
@@ -117,7 +118,7 @@ struct FocusSessionScreen: View {
                                 .tracking(-2)
                                 .foregroundColor(.white)
                             
-                            Text("Deep Work")
+                            Text(blockManager.activeBlock?.name ?? "Focus Session")
                                 .font(.system(size: 16, weight: .semibold, design: .default))
                                 .foregroundColor(appTheme.colors.primary.opacity(0.9))
                         }
@@ -126,9 +127,7 @@ struct FocusSessionScreen: View {
                     
                     // Info section
                     VStack(spacing: 8) {
-                        Text("Expected completion: 4:30 PM")
-                            .font(.system(size: 12, weight: .semibold, design: .default))
-                            .foregroundColor(.white.opacity(0.5))
+                        infoSection
                         
                         Text("\"Focus on being productive instead of busy.\"")
                             .font(.system(size: 12, weight: .semibold, design: .default))
@@ -146,7 +145,8 @@ struct FocusSessionScreen: View {
                             
                             Spacer()
                             
-                            Text("\(restrictedAppsCount) Active")
+                            let appCount = blockManager.activeBlock?.appSelection.applicationTokens.count ?? 0
+                            Text("\(appCount) Active")
                                 .font(.system(size: 11, weight: .bold, design: .default))
                                 .foregroundColor(appTheme.colors.primary)
                         }
@@ -200,12 +200,12 @@ struct FocusSessionScreen: View {
                             .cornerRadius(16)
                         }
                         
-                        Button(action: { showPauseOptions = true }) {
+                        Button(action: { togglePause() }) {
                             HStack(spacing: 8) {
-                                Image(systemName: isPaused ? "play.circle.fill" : "pause.circle.fill")
+                                Image(systemName: blockManager.isPaused ? "play.circle.fill" : "pause.circle.fill")
                                     .font(.system(size: 16, weight: .semibold))
                                 
-                                Text(isPaused ? "Resume" : "Pause")
+                                Text(blockManager.isPaused ? "Resume" : "Pause")
                                     .font(.system(size: 14, weight: .bold, design: .default))
                             }
                             .frame(maxWidth: .infinity)
@@ -354,17 +354,20 @@ struct FocusSessionScreen: View {
                 //.padding(.bottom, 32)
             }
         }
-        .onReceive(timer) { _ in
-            if !isPaused && timeRemaining > 0 {
-                timeRemaining -= 1
-            }
+        .onAppear {
+            startTimer()
+        }
+        .onDisappear {
+            stopTimer()
         }
         .sheet(isPresented: $showPauseOptions) {
             PauseSessionModal(
                 isPresented: $showPauseOptions,
                 selectedDuration: $selectedPauseDuration,
                 onStartBreak: { duration in
-                    isPaused = true
+                    Task {
+                        try await blockManager.pauseBlock(for: TimeInterval(duration * 60))
+                    }
                     showPauseOptions = false
                 }
             )
@@ -390,25 +393,97 @@ struct FocusSessionScreen: View {
     }
     
     // MARK: - Computed Properties
+    
+    private var infoSection: some View {
+        if let activeBlock = blockManager.activeBlock, let duration = activeBlock.schedule.duration, duration > elapsedTime {
+            let completionTime = Date(timeIntervalSinceNow: duration - elapsedTime)
+            let formatter = DateFormatter()
+            formatter.timeStyle = .short
+            let completionStr = formatter.string(from: completionTime)
+            
+            return AnyView(Text("Expected completion: \(completionStr)")
+                .font(.system(size: 12, weight: .semibold, design: .default))
+                .foregroundColor(.white.opacity(0.5)))
+        } else {
+            return AnyView(EmptyView())
+        }
+    }
+    
     private var timeString: String {
-        let minutes = timeRemaining / 60
-        let seconds = timeRemaining % 60
-        return String(format: "%02d:%02d", minutes, seconds)
+        guard let activeBlock = blockManager.activeBlock else {
+            return "00:00"
+        }
+        
+        let remaining: TimeInterval
+        if let duration = activeBlock.schedule.duration {
+            remaining = max(0, duration - elapsedTime)
+        } else {
+            remaining = TimeInterval(timeRemaining)
+        }
+        
+        let hours = Int(remaining) / 3600
+        let minutes = (Int(remaining) % 3600) / 60
+        let seconds = Int(remaining) % 60
+        
+        if hours > 0 {
+            return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            return String(format: "%02d:%02d", minutes, seconds)
+        }
     }
     
     private var progressFraction: Double {
-        Double(1499 - timeRemaining) / 1499.0
+        guard let activeBlock = blockManager.activeBlock, let duration = activeBlock.schedule.duration else {
+            return Double(1499 - timeRemaining) / 1499.0
+        }
+        
+        return min(elapsedTime / duration, 1.0)
     }
     
     // MARK: - Actions
     private func addTime() {
-        timeRemaining += 300 // 5 minutes
+        Task {
+            try await blockManager.extendBlock(by: 5)
+        }
     }
     
     private func togglePause() {
         withAnimation(.easeInOut(duration: 0.3)) {
-            isPaused.toggle()
+            Task {
+                try await blockManager.pauseBlock(for: TimeInterval(selectedPauseDuration * 60))
+            }
         }
+    }
+    
+    private func cancelSession() {
+        Task {
+            try await blockManager.cancelBlock()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                isPresented = false
+            }
+        }
+    }
+    
+    // MARK: - Timer Management
+    
+    private func startTimer() {
+        stopTimer()
+        
+        timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
+            guard let activeBlock = blockManager.activeBlock else {
+                stopTimer()
+                return
+            }
+            
+            // Calculate elapsed time based on when block was activated
+            let elapsed = Date().timeIntervalSince(activeBlock.createdAt)
+            elapsedTime = elapsed
+        }
+    }
+    
+    private func stopTimer() {
+        timer?.invalidate()
+        timer = nil
     }
 }
 
