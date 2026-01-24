@@ -1,4 +1,5 @@
 import SwiftUI
+import UserNotifications
 
 /// OnboardingScreen14TrialReminder - Trial Reminder Timeline Screen
 /// Shows users the trial timeline with reminder notification on Day 5
@@ -6,6 +7,7 @@ struct OnboardingScreen14TrialReminder: View {
     @ObservedObject var data: OnboardingData
     
     private let appTheme = AppTheme.shared
+    @State private var isRequestingNotifications = false
     
     var body: some View {
         ZStack {
@@ -119,7 +121,7 @@ struct OnboardingScreen14TrialReminder: View {
                         PrimaryButton(
                             title: "Enable remainders",
                         ) {
-                            data.currentScreen += 1
+                            requestNotificationPermission()
                         }
                         
                         HStack(spacing: 8) {
@@ -134,6 +136,28 @@ struct OnboardingScreen14TrialReminder: View {
                     }
                     .padding(.horizontal, appTheme.spacing.large)
                 }
+            }
+        }
+    }
+    
+    // MARK: - Notification Permission Request
+    private func requestNotificationPermission() {
+        guard !isRequestingNotifications else { return }
+        isRequestingNotifications = true
+        
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("Notification authorization error: \(error)")
+                }
+                
+                if granted {
+                    print("Notification permission granted")
+                }
+                
+                // Move to next screen regardless of permission result
+                data.currentScreen += 1
+                isRequestingNotifications = false
             }
         }
     }

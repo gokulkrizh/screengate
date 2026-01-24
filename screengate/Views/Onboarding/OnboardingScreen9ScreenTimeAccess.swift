@@ -1,4 +1,5 @@
 import SwiftUI
+import FamilyControls
 
 /// OnboardingScreen9ScreenTimeAccess - Screen Time Permission Request
 /// Explains why the app needs Screen Time access and related permissions
@@ -6,6 +7,7 @@ struct OnboardingScreen9ScreenTimeAccess: View {
     @ObservedObject var data: OnboardingData
     
     private let appTheme = AppTheme.shared
+    @State private var isRequestingAuthorization = false
     
     var body: some View {
         ZStack {
@@ -112,7 +114,7 @@ struct OnboardingScreen9ScreenTimeAccess: View {
                     PrimaryButton(
                         title: "Allow Access",
                         action: {
-                            data.currentScreen += 1
+                            requestScreenTimeAuthorization()
                         }
                     )
                     
@@ -171,6 +173,31 @@ struct OnboardingScreen9ScreenTimeAccess: View {
         .background(Color.white.opacity(0.03))
         .border(appTheme.colors.primary.opacity(0.1), width: 0.5)
         .cornerRadius(20)
+    }
+    
+    // MARK: - Authorization Request
+    private func requestScreenTimeAuthorization() {
+        guard !isRequestingAuthorization else { return }
+        isRequestingAuthorization = true
+        
+        Task {
+            do {
+                try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
+                // Authorization granted, move to next screen
+                await MainActor.run {
+                    data.currentScreen += 1
+                    isRequestingAuthorization = false
+                }
+            } catch {
+                // Handle authorization error
+                print("Screen Time authorization failed: \(error)")
+                await MainActor.run {
+                    isRequestingAuthorization = false
+                    // Still move to next screen even if denied
+                    data.currentScreen += 1
+                }
+            }
+        }
     }
 }
 
