@@ -1,18 +1,22 @@
 import SwiftUI
+import FamilyControls
 
 struct CreateBlockNowView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(BlockManager.self) private var blockManager
+    
     @State private var blockName = ""
     @State private var selectedHours = 0
     @State private var selectedMinutes = 20
     @State private var strictMode: StrictMode = .medium
     @State private var selectedPreset: Int? = 25
     @State private var showDurationPicker = false
-    private let appTheme = AppTheme.shared
+    @State private var showActivityPicker = false
+    @State private var activitySelection: FamilyActivitySelection = FamilyActivitySelection()
+    @State private var error: String?
+    @State private var isCreating = false
     
-    enum StrictMode {
-        case easy, medium, hard
-    }
+    private let appTheme = AppTheme.shared
     
     var body: some View {
         ZStack {
@@ -61,49 +65,70 @@ struct CreateBlockNowView: View {
                                 .font(.system(size: 20, weight: .bold, design: .default))
                                 .foregroundColor(.white)
                             
-                            Button(action: {}) {
+                            Button(action: { showActivityPicker = true }) {
                                 HStack(spacing: 12) {
-                                    // Stacked Icons
+                                    // Stacked Icons from selection
                                     HStack(spacing: -12) {
-                                        Circle()
-                                            .fill(LinearGradient(gradient: Gradient(colors: [Color.purple, Color.pink]), startPoint: .topLeading, endPoint: .bottomTrailing))
-                                            .frame(width: 40, height: 40)
-                                            .overlay(
-                                                Image(systemName: "camera.fill")
-                                                    .font(.system(size: 16))
-                                                    .foregroundColor(.white)
-                                            )
-                                            .overlay(Circle().stroke(Color(red: 0.09, green: 0.16, blue: 0.12), lineWidth: 2))
-                                        
-                                        Circle()
-                                            .fill(Color.black)
-                                            .frame(width: 40, height: 40)
-                                            .overlay(
-                                                Image(systemName: "music.note")
-                                                    .font(.system(size: 16))
-                                                    .foregroundColor(.white)
-                                            )
-                                            .overlay(Circle().stroke(Color(red: 0.09, green: 0.16, blue: 0.12), lineWidth: 2))
-                                        
-                                        Circle()
-                                            .fill(Color.blue)
-                                            .frame(width: 40, height: 40)
-                                            .overlay(
-                                                Image(systemName: "chart.bar.fill")
-                                                    .font(.system(size: 16))
-                                                    .foregroundColor(.white)
-                                            )
-                                            .overlay(Circle().stroke(Color(red: 0.09, green: 0.16, blue: 0.12), lineWidth: 2))
+                                        if !activitySelection.applicationTokens.isEmpty {
+                                            ForEach(Array(activitySelection.applicationTokens).prefix(3), id: \.self) { token in
+                                                Circle()
+                                                    .fill(Color.blue.opacity(0.7))
+                                                    .frame(width: 40, height: 40)
+                                                    .overlay(
+                                                        Image(systemName: "app.fill")
+                                                            .font(.system(size: 16))
+                                                            .foregroundColor(.white)
+                                                    )
+                                                    .overlay(Circle().stroke(Color(red: 0.09, green: 0.16, blue: 0.12), lineWidth: 2))
+                                            }
+                                        } else {
+                                            // Show default icons
+                                            Circle()
+                                                .fill(LinearGradient(gradient: Gradient(colors: [Color.purple, Color.pink]), startPoint: .topLeading, endPoint: .bottomTrailing))
+                                                .frame(width: 40, height: 40)
+                                                .overlay(
+                                                    Image(systemName: "camera.fill")
+                                                        .font(.system(size: 16))
+                                                        .foregroundColor(.white)
+                                                )
+                                                .overlay(Circle().stroke(Color(red: 0.09, green: 0.16, blue: 0.12), lineWidth: 2))
+                                            
+                                            Circle()
+                                                .fill(Color.black)
+                                                .frame(width: 40, height: 40)
+                                                .overlay(
+                                                    Image(systemName: "music.note")
+                                                        .font(.system(size: 16))
+                                                        .foregroundColor(.white)
+                                                )
+                                                .overlay(Circle().stroke(Color(red: 0.09, green: 0.16, blue: 0.12), lineWidth: 2))
+                                            
+                                            Circle()
+                                                .fill(Color.blue)
+                                                .frame(width: 40, height: 40)
+                                                .overlay(
+                                                    Image(systemName: "chart.bar.fill")
+                                                        .font(.system(size: 16))
+                                                        .foregroundColor(.white)
+                                                )
+                                                .overlay(Circle().stroke(Color(red: 0.09, green: 0.16, blue: 0.12), lineWidth: 2))
+                                        }
                                     }
                                     
                                     VStack(alignment: .leading, spacing: 4) {
-                                        Text("Instagram, TikTok +2")
-                                            .font(.system(size: 16, weight: .semibold, design: .default))
-                                            .foregroundColor(.white)
-                                        
-                                        Text("Social Media & Entertainment")
-                                            .font(.system(size: 12, weight: .regular, design: .default))
-                                            .foregroundColor(.white.opacity(0.5))
+                                        if activitySelection.applicationTokens.isEmpty {
+                                            Text("Select Apps")
+                                                .font(.system(size: 16, weight: .semibold, design: .default))
+                                                .foregroundColor(.white.opacity(0.7))
+                                        } else {
+                                            Text("\(activitySelection.applicationTokens.count) Apps Selected")
+                                                .font(.system(size: 16, weight: .semibold, design: .default))
+                                                .foregroundColor(.white)
+                                            
+                                            Text("Tap to modify")
+                                                .font(.system(size: 12, weight: .regular, design: .default))
+                                                .foregroundColor(.white.opacity(0.5))
+                                        }
                                     }
                                     
                                     Spacer()
@@ -246,22 +271,33 @@ struct CreateBlockNowView: View {
                 }
                 
                 // Start Focusing Button
-                Button(action: {}) {
-                    HStack(spacing: 8) {
-                        Text("Start Focusing")
-                            .font(.system(size: 16, weight: .bold, design: .default))
-                            .foregroundColor(Color(red: 0.06, green: 0.13, blue: 0.09))
-                        
-                        Image(systemName: "play.fill")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(Color(red: 0.06, green: 0.13, blue: 0.09))
+                Button(action: {
+                    Task {
+                        await createBlockNow()
                     }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 52)
-                    .background(appTheme.colors.primary)
-                    .cornerRadius(12)
-                    .shadow(color: appTheme.colors.primary.opacity(0.25), radius: 12, x: 0, y: 0)
+                }) {
+                    if isCreating {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .tint(Color(red: 0.06, green: 0.13, blue: 0.09))
+                    } else {
+                        HStack(spacing: 8) {
+                            Text("Start Focusing")
+                                .font(.system(size: 16, weight: .bold, design: .default))
+                                .foregroundColor(Color(red: 0.06, green: 0.13, blue: 0.09))
+                            
+                            Image(systemName: "play.fill")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(Color(red: 0.06, green: 0.13, blue: 0.09))
+                        }
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .frame(height: 52)
+                .background(appTheme.colors.primary)
+                .cornerRadius(12)
+                .shadow(color: appTheme.colors.primary.opacity(0.25), radius: 12, x: 0, y: 0)
+                .disabled(isCreating || blockName.isEmpty || activitySelection.applicationTokens.isEmpty)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
             }
@@ -272,6 +308,60 @@ struct CreateBlockNowView: View {
                 .presentationDetents([.height(400)])
                 .presentationBackground(Color(red: 0.06, green: 0.13, blue: 0.09))
         }
+        .sheet(isPresented: $showActivityPicker) {
+            FamilyActivitySelectionView(selection: $activitySelection)
+        }
+        .alert("Error", isPresented: .constant(error != nil), presenting: error) { _ in
+            Button("OK") { error = nil }
+        } message: { errorMsg in
+            Text(errorMsg)
+        }
+    }
+    
+    // MARK: - Private Methods
+    
+    @MainActor
+    private func createBlockNow() async {
+        guard !blockName.isEmpty else {
+            error = "Please enter a block name"
+            return
+        }
+        
+        guard !activitySelection.applicationTokens.isEmpty else {
+            error = "Please select at least one app"
+            return
+        }
+        
+        isCreating = true
+        
+        let duration = TimeInterval((selectedHours * 3600) + (selectedMinutes * 60))
+        let schedule = Block.BlockSchedule(
+            startTime: nil,
+            endTime: nil,
+            duration: duration,
+            threshold: nil,
+            repeatDays: nil,
+            isRepeating: false
+        )
+        
+        let block = Block(
+            name: blockName,
+            type: .blockNow,
+            appSelection: activitySelection,
+            schedule: schedule,
+            strictMode: strictMode,
+            isActive: false
+        )
+        
+        do {
+            try blockManager.createBlock(block)
+            try await blockManager.activateBlock(block)
+            dismiss()
+        } catch {
+            self.error = error.localizedDescription
+        }
+        
+        isCreating = false
     }
     
     private func presetButton(_ minutes: Int, selected: Bool) -> some View {
