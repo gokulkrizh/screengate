@@ -6,8 +6,8 @@ struct RadioOptionCard: View {
     private let appTheme = AppTheme.shared
     
     let icon: String
-    let iconColor: Color
-    let iconBackgroundColor: Color
+    let iconColor: Color?
+    let iconBackgroundColor: Color?
     let title: String
     let subtitle: String
     let isSelected: Bool
@@ -16,16 +16,18 @@ struct RadioOptionCard: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                // Icon background
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(iconBackgroundColor.opacity(0.15))
-                    
-                    Image(systemName: icon)
-                        .font(.system(size: 24))
-                        .foregroundColor(iconColor)
+                // Icon background (only if colors provided)
+                if let iconColor = iconColor, let iconBackgroundColor = iconBackgroundColor {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(iconBackgroundColor.opacity(0.15))
+                        
+                        Image(systemName: icon)
+                            .font(.system(size: 24))
+                            .foregroundColor(iconColor)
+                    }
+                    .frame(width: 48, height: 48)
                 }
-                .frame(width: 48, height: 48)
                 
                 // Content
                 VStack(alignment: .leading, spacing: 4) {
@@ -37,6 +39,7 @@ struct RadioOptionCard: View {
                     Text(subtitle)
                         .font(appTheme.fonts.bodySmall)
                         .foregroundColor(appTheme.colors.textSecondary)
+                        .multilineTextAlignment(.leading)
                 }
                 
                 Spacer()

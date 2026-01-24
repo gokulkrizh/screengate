@@ -4,7 +4,7 @@ import SwiftUI
 /// User selects which app categories steal most of their time
 struct OnboardingScreen4BehaviorInsight: View {
     @ObservedObject var data: OnboardingData
-    @State private var selectedCategories: Set<Int> = [0, 3] // Pre-select Social & News
+    @State private var selectedCategories: Set<Int> = [] // Pre-select Social & News
     
     private let appTheme = AppTheme.shared
     
@@ -64,17 +64,16 @@ struct OnboardingScreen4BehaviorInsight: View {
                         BackButton {
                             data.currentScreen = 3
                         }
-                        
                         Spacer()
                     }
                     
                     ProgressIndicatorHeader(currentStep: 3, totalSteps: 10)
                 }
                 .padding(.horizontal, appTheme.spacing.large)
-            //    .padding(.vertical, appTheme.spacing.medium)
+                .padding(.bottom, appTheme.spacing.medium)
                 
                 // Title and subtitle
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: appTheme.spacing.medium) {
                     HStack(spacing: 0) {
                         Text("Which app categories ")
                             .foregroundColor(appTheme.colors.text)
@@ -96,7 +95,7 @@ struct OnboardingScreen4BehaviorInsight: View {
                 
                 // Scrollable grid
                 ScrollView {
-                    VStack(spacing: 0) {
+                    VStack(spacing: 12) {
                         LazyVGrid(columns: [
                             GridItem(.flexible(), spacing: appTheme.spacing.medium),
                             GridItem(.flexible(), spacing: appTheme.spacing.medium)
@@ -118,6 +117,7 @@ struct OnboardingScreen4BehaviorInsight: View {
                             }
                         }
                         .padding(.horizontal, appTheme.spacing.large)
+                        .padding(.top, appTheme.spacing.small)
                         .padding(.bottom, 140)
                     }
                 }
@@ -140,7 +140,7 @@ struct OnboardingScreen4BehaviorInsight: View {
                         startPoint: .top,
                         endPoint: .bottom
                     )
-                    .frame(height: 60)
+                    .frame(height: 20)
                     
                     VStack(spacing: appTheme.spacing.medium) {
                         PrimaryButton(
@@ -151,7 +151,7 @@ struct OnboardingScreen4BehaviorInsight: View {
                         }
                     }
                     .padding(.horizontal, appTheme.spacing.large)
-                    .padding(.bottom, appTheme.spacing.large)
+                    //.padding(.bottom, appTheme.spacing.large)
                     .background(Color(red: 0.06, green: 0.13, blue: 0.09))
                 }
                 .zIndex(20)

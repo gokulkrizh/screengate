@@ -26,48 +26,16 @@ struct OnboardingScreen13TryForFree: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Header with progress
-                HStack {
-                    Spacer()
-                    ProgressIndicatorHeader(currentStep: 12, totalSteps: 10)
-                    Spacer()
-                }
-                .padding(.horizontal, appTheme.spacing.large)
-         //       .padding(.vertical, appTheme.spacing.medium)
                 
                 // Content
                 ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: 44) {
+                    VStack(spacing: 30) {
                         // Hero image
                         ZStack(alignment: .topTrailing) {
 
                             // Hero Image Area
                             HeroImageView(imageName: "paywallTryForFree", height: 220)
-                   
-                            // RoundedRectangle(cornerRadius: 24)
-                            //     .fill(Color.white.opacity(0.03))
-                            //     .border(Color.white.opacity(0.1), width: 0.5)
-                            //     .overlay(
-                            //         RoundedRectangle(cornerRadius: 24)
-                            //             .fill(
-                            //                 LinearGradient(
-                            //                     gradient: Gradient(colors: [
-                            //                         Color.black.opacity(0.4),
-                            //                         Color.black.opacity(0.1)
-                            //                     ]),
-                            //                     startPoint: .bottomLeading,
-                            //                     endPoint: .topTrailing
-                            //                 )
-                            //             )
-                            //     )
-                            
-                            // // Placeholder lock icon
-                            // Image(systemName: "lock.open.fill")
-                            //     .font(.system(size: 48, weight: .semibold))
-                            //     .foregroundColor(appTheme.colors.primary)
-                            //     .padding(20)
-                            
-                            // Lock open badge
+            
                             Circle()
                                 .fill(Color.white.opacity(0.05))
                                 .frame(width: 44, height: 44)
@@ -81,28 +49,23 @@ struct OnboardingScreen13TryForFree: View {
                         }
                         .frame(height: 200)
                         .padding(.horizontal, 20)
-                        //.padding(.vertical, 20)
                         
                         // Title and description
                         VStack(alignment: .center, spacing: 12) {
                             VStack(spacing: 4) {
                                 Text("Zero cost.")
-                                    .font(.system(size: 32, weight: .bold, design: .default))
-                                    .foregroundColor(.white)
+                                    .font(appTheme.fonts.displaySmall)
+                                    .foregroundColor(appTheme.colors.text)
                                 
                                 Text("100% Focus.")
-                                    .font(.system(size: 32, weight: .bold, design: .default))
+                                    .font(appTheme.fonts.displaySmall)
                                     .foregroundColor(appTheme.colors.primary)
                                     .shadow(color: appTheme.colors.primary.opacity(0.25), radius: 8)
-                                
-                                // Text(".")
-                                //     .font(.system(size: 32, weight: .bold, design: .default))
-                                //     .foregroundColor(.white)
                             }
                             
                             Text("Experience the full power of Screendiet before you commit.")
-                                .font(.system(size: 15, weight: .semibold, design: .default))
-                                .foregroundColor(.white.opacity(0.6))
+                                .font(appTheme.fonts.bodyLarge)
+                                .foregroundColor(appTheme.colors.textSecondary)
                                 .multilineTextAlignment(.center)
                         }
                         .frame(maxWidth: .infinity)
@@ -131,30 +94,70 @@ struct OnboardingScreen13TryForFree: View {
                     }
                 }
                 
-                Spacer()
+                // Spacer()
+                
+                // Bottom button
+                VStack(spacing: 0) {
+                    VStack(spacing: 0) {
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color.clear,
+                                Color(red: 0.06, green: 0.13, blue: 0.09),
+                                Color(red: 0.06, green: 0.13, blue: 0.09)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .frame(height: 20)
+
+                        VStack(spacing: 8) {
+                            PrimaryButton(
+                                title: "Unlock Free Access",
+                            ) {
+                                data.currentScreen += 1
+                            }
+
+                            HStack(spacing: 8) {
+                                Image(systemName: "bell.fill")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(appTheme.colors.primary)
+
+                                Text("We'll remind you 2 days before trial ends")
+                                    .font(.system(size: 12, weight: .semibold, design: .default))
+                                    .foregroundColor(.white.opacity(0.5))
+                            }
+                        }
+                        .padding(.horizontal, appTheme.spacing.large)
+                        .background(Color(red: 0.06, green: 0.13, blue: 0.09))
+                    }
+                    .zIndex(20)
+                }
+                .zIndex(20)
+                .ignoresSafeArea(.keyboard)
                 
                 // Bottom section with button and reminder
-                VStack(spacing: 16) {
-                    PrimaryButton(
-                        title: "Unlock Free Access",
-                        action: {
-                            data.isOnboardingComplete = true
-                            data.currentScreen += 1
-                        }
-                    )
-                    
-                    HStack(spacing: 8) {
-                        Image(systemName: "bell.fill")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(appTheme.colors.primary)
-                        
-                        Text("We'll remind you 2 days before trial ends")
-                            .font(.system(size: 12, weight: .semibold, design: .default))
-                            .foregroundColor(.white.opacity(0.5))
-                    }
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 20)
+//                VStack(spacing: 0) {
+//                    PrimaryButton(
+//                        title: "Unlock Free Access",
+//                        action: {
+//                            data.isOnboardingComplete = true
+//                            data.currentScreen += 1
+//                        }
+//                    )
+//                    
+//                    HStack(spacing: 8) {
+//                        Image(systemName: "bell.fill")
+//                            .font(.system(size: 12, weight: .semibold))
+//                            .foregroundColor(appTheme.colors.primary)
+//                        
+//                        Text("We'll remind you 2 days before trial ends")
+//                            .font(.system(size: 12, weight: .semibold, design: .default))
+//                            .foregroundColor(.white.opacity(0.5))
+//                    }
+//                    //.padding(.vertical, 8)
+//                }
+//                .padding(.horizontal, 20)
+//               // .padding(.vertical, 20)
             }
         }
     }
@@ -165,18 +168,14 @@ struct OnboardingScreen13TryForFree: View {
             // Checkmark circle
             Circle()
                 .fill(
-                    isHighlighted ?
-                    appTheme.colors.primary :
-                    appTheme.colors.primary.opacity(0.15)
+                    isHighlighted ? appTheme.colors.primary : appTheme.colors.primary.opacity(0.15)
                 )
                 .frame(width: 40, height: 40)
                 .overlay(
                     Image(systemName: "checkmark")
                         .font(.system(size: 16, weight: .bold))
                         .foregroundColor(
-                            isHighlighted ?
-                            Color(red: 0.06, green: 0.13, blue: 0.09) :
-                            appTheme.colors.primary
+                            isHighlighted ? Color(red: 0.06, green: 0.13, blue: 0.09) : appTheme.colors.primary
                         )
                 )
             
@@ -197,16 +196,15 @@ struct OnboardingScreen13TryForFree: View {
         }
         .padding(14)
         .background(
-            isHighlighted ?
-            appTheme.colors.primary.opacity(0.1) :
-            Color.white.opacity(0.03)
+            isHighlighted ? appTheme.colors.primary.opacity(0.1) : Color.white.opacity(0.03)
         )
-        .border(
-            isHighlighted ?
-            appTheme.colors.primary.opacity(0.4) :
-            Color.white.opacity(0.05),
-            width: isHighlighted ? 1.5 : 0.5
-        )
+        .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(
+                        isHighlighted ? appTheme.colors.primary.opacity(0.9) : Color.white.opacity(0.05),
+                        lineWidth: isHighlighted ? 1.5 : 0.5
+                    )
+            )
         .cornerRadius(16)
         .shadow(
             color: isHighlighted ? appTheme.colors.primary.opacity(0.15) : .clear,

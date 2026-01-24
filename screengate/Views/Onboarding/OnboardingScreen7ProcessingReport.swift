@@ -36,32 +36,6 @@ struct OnboardingScreen7ProcessingReport: View {
             
             // Main content
             VStack(spacing: 0) {
-                // Header with progress
-//                HStack {
-//                    Spacer()
-//                    ProgressIndicatorHeader(currentStep: 6, totalSteps: 10)
-//                    Spacer()
-//                }
-//                .padding(.horizontal, appTheme.spacing.large)
-             //   .padding(.vertical, appTheme.spacing.medium)
-                
-                // Header with logo (commented out)
-                // HStack(spacing: 6) {
-                //     Image(systemName: "smartphone.fill")
-                //         .font(.system(size: 16, weight: .bold))
-                //         .foregroundColor(appTheme.colors.primary)
-                    
-                //     Text("SCREENDIET")
-                //         .font(.system(size: 10, weight: .bold, design: .default))
-                //         .tracking(1.5)
-                //         .foregroundColor(.white.opacity(0.9))
-                // }
-                // .frame(maxWidth: .infinity, alignment: .center)
-                // .padding(.horizontal, appTheme.spacing.large)
-                // .padding(.top, appTheme.spacing.large)
-                // .padding(.bottom, appTheme.spacing.extraLarge)
-                
-                //Spacer()
                 
                 // Animated circular loader
                 VStack(spacing: appTheme.spacing.extraLarge) {
@@ -198,6 +172,7 @@ struct OnboardingScreen7ProcessingReport: View {
                                     .fill(appTheme.colors.primary)
                                     .frame(width: geometry.size.width * (progress / 100))
                                     .shadow(color: appTheme.colors.primary.opacity(0.6), radius: 8)
+                                    .animation(.easeOut(duration: 0.15), value: progress)
                             }
                         }
                         .frame(height: 8)
@@ -212,6 +187,7 @@ struct OnboardingScreen7ProcessingReport: View {
                                     Image(systemName: "checkmark.circle.fill")
                                         .font(.system(size: 20, weight: .bold))
                                         .foregroundColor(appTheme.colors.primary)
+                                        .frame(width: 20, height: 20)
                                 } else {
                                     ZStack {
                                         Circle()
@@ -228,6 +204,7 @@ struct OnboardingScreen7ProcessingReport: View {
                                                 value: isAnimating
                                             )
                                     }
+                                    .frame(width: 20, height: 20)
                                 }
                                 
                                 Text(steps[index])
@@ -238,6 +215,7 @@ struct OnboardingScreen7ProcessingReport: View {
                                             : appTheme.colors.text
                                     )
                                     .strikethrough(completedSteps.contains(index))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                                 
                                 Spacer()
                             }
@@ -265,14 +243,11 @@ struct OnboardingScreen7ProcessingReport: View {
         .onAppear {
             isAnimating = true
             
-            // Animate progress from 0 to 100 by updating every 50ms
-            // This shows every percentage from 1 to 100
+            // Animate progress from 0 to 100 smoothly with higher frequency updates
             var currentProgress: Double = 0
-            let timer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { _ in
-                currentProgress += 1
-                withAnimation(.linear(duration: 0.05)) {
-                    progress = min(currentProgress, 100)
-                }
+            let timer = Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true) { _ in
+                currentProgress += 0.4
+                progress = min(currentProgress, 100)
                 
                 if currentProgress >= 100 {
                     // Timer stops automatically when progress reaches 100

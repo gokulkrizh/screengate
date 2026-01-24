@@ -49,10 +49,10 @@ struct OnboardingScreen1Problem: View {
                 // Header with back button and centered progress
                 ZStack {
                     HStack {
-                        BackButton {
-                            // Can't go back from first screen, but keeping for consistency
-                        }
-                        .opacity(0.3)
+                        // BackButton {
+                        //     // Can't go back from first screen, but keeping for consistency
+                        // }
+                        // .opacity(0.3)
                         
                         Spacer()
                     }
@@ -60,7 +60,7 @@ struct OnboardingScreen1Problem: View {
                     ProgressIndicatorHeader(currentStep: 0, totalSteps: 10)
                 }
                 .padding(.horizontal, appTheme.spacing.large)
-               // .padding(.vertical, appTheme.spacing.medium)
+                .padding(.vertical, appTheme.spacing.medium)
                 
                 Spacer()
                     .frame(height: appTheme.spacing.small)
@@ -110,7 +110,6 @@ struct OnboardingScreen1Problem: View {
                     // Meta label
                     Text("THE PROBLEM")
                         .font(appTheme.fonts.labelSmall)
-                        .fontWeight(.bold)
                         .tracking(1.5)
                         .foregroundColor(appTheme.colors.primary)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -145,7 +144,7 @@ struct OnboardingScreen1Problem: View {
                     }
                 }
                 .padding(.horizontal, appTheme.spacing.large)
-                .padding(.bottom, appTheme.spacing.large)
+               // .padding(.bottom, appTheme.spacing.large)
             }
             .zIndex(10)
         }

@@ -13,15 +13,34 @@ struct OnboardingScreen8DataReport: View {
             Color(red: 0.06, green: 0.13, blue: 0.09)
                 .ignoresSafeArea()
             
-            // Decorative gradient blob
+            // Decorative gradient blobs
             VStack {
-                Circle()
-                    .fill(appTheme.colors.primary.opacity(0.08))
-                    .blur(radius: 150)
-                    .frame(width: 500, height: 500)
-                    .offset(y: -200)
+                HStack {
+                    VStack(spacing: 0) {
+                        Circle()
+                            .fill(appTheme.colors.primary.opacity(0.05))
+                            .blur(radius: 120)
+                            .frame(width: 320, height: 320)
+                        Spacer()
+                    }
+                    .offset(x: 120, y: -100)
+                    
+                    Spacer()
+                }
                 
                 Spacer()
+                
+                HStack {
+                    Spacer()
+                    VStack {
+                        Spacer()
+                        Circle()
+                            .fill(appTheme.colors.primary.opacity(0.08))
+                            .blur(radius: 100)
+                            .frame(width: 280, height: 280)
+                    }
+                    .offset(x: 80, y: 80)
+                }
             }
             .ignoresSafeArea()
             
@@ -37,10 +56,10 @@ struct OnboardingScreen8DataReport: View {
                         Spacer()
                     }
                     
-                    ProgressIndicatorHeader(currentStep: 6, totalSteps: 10)
+                    ProgressIndicatorHeader(currentStep: 7, totalSteps: 10)
                 }
                 .padding(.horizontal, appTheme.spacing.large)
-          //      .padding(.vertical, appTheme.spacing.medium)
+                .padding(.vertical, appTheme.spacing.medium)
                 
                 // Report header
                 HStack(spacing: 12) {
@@ -55,19 +74,19 @@ struct OnboardingScreen8DataReport: View {
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text("REPORT")
-                            .font(.system(size: 10, weight: .bold, design: .default))
+                            .font(appTheme.fonts.labelSmall)
                             .tracking(1.2)
                             .foregroundColor(appTheme.colors.primary)
                         
                         Text("Your Insights")
-                            .font(.system(size: 16, weight: .bold, design: .default))
-                            .foregroundColor(.white)
+                            .font(appTheme.fonts.titleMedium)
+                            .foregroundColor(appTheme.colors.text)
                     }
                     
                     Spacer()
                 }
-                .padding(.horizontal, 50)
-                .padding(.vertical, 16)
+                .padding(.horizontal, appTheme.spacing.large)
+                .padding(.vertical, appTheme.spacing.medium)
                 
                 // Scrollable content
                 ScrollView(.vertical, showsIndicators: false) {
@@ -84,22 +103,49 @@ struct OnboardingScreen8DataReport: View {
                         insightCard
                         .padding(.horizontal, appTheme.spacing.large)
                         
-                        // Next button
+                        Spacer()
+                            .frame(height: 140)
+                    }
+                    .padding(.top, appTheme.spacing.medium)
+                }
+                
+                Spacer()
+            }
+            .zIndex(10)
+            
+            // Bottom button
+            VStack(spacing: 0) {
+                Spacer()
+                
+                VStack(spacing: 0) {
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.clear,
+                            Color(red: 0.06, green: 0.13, blue: 0.09),
+                            Color(red: 0.06, green: 0.13, blue: 0.09)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 20)
+                    
+                    VStack(spacing: appTheme.spacing.medium) {
                         PrimaryButton(
                             title: "Continue",
+                            icon: nil,
                             action: {
                                 data.currentScreen += 1
                             }
                         )
-                        .padding(.horizontal, 20)
-                        .padding(.top, 12)
-                        .padding(.bottom, 24)
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
+                    .padding(.horizontal, appTheme.spacing.large)
+                   // .padding(.bottom, appTheme.spacing.large)
+                    .background(Color(red: 0.06, green: 0.13, blue: 0.09))
                 }
-            }.padding(.horizontal, appTheme.spacing.extraLarge)
-            .padding(.vertical, appTheme.spacing.extraLarge)
+                .zIndex(20)
+            }
+            .zIndex(20)
+            .ignoresSafeArea(.keyboard)
         }
     }
     

@@ -95,9 +95,9 @@ struct OnboardingScreen11CreatingPlan: View {
                                     )
                                 
                                 Text("PROCESSING")
-                                    .font(.system(size: 10, weight: .bold, design: .default))
+                                    .font(appTheme.fonts.labelSmall)
                                     .tracking(1.2)
-                                    .foregroundColor(.white)
+                                    .foregroundColor(appTheme.colors.text)
                             }
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
@@ -112,17 +112,17 @@ struct OnboardingScreen11CreatingPlan: View {
                     VStack(spacing: 12) {
                         VStack(spacing: 4) {
                             Text("Creating Your")
-                                .font(.system(size: 28, weight: .bold, design: .default))
-                                .foregroundColor(.white)
+                                .font(appTheme.fonts.displaySmall)
+                                .foregroundColor(appTheme.colors.text)
                             
                             Text("Personalized Plan")
-                                .font(.system(size: 28, weight: .bold, design: .default))
+                                .font(appTheme.fonts.displaySmall)
                                 .foregroundColor(appTheme.colors.primary)
                         }
                         
                         Text("We're tailoring your Screendiet schedule to align perfectly with your focus goals.")
-                            .font(.system(size: 14, weight: .semibold, design: .default))
-                            .foregroundColor(.white.opacity(0.6))
+                            .font(appTheme.fonts.bodyLarge)
+                            .foregroundColor(appTheme.colors.textSecondary)
                             .multilineTextAlignment(.center)
                     }
                     .frame(maxWidth: .infinity)
@@ -160,7 +160,7 @@ struct OnboardingScreen11CreatingPlan: View {
                                     isSpinning = true
                                 }
                         }
-                        .frame(height: 10)
+                        .frame(height: 8)
                         .scaleEffect(x: progress / 100, anchor: .leading)
                     }
                     
@@ -280,9 +280,12 @@ struct OnboardingScreen11CreatingPlan: View {
             appTheme.colors.primary.opacity(0.1) :
             Color.white.opacity(0.03)
         )
-        .border(
-            isActive ? appTheme.colors.primary : Color.white.opacity(0.05),
-            width: isActive ? 1.5 : 0.5
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(
+                    (isActive || isCompleted) ? appTheme.colors.primary : Color.white.opacity(0.05),
+                    lineWidth: (isActive || isCompleted) ? 1.5 : 0.5
+                )
         )
         .cornerRadius(12)
         .opacity(isActive || isCompleted ? 1.0 : 0.5)

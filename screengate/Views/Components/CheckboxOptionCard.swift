@@ -13,7 +13,7 @@ struct CheckboxOptionCard: View {
             HStack(spacing: appTheme.spacing.medium) {
                 VStack(alignment: .leading) {
                     Text(title)
-                        .font(appTheme.fonts.headlineSmall)
+                        .font(appTheme.fonts.titleMedium)
                         .foregroundColor(appTheme.colors.text)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)

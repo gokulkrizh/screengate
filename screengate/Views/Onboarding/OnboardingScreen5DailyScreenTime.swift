@@ -66,12 +66,14 @@ struct OnboardingScreen5DailyScreenTime: View {
                     
                     ProgressIndicatorHeader(currentStep: 4, totalSteps: 10)
                 }
-                
+                .padding(.horizontal, appTheme.spacing.large)
+                .padding(.bottom, appTheme.spacing.medium)
+
                 // Title and subtitle
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: appTheme.spacing.medium) {
                     Text("Daily Screen Time")
                         .font(appTheme.fonts.displaySmall)
-                        .fontWeight(.bold)
+
                         .foregroundColor(appTheme.colors.text)
                     
                     Text("Honestly, how much time do you spend staring at screens each day?")
@@ -85,10 +87,14 @@ struct OnboardingScreen5DailyScreenTime: View {
                 // Scrollable options
                 ScrollView {
                     VStack(spacing: 12) {
-                        ForEach(0..<options.count, id: \.self) { index in
-                            ScreenTimeOptionCard(
+                        ForEach(0..<options.count, id
+                                : \.self) { index in
+                            RadioOptionCard(
+                                icon: "",
+                                iconColor: nil,
+                                iconBackgroundColor: nil,
                                 title: options[index].title,
-                                description: options[index].description,
+                                subtitle: options[index].description,
                                 isSelected: selectedOption == index
                             ) {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
@@ -99,6 +105,7 @@ struct OnboardingScreen5DailyScreenTime: View {
                     }
                     .padding(.horizontal, appTheme.spacing.large)
                     .padding(.bottom, 140)
+                    .padding(.top, appTheme.spacing.small)
                 }
                 
                 Spacer()
@@ -119,7 +126,7 @@ struct OnboardingScreen5DailyScreenTime: View {
                         startPoint: .top,
                         endPoint: .bottom
                     )
-                    .frame(height: 60)
+                    .frame(height: 20)
                     
                     VStack(spacing: appTheme.spacing.medium) {
                         PrimaryButton(
@@ -130,7 +137,7 @@ struct OnboardingScreen5DailyScreenTime: View {
                         }
                     }
                     .padding(.horizontal, appTheme.spacing.large)
-                    .padding(.bottom, appTheme.spacing.large)
+                   // .padding(.bottom, appTheme.spacing.large)
                     .background(Color(red: 0.06, green: 0.13, blue: 0.09))
                 }
                 .zIndex(20)

@@ -70,19 +70,18 @@ struct OnboardingScreen3ProcessUnderstanding: View {
               //  .padding(.vertical, appTheme.spacing.medium)
                 
                 // Title and subtitle (fixed, not scrollable)
-                VStack(alignment: .center, spacing: appTheme.spacing.medium) {
+                VStack(alignment: .leading, spacing: appTheme.spacing.medium) {
                     Text("When do you find yourself using your phone the most?")
                         .font(appTheme.fonts.displaySmall)
-                        .fontWeight(.bold)
                         .foregroundColor(appTheme.colors.text)
-                        .multilineTextAlignment(.center)
+                        //.multilineTextAlignment(.center)
                     
                     Text("Reflecting on your habits helps us tailor your diet. Select all that apply.")
                         .font(appTheme.fonts.bodyLarge)
                         .foregroundColor(appTheme.colors.textSecondary)
-                        .multilineTextAlignment(.center)
+                       // .multilineTextAlignment(.center)
                 }
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, appTheme.spacing.large)
                 .padding(.vertical, appTheme.spacing.large)
                 
@@ -106,6 +105,7 @@ struct OnboardingScreen3ProcessUnderstanding: View {
                     }
                     .padding(.horizontal, appTheme.spacing.large)
                     .padding(.bottom, 140)
+                    .padding(.top, appTheme.spacing.small)
                 }
                 
                 Spacer()
@@ -126,7 +126,7 @@ struct OnboardingScreen3ProcessUnderstanding: View {
                         startPoint: .top,
                         endPoint: .bottom
                     )
-                    .frame(height: 60)
+                    .frame(height: 20)
                     
                     VStack(spacing: appTheme.spacing.medium) {
                         PrimaryButton(
@@ -137,7 +137,7 @@ struct OnboardingScreen3ProcessUnderstanding: View {
                         }
                     }
                     .padding(.horizontal, appTheme.spacing.large)
-                    .padding(.bottom, appTheme.spacing.large)
+                    //.padding(.bottom, appTheme.spacing.large)
                     .background(Color(red: 0.06, green: 0.13, blue: 0.09))
                 }
                 .zIndex(20)

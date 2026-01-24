@@ -25,155 +25,178 @@ struct OnboardingScreen14TrialReminder: View {
             }
             .ignoresSafeArea()
             
-            VStack(spacing: 0) {
-                // Header with progress
-                HStack {
-                    Spacer()
-                    ProgressIndicatorHeader(currentStep: 13, totalSteps: 10)
-                    Spacer()
+            VStack {
+                // Title and description
+                VStack(alignment: .center, spacing: 12) {
+                    Text("No surprise charges")
+                        .font(appTheme.fonts.displayMedium)
+                        .multilineTextAlignment(.center)
+                        .foregroundColor(appTheme.colors.text)
+                        .padding(.horizontal, 20)
+                    
+                    Text("We'll send you a notification 2 days before your trial ends, so you're always in control.")
+                        .font(appTheme.fonts.bodyLarge)
+                        .foregroundColor(appTheme.colors.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 45)
                 }
-                .padding(.horizontal, appTheme.spacing.large)
-         //       .padding(.vertical, appTheme.spacing.medium)
-                
+                .padding(.bottom, 32)
+                .padding(.top, appTheme.spacing.large)
+
                 // Content
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: 50) {
-                        // Title and description
-                        VStack(alignment: .center, spacing: 12) {
-                            Text("No surprise charges")
-                                .font(.system(size: 32, weight: .bold, design: .default))
-                                .foregroundColor(.white)
-                            
-                            Text("We'll send you a notification 2 days before your trial ends, so you're always in control.")
-                                .font(.system(size: 15, weight: .semibold, design: .default))
-                                .foregroundColor(.white.opacity(0.6))
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 20)
-                        }
-                        .padding(.bottom, 32)
+                GeometryReader { geometry in
+                    ScrollView(.vertical, showsIndicators: false) {
                         
-                        // Timeline
-                        ZStack(alignment: .topLeading) {
-                            // Vertical connector line (behind items)
-                            VStack(spacing: 0) {
-                                // Spacer for first item height (56) + spacing (28)
-                                Spacer()
-                                    .frame(height: 55)
-                                
-                                // Gradient line (increased height)
-                                LinearGradient(
-                                    gradient: Gradient(colors: [
-                                        appTheme.colors.primary,
-                                        appTheme.colors.primary.opacity(0.4),
-                                        Color.white.opacity(0.1)
-                                    ]),
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                                .frame(width: 2, height: 270)
-                            }
-                            .padding(.leading, 48)
+                        VStack(spacing: 50) {
                             
-                            // Timeline items
-                            VStack(spacing: 40) {
-                                // Day 0: Today
-                                timelineItem(
-                                    icon: "lock.open.fill",
-                                    title: "Today",
-                                    subtitle: "Start free 7-day trial",
-                                    isActive: false,
-                                    isCompleted: true
-                                )
+                            // Timeline
+                            HStack {
+                                Spacer()
                                 
-                                // Day 5: Reminder
-                                VStack(alignment: .leading, spacing: 22) {
+                                ZStack(alignment: .topLeading) {
+                                // Vertical connector line (behind items)
+                                VStack(spacing: 30) {
+                                    // Spacer for first item height (56) + spacing (28)
+                                    Spacer()
+                                        .frame(height: 55)
+                                    
+                                    // Gradient line (increased height)
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            appTheme.colors.primary,
+                                            appTheme.colors.primary.opacity(0.4),
+                                            Color.white.opacity(0.1)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                    .frame(width: 2, height: 270)
+                                }
+                                .padding(.leading, 48)
+                                
+                                // Timeline items
+                                VStack(spacing: 40) {
+                                    // Day 0: Today
                                     timelineItem(
-                                        icon: "bell.fill",
-                                        title: "Day 5",
-                                        subtitle: "We'll remind you",
-                                        isActive: true,
-                                        isCompleted: false
+                                        icon: "lock.open.fill",
+                                        title: "Today",
+                                        subtitle: "Start free 7-day trial",
+                                        isActive: false,
+                                        isCompleted: true
                                     )
                                     
-                                    // Notification preview card
-                                    VStack(alignment: .leading, spacing: 10) {
-                                        HStack(spacing: 12) {
-                                            // App icon
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .fill(appTheme.colors.primary)
-                                                .frame(width: 40, height: 40)
-                                                .overlay(
-                                                    Image(systemName: "smartphone.fill")
-                                                        .font(.system(size: 16, weight: .semibold))
-                                                        .foregroundColor(Color(red: 0.06, green: 0.13, blue: 0.09))
-                                                )
-                                            
-                                            VStack(alignment: .leading, spacing: 4) {
-                                                HStack(spacing: 8) {
-                                                    Text("SCREENDIET")
-                                                        .font(.system(size: 10, weight: .bold, design: .default))
-                                                        .tracking(0.5)
-                                                        .foregroundColor(.white.opacity(0.5))
-                                                    
-                                                    Spacer()
-                                                    
-                                                    Text("now")
-                                                        .font(.system(size: 9, weight: .semibold, design: .default))
-                                                        .foregroundColor(.white.opacity(0.4))
-                                                }
-                                                
-                                                Text("Trial Ending Soon")
-                                                    .font(.system(size: 13, weight: .bold, design: .default))
-                                                    .foregroundColor(.white)
-                                            }
-                                        }
+                                    // Day 5: Reminder
+                                    VStack(alignment: .leading, spacing: 22) {
+                                        timelineItem(
+                                            icon: "bell.fill",
+                                            title: "Day 5",
+                                            subtitle: "We'll remind you",
+                                            isActive: true,
+                                            isCompleted: false
+                                        )
                                         
-                                        Text("Your trial ends in 2 days. Cancel now if you don't want to be charged.")
-                                            .font(.system(size: 11, weight: .semibold, design: .default))
-                                            .foregroundColor(.white.opacity(0.6))
-                                            .lineLimit(2)
+                                        // Notification preview card
+                                        VStack(alignment: .leading, spacing: 10) {
+                                            HStack(spacing: 12) {
+                                                // App icon
+                                                RoundedRectangle(cornerRadius: 8)
+                                                    .fill(appTheme.colors.primary)
+                                                    .frame(width: 40, height: 40)
+                                                    .overlay(
+                                                        Image(systemName: "smartphone.fill")
+                                                            .font(.system(size: 16, weight: .semibold))
+                                                            .foregroundColor(Color(red: 0.06, green: 0.13, blue: 0.09))
+                                                    )
+                                                
+                                                VStack(alignment: .leading, spacing: 4) {
+                                                    HStack(spacing: 8) {
+                                                        Text("SCREENDIET")
+                                                            .font(.system(size: 10, weight: .bold, design: .default))
+                                                            .tracking(0.5)
+                                                            .foregroundColor(.white.opacity(0.5))
+                                                        
+                                                        Spacer()
+                                                        
+                                                        Text("now")
+                                                            .font(.system(size: 9, weight: .semibold, design: .default))
+                                                            .foregroundColor(.white.opacity(0.4))
+                                                    }
+                                                    
+                                                    Text("Trial Ending Soon")
+                                                        .font(.system(size: 13, weight: .bold, design: .default))
+                                                        .foregroundColor(.white)
+                                                }
+                                            }
+                                            
+                                            Text("Your trial ends in 2 days. Cancel now if you don't want to be charged.")
+                                                .font(.system(size: 11, weight: .semibold, design: .default))
+                                                .foregroundColor(.white.opacity(0.6))
+                                                .lineLimit(2)
+                                        }
+                                        .padding(12)
+                                        .background(Color.white.opacity(0.03))
+                                        .border(Color.white.opacity(0.1), width: 0.5)
+                                        .cornerRadius(12)
+                                        .padding(.leading, 48)
                                     }
-                                    .padding(12)
-                                    .background(Color.white.opacity(0.03))
-                                    .border(Color.white.opacity(0.1), width: 0.5)
-                                    .cornerRadius(12)
-                                    .padding(.leading, 48)
+                                    
+                                    // Day 7: Subscription begins
+                                    timelineItem(
+                                        icon: "star.fill",
+                                        title: "Day 7",
+                                        subtitle: "Premium subscription begins",
+                                        isActive: false,
+                                        isCompleted: false
+                                    )
                                 }
-                                
-                                // Day 7: Subscription begins
-                                timelineItem(
-                                    icon: "star.fill",
-                                    title: "Day 7",
-                                    subtitle: "Premium subscription begins",
-                                    isActive: false,
-                                    isCompleted: false
-                                )
+                                .padding(.horizontal, 20)
+                                .padding(.top, 20)
                             }
-                            .padding(.horizontal, 20)
+                            
+                            Spacer()
                         }
-                        .frame(maxWidth: .infinity)
+                        
+                        }
                         .padding(.bottom, 32)
+                        .frame(maxWidth: .infinity, minHeight: geometry.size.height)
                     }
+                    .scrollDisabled(true)
                 }
-                
-                Spacer()
-                
-                // Bottom section
-                VStack(spacing: 16) {
-                    PrimaryButton(
-                        title: "Enable Reminders & Continue",
-                        action: {
+
+                VStack(spacing: 0) {
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.clear,
+                            Color(red: 0.06, green: 0.13, blue: 0.09),
+                            Color(red: 0.06, green: 0.13, blue: 0.09)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 20)
+                    
+                    VStack(spacing: 8) {
+                        PrimaryButton(
+                            title: "Enable remainders",
+                        ) {
                             data.currentScreen += 1
                         }
-                    )
-                    
-                    Text("No payment due now. You can cancel anytime in settings.")
-                        .font(.system(size: 12, weight: .semibold, design: .default))
-                        .foregroundColor(.white.opacity(0.5))
-                        .multilineTextAlignment(.center)
+                        
+                        HStack(spacing: 8) {
+                            Image(systemName: "bell.fill")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(appTheme.colors.primary)
+                            
+                            Text("We'll remind you 2 days before trial ends")
+                                .font(.system(size: 12, weight: .semibold, design: .default))
+                                .foregroundColor(.white.opacity(0.5))
+                        }
+                    }
+                    .padding(.horizontal, appTheme.spacing.large)
+                    .background(Color(red: 0.06, green: 0.13, blue: 0.09))
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 20)
+                .zIndex(20)
+                .ignoresSafeArea(.keyboard)
             }
         }
     }

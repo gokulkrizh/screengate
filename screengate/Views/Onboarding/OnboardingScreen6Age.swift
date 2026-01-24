@@ -67,12 +67,10 @@ struct OnboardingScreen6Age: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Let's customize")
                         .font(appTheme.fonts.displaySmall)
-                        .fontWeight(.bold)
                         .foregroundColor(appTheme.colors.text)
                     
                     Text("your plan.")
                         .font(appTheme.fonts.displaySmall)
-                        .fontWeight(.bold)
                         .foregroundColor(appTheme.colors.text)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -85,7 +83,7 @@ struct OnboardingScreen6Age: View {
                 VStack(spacing: appTheme.spacing.medium) {
                     HStack(spacing: appTheme.spacing.medium) {
                         Text("I am")
-                            .font(.system(size: 20, weight: .medium))
+                            .font(appTheme.fonts.titleLarge)
                             .foregroundColor(appTheme.colors.textSecondary)
                         
                         Picker("Age", selection: $selectedAge) {
@@ -102,7 +100,7 @@ struct OnboardingScreen6Age: View {
                         .frame(width: 100, height: 200)
                         
                         Text("years old.")
-                            .font(.system(size: 20, weight: .medium))
+                            .font(appTheme.fonts.titleLarge)
                             .foregroundColor(appTheme.colors.textSecondary)
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -140,18 +138,18 @@ struct OnboardingScreen6Age: View {
                         startPoint: .top,
                         endPoint: .bottom
                     )
-                    .frame(height: 60)
+                    .frame(height: 20)
                     
                     VStack(spacing: appTheme.spacing.medium) {
                         PrimaryButton(
                             title: "Continue",
                             icon: nil
                         ) {
-                            data.currentScreen = 7
+                            data.currentScreen = 9
                         }
                     }
                     .padding(.horizontal, appTheme.spacing.large)
-                    .padding(.bottom, appTheme.spacing.large)
+                   // .padding(.bottom, appTheme.spacing.large)
                     .background(Color(red: 0.06, green: 0.13, blue: 0.09))
                 }
                 .zIndex(20)

@@ -51,7 +51,7 @@ struct OnboardingScreen12SolutionPreview: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 HStack(spacing: 0) {
                                     Text(makeHeadline())
-                                        .font(.system(size: 28, weight: .bold, design: .default))
+                                         .font(appTheme.fonts.displaySmall)
                                         //.foregroundColor(.white)
                                     
                                     // Text("Focus")
@@ -66,8 +66,8 @@ struct OnboardingScreen12SolutionPreview: View {
                             
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(makeSubHeadline())
-                                    .font(.system(size: 14, weight: .semibold, design: .default))
-                                    .foregroundColor(.white.opacity(0.6))
+                                    .font(appTheme.fonts.bodyLarge)
+                                    .foregroundColor(appTheme.colors.textSecondary)
                                 
                                 // HStack(spacing: 4) {
                                 //     Text("14 hours")
@@ -89,8 +89,8 @@ struct OnboardingScreen12SolutionPreview: View {
                         VStack(alignment: .leading, spacing: 12) {
                             HStack {
                                 Text("Your Strategy")
-                                    .font(.system(size: 18, weight: .bold, design: .default))
-                                    .foregroundColor(.white)
+                                    .font(appTheme.fonts.titleMedium)
+                                    .foregroundColor(appTheme.colors.text)
                                 
                                 Spacer()
                             }

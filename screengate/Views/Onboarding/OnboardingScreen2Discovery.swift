@@ -70,7 +70,7 @@ struct OnboardingScreen2Discovery: View {
                 
                 // Badge and heading (fixed, not scrollable)
                 VStack(alignment: .leading, spacing: appTheme.spacing.medium) {
-                    Badge(label: "Discovery")
+                    //Badge(label: "Discovery")
                     
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Let's start your journey.")
@@ -107,6 +107,7 @@ struct OnboardingScreen2Discovery: View {
                     }
                     .padding(.horizontal, appTheme.spacing.large)
                     .padding(.bottom, 140)
+                    .padding(.top, appTheme.spacing.small)
                 }
                 
                 Spacer()
@@ -127,7 +128,7 @@ struct OnboardingScreen2Discovery: View {
                         startPoint: .top,
                         endPoint: .bottom
                     )
-                    .frame(height: 60)
+                    .frame(height: 20)
                     
                     VStack(spacing: appTheme.spacing.medium) {
                         PrimaryButton(
@@ -138,7 +139,7 @@ struct OnboardingScreen2Discovery: View {
                         }
                     }
                     .padding(.horizontal, appTheme.spacing.large)
-                    .padding(.bottom, appTheme.spacing.large)
+                   // .padding(.bottom, appTheme.spacing.large)
                     .background(Color(red: 0.06, green: 0.13, blue: 0.09))
                 }
                 .zIndex(20)

@@ -23,15 +23,34 @@ struct OnboardingScreen10GoalSetting: View {
             Color(red: 0.06, green: 0.13, blue: 0.09)
                 .ignoresSafeArea()
             
-            // Decorative gradient blob
+            // Decorative gradient blobs
             VStack {
-                Circle()
-                    .fill(appTheme.colors.primary.opacity(0.08))
-                    .blur(radius: 150)
-                   // .frame(width: 500, height: 500)
-                    .offset(y: -150)
+                HStack {
+                    VStack(spacing: 0) {
+                        Circle()
+                            .fill(appTheme.colors.primary.opacity(0.05))
+                            .blur(radius: 120)
+                            .frame(width: 320, height: 320)
+                        Spacer()
+                    }
+                    .offset(x: 120, y: -100)
+                    
+                    Spacer()
+                }
                 
                 Spacer()
+                
+                HStack {
+                    Spacer()
+                    VStack {
+                        Spacer()
+                        Circle()
+                            .fill(appTheme.colors.primary.opacity(0.08))
+                            .blur(radius: 100)
+                            .frame(width: 280, height: 280)
+                    }
+                    .offset(x: 80, y: 80)
+                }
             }
             .ignoresSafeArea()
             
@@ -48,8 +67,8 @@ struct OnboardingScreen10GoalSetting: View {
                     
                     ProgressIndicatorHeader(currentStep: 7, totalSteps: 10)
                 }
-                .padding(.horizontal, appTheme.spacing.large)
-          //      .padding(.vertical, 12)
+                .padding(.horizontal, 0)
+               // .padding(.vertical, 12)
                 
                 // Content
                 ScrollView(.vertical, showsIndicators: false) {
@@ -57,13 +76,13 @@ struct OnboardingScreen10GoalSetting: View {
                         // Title and description
                         VStack(alignment: .leading, spacing: 12) {
                             Text("What would success look like for you?")
-                                .font(.system(size: 28, weight: .bold, design: .default))
-                                .foregroundColor(.white)
+                                .font(appTheme.fonts.displaySmall)
+                                .foregroundColor(appTheme.colors.text)
                                 .lineLimit(3)
                             
                             Text("Select all that apply to personalize your journey.")
-                                .font(.system(size: 15, weight: .semibold, design: .default))
-                                .foregroundColor(.white.opacity(0.6))
+                                .font(appTheme.fonts.bodyLarge)
+                                .foregroundColor(appTheme.colors.textSecondary)
                         }
                         .padding(.top, 12)
                         

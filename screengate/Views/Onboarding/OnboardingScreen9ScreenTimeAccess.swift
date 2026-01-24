@@ -34,13 +34,19 @@ struct OnboardingScreen9ScreenTimeAccess: View {
             // Main content
             VStack(spacing: 0) {
                 // Header with progress
-                HStack {
-                    Spacer()
+                ZStack {
+                    HStack {
+                        BackButton {
+                            data.currentScreen = 6
+                        }
+                       
+                        Spacer()
+                    }
                     ProgressIndicatorHeader(currentStep: 6, totalSteps: 10)
-                    Spacer()
                 }
                 .padding(.horizontal, appTheme.spacing.large)
-         //       .padding(.vertical, appTheme.spacing.medium)
+                .padding(.top, appTheme.spacing.large)
+               // .padding(.vertical, appTheme.spacing.medium)
                 
                 // Top spacing
                 VStack(spacing: 24) {
@@ -67,13 +73,13 @@ struct OnboardingScreen9ScreenTimeAccess: View {
                     // Title and description
                     VStack(spacing: 12) {
                         Text("Screen Time Access")
-                            .font(.system(size: 28, weight: .bold, design: .default))
-                            .foregroundColor(.white)
+                            .font(appTheme.fonts.displaySmall)
+                            .foregroundColor(appTheme.colors.text)
                             .lineLimit(2)
                         
                         Text("Screendiet needs this permission to sync with your device's usage data.")
-                            .font(.system(size: 15, weight: .semibold, design: .default))
-                            .foregroundColor(.white.opacity(0.7))
+                            .font(appTheme.fonts.bodyLarge)
+                            .foregroundColor(appTheme.colors.textSecondary)
                             .lineLimit(3)
                             .multilineTextAlignment(.center)
                     }

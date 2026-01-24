@@ -40,14 +40,14 @@ struct GetStartedView: View {
                         data.currentScreen = 1
                     }
                     
-                    SecondaryButton(
-                        title: "Already have an account? Log in"
-                    ) {
-                        // Future: Implement login flow
-                    }
+//                    SecondaryButton(
+//                        title: "Already have an account? Log in"
+//                    ) {
+//                        // Future: Implement login flow
+//                    }
                 }
                 .padding(.horizontal, appTheme.spacing.large)
-                .padding(.bottom, appTheme.spacing.large)
+               // .padding(.bottom, appTheme.spacing.large)
             }
             .zIndex(10)
         }
