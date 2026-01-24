@@ -4,7 +4,7 @@ import SwiftUI
 /// User selects when they find themselves using phone the most
 struct OnboardingScreen3ProcessUnderstanding: View {
     @ObservedObject var data: OnboardingData
-    @State private var selectedOptions: Set<Int> = [1] // Pre-select "During breaks"
+    @State private var selectedOptions: Set<Int> = []
     
     private let appTheme = AppTheme.shared
     
@@ -86,7 +86,8 @@ struct OnboardingScreen3ProcessUnderstanding: View {
                     VStack(spacing: appTheme.spacing.medium) {
                         PrimaryButton(
                             title: "Continue",
-                            icon: "arrow.right"
+                            icon: "arrow.right",
+                            isDisabled: selectedOptions.isEmpty
                         ) {
                             data.currentScreen = 4
                         }

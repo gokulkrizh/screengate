@@ -4,7 +4,7 @@ import SwiftUI
 /// User selects their age for plan customization
 struct OnboardingScreen6Age: View {
     @ObservedObject var data: OnboardingData
-    @State private var selectedAge: Int = 24
+    @State private var selectedAge: Int? = nil
     @State private var scrollOffset: CGFloat = 0
     
     private let appTheme = AppTheme.shared
@@ -52,13 +52,27 @@ struct OnboardingScreen6Age: View {
                             .font(appTheme.fonts.titleLarge)
                             .foregroundColor(appTheme.colors.textSecondary)
                         
-                        Picker("Age", selection: $selectedAge) {
+                        Picker("Age", selection: Binding(
+                            get: { selectedAge ?? -1 },
+                            set: { newValue in
+                                if newValue == -1 {
+                                    selectedAge = nil
+                                } else {
+                                    selectedAge = newValue
+                                }
+                            }
+                        )) {
+                            Text("—")
+                                .font(.system(size: 36, weight: .bold))
+                                .foregroundColor(appTheme.colors.primary.opacity(0.3))
+                                .tag(-1)
+                            
                             ForEach(ageRange, id: \.self) { age in
                                 Text("\(age)")
-                                    .font(.system(size: age == selectedAge ? 36 : 28, weight: age == selectedAge ? .bold : .semibold))
+                                    .font(.system(size: (selectedAge == age) ? 36 : 28, weight: (selectedAge == age) ? .bold : .semibold))
                                     .foregroundColor(appTheme.colors.primary)
-                                    .scaleEffect(age == selectedAge ? 1.0 : 0.7)
-                                    .opacity(age == selectedAge ? 1.0 : 0.4)
+                                    .scaleEffect((selectedAge == age) ? 1.0 : 0.7)
+                                    .opacity((selectedAge == age) ? 1.0 : 0.4)
                                     .tag(age)
                             }
                         }
@@ -98,7 +112,8 @@ struct OnboardingScreen6Age: View {
                     VStack(spacing: appTheme.spacing.medium) {
                         PrimaryButton(
                             title: "Continue",
-                            icon: nil
+                            icon: nil,
+                            isDisabled: selectedAge == nil
                         ) {
                             data.currentScreen = 9
                         }

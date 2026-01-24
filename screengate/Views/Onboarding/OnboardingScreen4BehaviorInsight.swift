@@ -101,7 +101,8 @@ struct OnboardingScreen4BehaviorInsight: View {
                     VStack(spacing: appTheme.spacing.medium) {
                         PrimaryButton(
                             title: "Analyze Habits",
-                            icon: nil
+                            icon: nil,
+                            isDisabled: selectedCategories.isEmpty
                         ) {
                             data.currentScreen = 5
                         }

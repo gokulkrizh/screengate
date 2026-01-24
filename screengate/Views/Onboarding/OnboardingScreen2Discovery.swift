@@ -4,7 +4,7 @@ import SwiftUI
 /// Allows user to select their main reason for joining
 struct OnboardingScreen2Discovery: View {
     @ObservedObject var data: OnboardingData
-    @State private var selectedOption: Int = 0
+    @State private var selectedOption: Int? = nil
     
     private let appTheme = AppTheme.shared
     
@@ -89,7 +89,8 @@ struct OnboardingScreen2Discovery: View {
                     VStack(spacing: appTheme.spacing.medium) {
                         PrimaryButton(
                             title: "Continue",
-                            icon: "arrow.right"
+                            icon: "arrow.right",
+                            isDisabled: selectedOption == nil
                         ) {
                             data.currentScreen = 3
                         }

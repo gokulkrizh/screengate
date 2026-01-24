@@ -4,7 +4,7 @@ import SwiftUI
 /// Allows users to select success goals for their wellness journey
 struct OnboardingScreen10GoalSetting: View {
     @ObservedObject var data: OnboardingData
-    @State private var selectedGoals: Set<String> = ["reclaim_time"]
+    @State private var selectedGoals: Set<String> = []
     @State private var customGoal: String = ""
     
     private let appTheme = AppTheme.shared
@@ -100,7 +100,8 @@ struct OnboardingScreen10GoalSetting: View {
                 BottomGradientContainer {
                     VStack(spacing: appTheme.spacing.medium) {
                         PrimaryButton(
-                            title: "Continue"
+                            title: "Continue",
+                            isDisabled: selectedGoals.isEmpty && customGoal.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                         ) {
                             data.currentScreen += 1
                         }

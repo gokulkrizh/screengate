@@ -4,7 +4,7 @@ import SwiftUI
 /// User selects how much time they spend on screens daily
 struct OnboardingScreen5DailyScreenTime: View {
     @ObservedObject var data: OnboardingData
-    @State private var selectedOption: Int = 2 // Pre-select "I'm glued to it"
+    @State private var selectedOption: Int? = nil
     
     private let appTheme = AppTheme.shared
     
@@ -86,7 +86,8 @@ struct OnboardingScreen5DailyScreenTime: View {
                     VStack(spacing: appTheme.spacing.medium) {
                         PrimaryButton(
                             title: "Continue",
-                            icon: nil
+                            icon: nil,
+                            isDisabled: selectedOption == nil
                         ) {
                             data.currentScreen = 6
                         }

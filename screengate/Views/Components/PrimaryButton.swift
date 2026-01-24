@@ -7,22 +7,27 @@ struct PrimaryButton: View {
     
     let title: String
     let icon: String?
+    let isDisabled: Bool
     let action: () -> Void
     
     init(
         title: String,
         icon: String? = nil,
+        isDisabled: Bool = false,
         action: @escaping () -> Void
     ) {
         self.title = title
         self.icon = icon
+        self.isDisabled = isDisabled
         self.action = action
     }
     
     var body: some View {
         Button(action: {
-            withAnimation {
-                action()
+            if !isDisabled {
+                withAnimation {
+                    action()
+                }
             }
         }) {
             HStack(spacing: appTheme.spacing.small) {
@@ -37,11 +42,12 @@ struct PrimaryButton: View {
             }
             .frame(maxWidth: .infinity)
             .frame(height: 56)
-            .background(appTheme.colors.primary)
-            .foregroundColor(appTheme.colors.background)
+            .background(isDisabled ? appTheme.colors.primary.opacity(0.3) : appTheme.colors.primary)
+            .foregroundColor(isDisabled ? appTheme.colors.background.opacity(0.5) : appTheme.colors.background)
             .cornerRadius(14)
-            .shadow(color: appTheme.colors.primary.opacity(0.25), radius: 12)
+            .shadow(color: isDisabled ? Color.clear : appTheme.colors.primary.opacity(0.25), radius: 12)
         }
+        .disabled(isDisabled)
         .scaleEffect(1.0, anchor: .center)
     }
 }
