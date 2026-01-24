@@ -27,7 +27,11 @@ final class BlockManager {
     
     init() {
         self.userDefaults = UserDefaults(suiteName: "group.com.gia.screengate") ?? .standard
-        loadFromUserDefaults()
+        
+        // Load from UserDefaults asynchronously to avoid blocking UI
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.loadFromUserDefaults()
+        }
     }
     
     deinit {

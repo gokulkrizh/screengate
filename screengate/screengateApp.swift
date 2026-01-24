@@ -43,16 +43,19 @@ extension Notification.Name {
 struct DeviceActivityMonitorDemoApp: App {
     @State private var showRestrictionLifted = false
     @State private var hasCompletedOnboarding = OnboardingData.hasCompletedOnboarding()
+    @State private var blockManager = BlockManager()
     private let notificationDelegate = NotificationDelegate()
 
     init() {
-        Superwall.configure(apiKey: "pk_u5bxkniFBjniC5yFeiCtV")
+        // Setup notification delegate
+        UNUserNotificationCenter.current().delegate = notificationDelegate
     }
     
     var body: some Scene {
         WindowGroup {
             if hasCompletedOnboarding {
                 HomeScreen()
+                    .environment(blockManager)
             } else {
                 NavigationStack {
                     SplashView(onCompletion: {
