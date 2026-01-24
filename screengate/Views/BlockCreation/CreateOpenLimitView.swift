@@ -1,16 +1,17 @@
 import SwiftUI
+import FamilyControls
 
 struct CreateOpenLimitView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(BlockManager.self) private var blockManager
+    
     @State private var blockName = ""
     @State private var openCount = 3
     @State private var selectedDays: Set<Int> = [1, 2, 3, 4, 5] // M-F
     @State private var strictMode: StrictMode = .medium
+    @State private var showActivityPicker = false
+    @State private var activitySelection: FamilyActivitySelection = FamilyActivitySelection()
     private let appTheme = AppTheme.shared
-    
-    enum StrictMode {
-        case easy, medium, hard
-    }
     
     var body: some View {
         ZStack {
@@ -38,13 +39,20 @@ struct CreateOpenLimitView: View {
                     Spacer()
                     
                     Button(action: {}) {
-                        Text("Save")
-                            .font(.system(size: 16, weight: .bold, design: .default))
-                            .foregroundColor(appTheme.colors.primary)
+                        Text("Coming Soon")
+                            .font(.system(size: 14, weight: .semibold, design: .default))
+                            .foregroundColor(.white.opacity(0.5))
                     }
+                    .disabled(true)
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
+                
+                Text("This feature is coming in v2. For now, use App Time Limit to manage daily app usage.")
+                    .font(.system(size: 12, weight: .regular, design: .default))
+                    .foregroundColor(.white.opacity(0.6))
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 12)
                 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 24) {

@@ -2,12 +2,44 @@ import SwiftUI
 
 struct UpcomingBlocksView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(BlockManager.self) private var blockManager
     @State private var showCreateBlock = false
     @State private var showScheduledBlock = false
     @State private var showOpenLimit = false
     @State private var showAppTimeLimit = false
     @State private var showBlockNow = false
     private let appTheme = AppTheme.shared
+    
+    // MARK: - Helper Functions
+    
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE, MMM d"
+        return formatter.string(from: date)
+    }
+    
+    private func formatTimeRange(_ start: Date, _ end: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        let startStr = formatter.string(from: start)
+        let endStr = formatter.string(from: end)
+        return "\(startStr) - \(endStr)"
+    }
+    
+    private func formatDuration(_ timeInterval: TimeInterval) -> String {
+        let hours = Int(timeInterval) / 3600
+        let minutes = (Int(timeInterval) % 3600) / 60
+        
+        if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        } else {
+            return "\(minutes)m"
+        }
+    }
+    
+    private func getTomorrowDate() -> Date {
+        return Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
+    }
     
     var body: some View {
         ZStack {
@@ -62,102 +94,136 @@ struct UpcomingBlocksView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
                         // Today Section
-                        sectionHeader(title: "Today", date: "Wed, Oct 24")
-                        
-                        // Morning Focus Block (Active)
-                        TimelineBlockView(
-                            icon: "briefcase.fill",
-                            iconColor: appTheme.colors.primary,
-                            title: "Morning Focus",
-                            status: "IN PROGRESS",
-                            timeRange: "09:00 AM - 11:00 AM",
-                            duration: nil,
-                            isActive: true,
-                            isFirst: true,
-                            isLast: false,
-                            actionIcon: "ellipsis"
-                        )
-                        
-                        // No Social Media Block
-                        TimelineBlockView(
-                            icon: "nosign",
-                            iconColor: Color.gray,
-                            title: "No Social Media",
-                            subtitle: "Detox session",
-                            timeRange: "01:00 PM - 02:00 PM",
-                            duration: "1h",
-                            isActive: false,
-                            isFirst: false,
-                            isLast: false,
-                            actionIcon: "chevron.right"
-                        )
-                        
-                        // End cap for today
-                        HStack(spacing: 0) {
-                            VStack {
-                                Circle()
-                                    .fill(Color.white.opacity(0.2))
-                                    .frame(width: 6, height: 6)
-                                    .padding(.top, -10)
+                        let todayBlocks = blockManager.blocks.filter { block in
+                            if let startTime = block.schedule.startTime {
+                                return Calendar.current.isDateInToday(startTime)
                             }
-                            .frame(width: 50)
-                            
-                            Spacer()
+                            return false
                         }
-                        .padding(.bottom, 32)
+                        
+                        if !todayBlocks.isEmpty {
+                            sectionHeader(title: "Today", date: formatDate(Date()))
+                            
+                            ForEach(Array(todayBlocks.enumerated()), id: \.element.id) { index, block in
+                                TimelineBlockView(
+                                    icon: "timer.circle.fill",
+                                    iconColor: appTheme.colors.primary,
+                                    title: block.name,
+                                    timeRange: formatTimeRange(block.schedule.startTime ?? Date(), block.schedule.endTime ?? Date()),
+                                    duration: block.schedule.duration != nil ? formatDuration(block.schedule.duration!) : nil,
+                                    isActive: blockManager.activeBlock?.id == block.id,
+                                    isFirst: index == 0,
+                                    isLast: index == todayBlocks.count - 1,
+                                    actionIcon: blockManager.activeBlock?.id == block.id ? "pause.circle" : "ellipsis"
+                                )
+                                .contextMenu {
+                                    Button(role: .destructive, action: {
+                                        try? blockManager.deleteBlock(block)
+                                    }) {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                            }
+                            
+                            // End cap for today
+                            HStack(spacing: 0) {
+                                VStack {
+                                    Circle()
+                                        .fill(Color.white.opacity(0.2))
+                                        .frame(width: 6, height: 6)
+                                        .padding(.top, -10)
+                                }
+                                .frame(width: 50)
+                                
+                                Spacer()
+                            }
+                            .padding(.bottom, 32)
+                        }
                         
                         // Tomorrow Section
-                        sectionHeader(title: "Tomorrow", date: "Thu, Oct 25")
+                        let tomorrowBlocks = blockManager.blocks.filter { block in
+                            if let startTime = block.schedule.startTime {
+                                return Calendar.current.isDateInTomorrow(startTime)
+                            }
+                            return false
+                        }
                         
-                        // Sleep Mode Block
-                        TimelineBlockView(
-                            icon: "moon.fill",
-                            iconColor: Color.gray,
-                            title: "Sleep Mode",
-                            subtitle: "Recurring • Daily",
-                            timeRange: "10:00 PM - 07:00 AM",
-                            duration: nil,
-                            isActive: false,
-                            isFirst: true,
-                            isLast: true,
-                            actionIcon: "pencil",
-                            isFuture: true
-                        )
+                        if !tomorrowBlocks.isEmpty {
+                            sectionHeader(title: "Tomorrow", date: formatDate(getTomorrowDate()))
+                            
+                            ForEach(Array(tomorrowBlocks.enumerated()), id: \.element.id) { index, block in
+                                TimelineBlockView(
+                                    icon: "timer.circle.fill",
+                                    iconColor: appTheme.colors.primary,
+                                    title: block.name,
+                                    timeRange: formatTimeRange(block.schedule.startTime ?? Date(), block.schedule.endTime ?? Date()),
+                                    duration: block.schedule.duration != nil ? formatDuration(block.schedule.duration!) : nil,
+                                    isActive: false,
+                                    isFirst: index == 0,
+                                    isLast: index == tomorrowBlocks.count - 1,
+                                    actionIcon: "ellipsis",
+                                    isFuture: true
+                                )
+                                .contextMenu {
+                                    Button(role: .destructive, action: {
+                                        try? blockManager.deleteBlock(block)
+                                    }) {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                }
+                            }
+                            
+                            // End cap for tomorrow
+                            HStack(spacing: 0) {
+                                VStack {
+                                    Circle()
+                                        .fill(Color.white.opacity(0.2))
+                                        .frame(width: 6, height: 6)
+                                        .padding(.top, -10)
+                                }
+                                .frame(width: 50)
+                                
+                                Spacer()
+                            }
+                            .padding(.bottom, 32)
+                        }
                         
                         // Empty State
-                        VStack(spacing: 12) {
-                            ZStack {
-                                Circle()
-                                    .fill(appTheme.colors.primary.opacity(0.2))
-                                    .frame(width: 48, height: 48)
+                        if todayBlocks.isEmpty && tomorrowBlocks.isEmpty {
+                            VStack(spacing: 12) {
+                                ZStack {
+                                    Circle()
+                                        .fill(appTheme.colors.primary.opacity(0.2))
+                                        .frame(width: 48, height: 48)
+                                    
+                                    Image(systemName: "calendar.badge.plus")
+                                        .font(.system(size: 24, weight: .semibold))
+                                        .foregroundColor(appTheme.colors.primary)
+                                }
                                 
-                                Image(systemName: "calendar.badge.plus")
-                                    .font(.system(size: 24, weight: .semibold))
-                                    .foregroundColor(appTheme.colors.primary)
+                                Text("No upcoming blocks yet.")
+                                    .font(.system(size: 14, weight: .medium, design: .default))
+                                    .foregroundColor(.white.opacity(0.7))
+                                
+                                Button(action: { showCreateBlock = true }) {
+                                    Text("Create your first block")
+                                        .font(.system(size: 14, weight: .bold, design: .default))
+                                        .foregroundColor(appTheme.colors.primary)
+                                }
                             }
-                            
-                            Text("Plan ahead to stay focused.")
-                                .font(.system(size: 14, weight: .medium, design: .default))
-                                .foregroundColor(.white.opacity(0.7))
-                            
-                            Button(action: {}) {
-                                Text("Schedule a new block")
-                                    .font(.system(size: 14, weight: .bold, design: .default))
-                                    .foregroundColor(appTheme.colors.primary)
-                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 32)
+                            .padding(.horizontal, 20)
+                            .background(Color.white.opacity(0.03))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(style: StrokeStyle(lineWidth: 1, dash: [5, 5]))
+                                    .foregroundColor(Color.white.opacity(0.1))
+                            )
+                            .cornerRadius(16)
+                            .padding(.horizontal, 20)
+                            .padding(.top, 16)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 32)
-                        .padding(.horizontal, 20)
-                        .background(Color.white.opacity(0.03))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(style: StrokeStyle(lineWidth: 1, dash: [5, 5]))
-                                .foregroundColor(Color.white.opacity(0.1))
-                        )
-                        .cornerRadius(16)
-                        .padding(.horizontal, 20)
-                        .padding(.top, 16)
                     }
                     .padding(.bottom, 32)
                 }

@@ -1,7 +1,10 @@
 import SwiftUI
+import FamilyControls
 
 struct CreateAppTimeLimitView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(BlockManager.self) private var blockManager
+    
     @State private var blockName = ""
     @State private var selectedHours = 1
     @State private var selectedMinutes = 30
@@ -10,11 +13,12 @@ struct CreateAppTimeLimitView: View {
     @State private var scheduleEnabled = true
     @State private var notificationsEnabled = false
     @State private var showDurationPicker = false
-    private let appTheme = AppTheme.shared
+    @State private var showActivityPicker = false
+    @State private var activitySelection: FamilyActivitySelection = FamilyActivitySelection()
+    @State private var error: String?
+    @State private var isCreating = false
     
-    enum StrictMode {
-        case easy, medium, hard
-    }
+    private let appTheme = AppTheme.shared
     
     var body: some View {
         ZStack {
@@ -35,17 +39,13 @@ struct CreateAppTimeLimitView: View {
                     
                     Spacer()
                     
-                    Text("Create Block")
+                    Text("App Time Limit")
                         .font(.system(size: 18, weight: .bold, design: .default))
                         .foregroundColor(.white)
                     
                     Spacer()
                     
-                    Button(action: {}) {
-                        Text("Save")
-                            .font(.system(size: 16, weight: .bold, design: .default))
-                            .foregroundColor(appTheme.colors.primary)
-                    }
+                    Color.clear.frame(width: 40, height: 40)
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -56,7 +56,7 @@ struct CreateAppTimeLimitView: View {
                         BlockNameTextField(
                             text: $blockName,
                             icon: "timer",
-                            placeholder: "Social Media Focus"
+                            placeholder: "Instagram Daily Limit"
                         )
                         .padding(.horizontal, 20)
                         .padding(.top, 12)
@@ -67,47 +67,52 @@ struct CreateAppTimeLimitView: View {
                                 .font(.system(size: 20, weight: .bold, design: .default))
                                 .foregroundColor(.white)
                             
-                            Button(action: {}) {
+                            Button(action: { showActivityPicker = true }) {
                                 HStack(spacing: 12) {
-                                    // Stacked Icons
+                                    // Stacked Icons from selection
                                     HStack(spacing: -12) {
-                                        Circle()
-                                            .fill(LinearGradient(gradient: Gradient(colors: [Color.purple, Color.pink]), startPoint: .topLeading, endPoint: .bottomTrailing))
-                                            .frame(width: 40, height: 40)
-                                            .overlay(
-                                                Image(systemName: "camera.fill")
-                                                    .font(.system(size: 16))
-                                                    .foregroundColor(.white)
-                                            )
-                                            .overlay(Circle().stroke(Color(red: 0.09, green: 0.16, blue: 0.12), lineWidth: 2))
-                                        
-                                        Circle()
-                                            .fill(Color.black)
-                                            .frame(width: 40, height: 40)
-                                            .overlay(
-                                                Image(systemName: "music.note")
-                                                    .font(.system(size: 16))
-                                                    .foregroundColor(.white)
-                                            )
-                                            .overlay(Circle().stroke(Color(red: 0.09, green: 0.16, blue: 0.12), lineWidth: 2))
-                                        
-                                        Circle()
-                                            .fill(Color.blue)
-                                            .frame(width: 40, height: 40)
-                                            .overlay(
-                                                Image(systemName: "chart.bar.fill")
-                                                    .font(.system(size: 16))
-                                                    .foregroundColor(.white)
-                                            )
-                                            .overlay(Circle().stroke(Color(red: 0.09, green: 0.16, blue: 0.12), lineWidth: 2))
+                                        if !activitySelection.applicationTokens.isEmpty {
+                                            ForEach(Array(activitySelection.applicationTokens).prefix(3), id: \.self) { _ in
+                                                Circle()
+                                                    .fill(Color.blue.opacity(0.7))
+                                                    .frame(width: 40, height: 40)
+                                                    .overlay(
+                                                        Image(systemName: "app.fill")
+                                                            .font(.system(size: 16))
+                                                            .foregroundColor(.white)
+                                                    )
+                                                    .overlay(Circle().stroke(Color(red: 0.09, green: 0.16, blue: 0.12), lineWidth: 2))
+                                            }
+                                        } else {
+                                            // Show default icons
+                                            Circle()
+                                                .fill(LinearGradient(gradient: Gradient(colors: [Color.purple, Color.pink]), startPoint: .topLeading, endPoint: .bottomTrailing))
+                                                .frame(width: 40, height: 40)
+                                                .overlay(
+                                                    Image(systemName: "camera.fill")
+                                                        .font(.system(size: 16))
+                                                        .foregroundColor(.white)
+                                                )
+                                                .overlay(Circle().stroke(Color(red: 0.09, green: 0.16, blue: 0.12), lineWidth: 2))
+                                            
+                                            Circle()
+                                                .fill(Color.black)
+                                                .frame(width: 40, height: 40)
+                                                .overlay(
+                                                    Image(systemName: "music.note")
+                                                        .font(.system(size: 16))
+                                                        .foregroundColor(.white)
+                                                )
+                                                .overlay(Circle().stroke(Color(red: 0.09, green: 0.16, blue: 0.12), lineWidth: 2))
+                                        }
                                     }
                                     
                                     VStack(alignment: .leading, spacing: 4) {
-                                        Text("Instagram, TikTok +2")
+                                        Text(!activitySelection.applicationTokens.isEmpty ? "Selected Apps" : "Instagram, TikTok +2")
                                             .font(.system(size: 16, weight: .semibold, design: .default))
                                             .foregroundColor(.white)
                                         
-                                        Text("Social Media & Entertainment")
+                                        Text("Tap to change")
                                             .font(.system(size: 12, weight: .regular, design: .default))
                                             .foregroundColor(.white.opacity(0.5))
                                     }
@@ -115,8 +120,8 @@ struct CreateAppTimeLimitView: View {
                                     Spacer()
                                     
                                     Image(systemName: "chevron.right")
-                                        .font(.system(size: 14))
-                                        .foregroundColor(.white.opacity(0.4))
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(.white.opacity(0.3))
                                 }
                                 .padding(16)
                                 .background(Color(red: 0.09, green: 0.16, blue: 0.12))
@@ -131,60 +136,29 @@ struct CreateAppTimeLimitView: View {
                         
                         // Daily Limit
                         VStack(alignment: .leading, spacing: 12) {
-                            HStack {
-                                Text("Daily Limit")
-                                    .font(.system(size: 20, weight: .bold, design: .default))
-                                    .foregroundColor(.white)
-                                
-                                Spacer()
-                                
-                                HStack(spacing: 4) {
-                                    Circle()
-                                        .fill(appTheme.colors.primary)
-                                        .frame(width: 6, height: 6)
-                                    
-                                    Text("Daily")
-                                        .font(.system(size: 14, weight: .medium, design: .default))
-                                        .foregroundColor(appTheme.colors.primary)
-                                }
-                            }
+                            Text("Daily Limit")
+                                .font(.system(size: 20, weight: .bold, design: .default))
+                                .foregroundColor(.white)
                             
-                            // Time Display
                             Button(action: { showDurationPicker = true }) {
-                                VStack(spacing: 12) {
-                                    HStack(spacing: 8) {
-                                        Text("\(selectedHours)")
-                                            .font(.system(size: 80, weight: .bold, design: .default))
-                                            .foregroundColor(.white)
-                                        
-                                        Text("H")
-                                            .font(.system(size: 32, weight: .bold, design: .default))
-                                            .foregroundColor(appTheme.colors.primary)
-                                            .offset(y: 10)
-                                        
-                                        Text("\(selectedMinutes)")
-                                            .font(.system(size: 80, weight: .bold, design: .default))
-                                            .foregroundColor(.white)
-                                        
-                                        Text("M")
-                                            .font(.system(size: 32, weight: .bold, design: .default))
-                                            .foregroundColor(appTheme.colors.primary)
-                                            .offset(y: 10)
-                                    }
+                                HStack {
+                                    Image(systemName: "clock")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(appTheme.colors.primary)
                                     
-                                    HStack(spacing: 6) {
-                                        Image(systemName: "pencil")
-                                            .font(.system(size: 12, weight: .medium))
-                                            .foregroundColor(.white.opacity(0.5))
-                                        
-                                        Text("TAP TO ADJUST")
-                                            .font(.system(size: 12, weight: .medium, design: .default))
-                                            .foregroundColor(.white.opacity(0.5))
-                                            .tracking(0.5)
+                                    Text(String(format: "%d:%02d", selectedHours, selectedMinutes))
+                                        .font(.system(size: 32, weight: .bold, design: .monospaced))
+                                        .foregroundColor(.white)
+                                    
+                                    Spacer()
+                                    
+                                    VStack(alignment: .trailing, spacing: 4) {
+                                        Text("hours per day")
+                                            .font(.system(size: 12, weight: .regular, design: .default))
+                                            .foregroundColor(.white.opacity(0.6))
                                     }
                                 }
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 32)
+                                .padding(16)
                                 .background(Color(red: 0.09, green: 0.16, blue: 0.12))
                                 .cornerRadius(16)
                                 .overlay(
@@ -226,7 +200,7 @@ struct CreateAppTimeLimitView: View {
                                 }
                             }
                         }
-                        .padding(.horizontal, 16)
+                        .padding(.horizontal, 20)
                         
                         Rectangle()
                             .fill(
@@ -239,11 +213,12 @@ struct CreateAppTimeLimitView: View {
                             .frame(height: 1)
                             .padding(.horizontal, 20)
                         
-                        // Strictness Level
+                        // Select Strictness
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Strictness Level")
+                            Text("Select Strictness")
                                 .font(.system(size: 20, weight: .bold, design: .default))
                                 .foregroundColor(.white)
+                                .padding(.horizontal, 20)
                             
                             VStack(spacing: 12) {
                                 StrictModeCard(
@@ -276,8 +251,19 @@ struct CreateAppTimeLimitView: View {
                                     action: { strictMode = .hard }
                                 )
                             }
+                            .padding(.horizontal, 16)
                         }
-                        .padding(.horizontal, 16)
+                        
+                        Rectangle()
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color.clear, Color.white.opacity(0.1), Color.clear]),
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .frame(height: 1)
+                            .padding(.horizontal, 20)
                         
                         // Settings
                         VStack(spacing: 16) {
@@ -291,7 +277,7 @@ struct CreateAppTimeLimitView: View {
                                         .font(.system(size: 16, weight: .semibold, design: .default))
                                         .foregroundColor(.white)
                                     
-                                    Text("Apply every day of the week")
+                                    Text("Enable/disable on specific days")
                                         .font(.system(size: 13, weight: .regular, design: .default))
                                         .foregroundColor(.white.opacity(0.5))
                                 }
@@ -332,15 +318,26 @@ struct CreateAppTimeLimitView: View {
                 }
                 
                 // Create Block Button
-                Button(action: {}) {
-                    Text("Create Block")
-                        .font(.system(size: 16, weight: .bold, design: .default))
-                        .foregroundColor(Color(red: 0.06, green: 0.13, blue: 0.09))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 52)
-                        .background(appTheme.colors.primary)
-                        .cornerRadius(12)
+                Button(action: {
+                    Task {
+                        await createAppTimeLimit()
+                    }
+                }) {
+                    if isCreating {
+                        ProgressView()
+                            .progressViewStyle(.circular)
+                            .tint(appTheme.colors.primary)
+                    } else {
+                        Text("Create Block")
+                            .font(.system(size: 16, weight: .bold, design: .default))
+                            .foregroundColor(Color(red: 0.06, green: 0.13, blue: 0.09))
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .frame(height: 52)
+                .background(appTheme.colors.primary)
+                .cornerRadius(12)
+                .disabled(isCreating || blockName.isEmpty || activitySelection.applicationTokens.isEmpty)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
             }
@@ -351,6 +348,68 @@ struct CreateAppTimeLimitView: View {
                 .presentationDetents([.height(400)])
                 .presentationBackground(Color(red: 0.06, green: 0.13, blue: 0.09))
         }
+        .sheet(isPresented: $showActivityPicker) {
+            FamilyActivitySelectionView(selection: $activitySelection)
+        }
+        .alert("Error", isPresented: .constant(error != nil), presenting: error) { _ in
+            Button("OK") { error = nil }
+        } message: { errorMsg in
+            Text(errorMsg)
+        }
+    }
+    
+    // MARK: - Private Methods
+    
+    @MainActor
+    private func createAppTimeLimit() async {
+        guard !blockName.isEmpty else {
+            error = "Please enter a block name"
+            return
+        }
+        
+        guard !activitySelection.applicationTokens.isEmpty else {
+            error = "Please select at least one app"
+            return
+        }
+        
+        isCreating = true
+        
+        let threshold = TimeInterval((selectedHours * 3600) + (selectedMinutes * 60))
+        let startTime = Calendar.current.startOfDay(for: Date())
+        let endTime = Calendar.current.date(byAdding: .day, value: 1, to: startTime) ?? Date()
+        
+        let schedule = Block.BlockSchedule(
+            startTime: startTime,
+            endTime: endTime,
+            duration: nil,
+            threshold: threshold,
+            repeatDays: selectedDays.isEmpty ? nil : selectedDays,
+            isRepeating: !selectedDays.isEmpty
+        )
+        
+        let block = Block(
+            name: blockName,
+            type: .appTimeLimit,
+            appSelection: activitySelection,
+            schedule: schedule,
+            strictMode: strictMode,
+            isActive: false
+        )
+        
+        do {
+            try blockManager.createBlock(block)
+            try await blockManager.activateBlock(block)
+            dismiss()
+        } catch {
+            self.error = error.localizedDescription
+        }
+        
+        isCreating = false
+    }
+    
+    private func dayLabel(_ day: Int) -> String {
+        let days = ["M", "T", "W", "T", "F", "S", "S"]
+        return days[day - 1]
     }
 }
 
