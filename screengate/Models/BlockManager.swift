@@ -381,7 +381,36 @@ final class BlockManager {
                 userDefaults.removeObject(forKey: activeBlockIdKey)
             }
             
-            // Save active block metadata (for extension to use without parsing full blocks array)
+            // Save block-specific metadata for ALL active blocks (supports multiple concurrent blocks)
+            // Extension will use block ID from activity name to fetch the right metadata
+            let activeBlocks = blocks.filter { $0.isActive && !$0.isPaused }
+            var activeBlockIds: [String] = []
+            
+            for block in activeBlocks {
+                var metadata: [String: Any] = [:]
+                metadata["id"] = block.id.uuidString
+                metadata["type"] = block.type.rawValue
+                metadata["createdAt"] = block.createdAt
+                if let duration = block.schedule.duration {
+                    metadata["duration"] = duration
+                    // Pre-calculate isShortBlock to avoid calculation in extension (limited 5MB memory)
+                    metadata["isShortBlock"] = (block.type == .blockNow && duration < 15 * 60)
+                }
+                
+                // Save with block-specific key: "activeBlockMetadata_{blockId}"
+                let metadataKey = "activeBlockMetadata_\(block.id.uuidString)"
+                userDefaults.set(metadata, forKey: metadataKey)
+                activeBlockIds.append(block.id.uuidString)
+            }
+            
+            // Save array of active block IDs for extension to iterate if needed
+            if !activeBlockIds.isEmpty {
+                userDefaults.set(activeBlockIds, forKey: "activeBlockIds")
+            } else {
+                userDefaults.removeObject(forKey: "activeBlockIds")
+            }
+            
+            // Keep legacy activeBlockMetadata for backwards compatibility with current active block
             if let activeBlock = activeBlock {
                 var metadata: [String: Any] = [:]
                 metadata["id"] = activeBlock.id.uuidString
@@ -389,7 +418,6 @@ final class BlockManager {
                 metadata["createdAt"] = activeBlock.createdAt
                 if let duration = activeBlock.schedule.duration {
                     metadata["duration"] = duration
-                    // Pre-calculate isShortBlock to avoid calculation in extension (limited 5MB memory)
                     metadata["isShortBlock"] = (activeBlock.type == .blockNow && duration < 15 * 60)
                 }
                 userDefaults.set(metadata, forKey: "activeBlockMetadata")

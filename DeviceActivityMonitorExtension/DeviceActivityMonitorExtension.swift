@@ -20,7 +20,23 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     
     // MARK: - Helpers
     
-    /// Read active block from UserDefaults
+    /// Extract block ID from DeviceActivityName
+    /// Format: "com.gia.screendiet.com.gia.screengate.{BLOCK_ID}"
+    private func extractBlockId(from activity: DeviceActivityName) -> String? {
+        let activityString = activity.rawValue
+        let prefix = "com.gia.screendiet.com.gia.screengate."
+        
+        guard activityString.hasPrefix(prefix) else {
+            logger.warning("Activity name doesn't match expected format: \(activityString)")
+            return nil
+        }
+        
+        let blockId = String(activityString.dropFirst(prefix.count))
+        logger.info("Extracted block ID: \(blockId) from activity: \(activityString)")
+        return blockId
+    }
+    
+    /// Read active block from UserDefaults (legacy - for backwards compatibility)
     private func getActiveBlock() -> (id: String, isPaused: Bool, pausedUntil: Date?) {
         logger.info("getActiveBlock called")
         guard let userDefaults = userDefaults else {
@@ -42,92 +58,28 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         return (id: activeBlockId, isPaused: isPaused, pausedUntil: pausedUntil)
     }
     
-    /// Get active block info including creation time, duration, and pre-calculated flags
-    private func getActiveBlockInfo() -> (id: String, createdAt: Date?, duration: TimeInterval?, type: String, isShortBlock: Bool) {
-        logger.info("getActiveBlockInfo called")
+    /// Get active block info for a specific block ID (optimized for 5MB memory limit)
+    /// Only reads block-specific metadata key - no JSON parsing
+    private func getActiveBlockInfo(blockId: String) -> (id: String, createdAt: Date?, duration: TimeInterval?, type: String, isShortBlock: Bool) {
         guard let userDefaults = userDefaults else {
-            logger.warning("No UserDefaults available")
             return (id: "", createdAt: nil, duration: nil, type: "", isShortBlock: false)
         }
         
-        // Try to read from activeBlockMetadata first (simpler format)
-        if let metadata = userDefaults.dictionary(forKey: "activeBlockMetadata") as? [String: Any] {
-            logger.info("Found activeBlockMetadata in UserDefaults")
-            let id = (metadata["id"] as? String) ?? ""
-            let type = (metadata["type"] as? String) ?? ""
-            let createdAt = (metadata["createdAt"] as? Date)
-            let duration = (metadata["duration"] as? TimeInterval)
-            let isShortBlock = (metadata["isShortBlock"] as? Bool) ?? false
-            
-            logger.info("Block info from metadata: id=\(id), type=\(type), duration=\(duration ?? 0), isShortBlock=\(isShortBlock)")
-            return (id: id, createdAt: createdAt, duration: duration, type: type, isShortBlock: isShortBlock)
-        }
-        
-        // Fallback: parse from blocks array if metadata not available
-        logger.info("activeBlockMetadata not found, falling back to blocks array parsing")
-        
-        guard let activeBlockIdString = userDefaults.string(forKey: "activeBlockId") else {
-            logger.warning("No activeBlockId in UserDefaults")
+        // Direct key lookup - O(1), no JSON parsing
+        let metadataKey = "activeBlockMetadata_\(blockId)"
+        guard let metadata = userDefaults.dictionary(forKey: metadataKey) as? [String: Any] else {
+            logger.warning("No metadata found for blockId: \(blockId)")
             return (id: "", createdAt: nil, duration: nil, type: "", isShortBlock: false)
         }
         
-        guard let blocksData = userDefaults.data(forKey: "blocks") else {
-            logger.warning("No blocks array in UserDefaults")
-            return (id: "", createdAt: nil, duration: nil, type: "", isShortBlock: false)
-        }
-        
-        do {
-            // Decode as array of dictionaries
-            let blocksArray = try jsonDecoder.decode([[String: AnyCodable]].self, from: blocksData)
-            
-            // Find the active block by matching the id field
-            guard let activeBlockDict = blocksArray.first(where: { blockDict in
-                // Extract id as string from AnyCodable
-                if let idValue = blockDict["id"] {
-                    if let idString = idValue as? String {
-                        return idString == activeBlockIdString
-                    } else if let idDict = idValue as? [String: AnyCodable],
-                              let uuidValue = idDict["uuid"] as? String {
-                        // Handle case where UUID might be encoded as nested object
-                        return uuidValue == activeBlockIdString
-                    }
-                }
-                return false
-            }) else {
-                logger.warning("Active block id not found in blocks array")
-                return (id: "", createdAt: nil, duration: nil, type: "", isShortBlock: false)
-            }
-            
-            let id = (activeBlockDict["id"] as? String) ?? activeBlockIdString
-            let type = (activeBlockDict["type"] as? String) ?? ""
-            
-            // Get createdAt
-            var createdAt: Date? = nil
-            if let createdAtData = activeBlockDict["createdAt"] {
-                createdAt = createdAtData as? Date
-            }
-            
-            // Get schedule info
-            var duration: TimeInterval? = nil
-            if let schedule = activeBlockDict["schedule"] as? [String: AnyCodable],
-               let durationVal = schedule["duration"] {
-                if let timeInterval = durationVal as? TimeInterval {
-                    duration = timeInterval
-                } else if let doubleVal = durationVal as? Double {
-                    duration = TimeInterval(doubleVal)
-                }
-            }
-            
-            // Calculate isShortBlock for fallback case
-            let isShortBlock = (type == "blockNow" && duration != nil && duration! < 15 * 60)
-            
-            logger.info("Block info from array: id=\\(id), type=\\(type), duration=\\(duration?.description ?? \"none\"), isShortBlock=\\(isShortBlock)")
-            return (id: id, createdAt: createdAt, duration: duration, type: type, isShortBlock: isShortBlock)
-        } catch {
-            logger.error("Error decoding blocks array: \(error.localizedDescription)")
-            print("Error decoding blocks: \(error)")
-            return (id: "", createdAt: nil, duration: nil, type: "", isShortBlock: false)
-        }
+        // All values pre-calculated by main app - just read them
+        return (
+            id: (metadata["id"] as? String) ?? "",
+            createdAt: metadata["createdAt"] as? Date,
+            duration: metadata["duration"] as? TimeInterval,
+            type: (metadata["type"] as? String) ?? "",
+            isShortBlock: (metadata["isShortBlock"] as? Bool) ?? false
+        )
     }
     
     /// Check if block is currently paused (pausedUntil > now)
@@ -169,59 +121,64 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     
     // MARK: - Block Type Handlers
     
-    /// Clear active block from UserDefaults (centralized cleanup)
-    private func clearActiveBlockData() {
+    /// Clear specific block data from UserDefaults (supports multiple concurrent blocks)
+    private func clearActiveBlockData(blockId: String) {
         guard let userDefaults = userDefaults else { return }
-        userDefaults.removeObject(forKey: "activeBlockId")
-        userDefaults.removeObject(forKey: "pausedUntil")
-        userDefaults.removeObject(forKey: "activeBlockMetadata")
+        
+        // Remove block-specific metadata
+        userDefaults.removeObject(forKey: "activeBlockMetadata_\(blockId)")
+        
+        // Remove from active blocks array
+        if var activeBlockIds = userDefaults.array(forKey: "activeBlockIds") as? [String] {
+            activeBlockIds.removeAll { $0 == blockId }
+            if activeBlockIds.isEmpty {
+                userDefaults.removeObject(forKey: "activeBlockIds")
+                // Also clear legacy keys when no blocks are active
+                userDefaults.removeObject(forKey: "activeBlockId")
+                userDefaults.removeObject(forKey: "pausedUntil")
+            } else {
+                userDefaults.set(activeBlockIds, forKey: "activeBlockIds")
+            }
+        }
+        
         userDefaults.synchronize()
-        logger.info("Cleared active block data from UserDefaults")
+        logger.info("Cleared block data for blockId: \(blockId)")
     }
     
     /// Handle short blockNow completion (<15 min) - called from intervalWillEndWarning
-    private func handleShortBlockNowCompletion() {
-        logger.info("Handling short blockNow completion")
+    private func handleShortBlockNowCompletion(blockId: String) {
+        logger.info("Handling short blockNow completion for blockId: \(blockId)")
         
-        if isCurrentlyPaused() {
-            logger.warning("Block is paused, skipping cleanup")
-            return
-        }
+        // Note: Pause check removed - each block is independent
         
         manager.removeRestrictions()
-        clearActiveBlockData()
+        clearActiveBlockData(blockId: blockId)
         sendNotification(title: "Focus Session Complete", body: "Your focus block has ended!")
-        logger.info("Short blockNow cleanup completed")
+        logger.info("Short blockNow cleanup completed for blockId: \(blockId)")
     }
     
     /// Handle long blockNow completion (≥15 min) - called from intervalDidEnd
-    private func handleLongBlockNowCompletion() {
-        logger.info("Handling long blockNow completion")
+    private func handleLongBlockNowCompletion(blockId: String) {
+        logger.info("Handling long blockNow completion for blockId: \(blockId)")
         
-        if isCurrentlyPaused() {
-            logger.warning("Block is paused, skipping cleanup")
-            return
-        }
+        // Note: Pause check removed - each block is independent
         
         manager.removeRestrictions()
-        clearActiveBlockData()
+        clearActiveBlockData(blockId: blockId)
         sendNotification(title: "Focus Session Complete", body: "Your focus block has ended!")
-        logger.info("Long blockNow cleanup completed")
+        logger.info("Long blockNow cleanup completed for blockId: \(blockId)")
     }
     
     /// Handle scheduled block completion - called from intervalDidEnd
-    private func handleScheduledBlockCompletion() {
-        logger.info("Handling scheduled block completion")
+    private func handleScheduledBlockCompletion(blockId: String) {
+        logger.info("Handling scheduled block completion for blockId: \(blockId)")
         
-        if isCurrentlyPaused() {
-            logger.warning("Block is paused, skipping cleanup")
-            return
-        }
+        // Note: Pause check removed - each block is independent
         
         manager.removeRestrictions()
-        clearActiveBlockData()
+        clearActiveBlockData(blockId: blockId)
         sendNotification(title: "Focus Block Ended", body: "Your scheduled block has completed!")
-        logger.info("Scheduled block cleanup completed")
+        logger.info("Scheduled block cleanup completed for blockId: \(blockId)")
     }
     
     /// Handle app time limit threshold reached - called from eventDidReachThreshold
@@ -272,10 +229,16 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     
     override func intervalDidEnd(for activity: DeviceActivityName) {
         super.intervalDidEnd(for: activity)
-        logger.info("intervalDidEnd called")
+        logger.info("intervalDidEnd called for activity: \(activity.rawValue)")
         
-        let (_, _, _, blockType, isShortBlock) = getActiveBlockInfo()
-        logger.info("Block type: \(blockType), isShortBlock: \(isShortBlock)")
+        // Extract block ID from activity name
+        guard let blockId = extractBlockId(from: activity) else {
+            logger.error("Failed to extract block ID from activity")
+            return
+        }
+        
+        let (_, _, _, blockType, isShortBlock) = getActiveBlockInfo(blockId: blockId)
+        logger.info("Block type: \(blockType), isShortBlock: \(isShortBlock), blockId: \(blockId)")
         
         // Route to appropriate handler based on block type
         switch blockType {
@@ -285,28 +248,34 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                 logger.info("Short blockNow - already handled, skipping")
             } else {
                 // Long blocks clean up here
-                handleLongBlockNowCompletion()
+                handleLongBlockNowCompletion(blockId: blockId)
             }
             
         case "scheduled":
-            handleScheduledBlockCompletion()
+            handleScheduledBlockCompletion(blockId: blockId)
             
         case "appTimeLimit":
-            handleScheduledBlockCompletion() // Same cleanup as scheduled
+            handleScheduledBlockCompletion(blockId: blockId) // Same cleanup as scheduled
             
         default:
             logger.warning("Unknown block type: \(blockType)")
         }
         
-        logger.info("intervalDidEnd completed")
+        logger.info("intervalDidEnd completed for blockId: \(blockId)")
     }
     
     override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
         super.eventDidReachThreshold(event, activity: activity)
-        logger.info("eventDidReachThreshold fired")
+        logger.info("eventDidReachThreshold fired for activity: \(activity.rawValue)")
         
-        let (_, _, _, blockType, _) = getActiveBlockInfo()
-        logger.info("Block type: \(blockType)")
+        // Extract block ID from activity name
+        guard let blockId = extractBlockId(from: activity) else {
+            logger.error("Failed to extract block ID from activity")
+            return
+        }
+        
+        let (_, _, _, blockType, _) = getActiveBlockInfo(blockId: blockId)
+        logger.info("Block type: \(blockType), blockId: \(blockId)")
         
         // Route to appropriate handler based on block type
         switch blockType {
@@ -333,21 +302,27 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     
     override func intervalWillEndWarning(for activity: DeviceActivityName) {
         super.intervalWillEndWarning(for: activity)
-        logger.info("intervalWillEndWarning called")
+        logger.info("intervalWillEndWarning called for activity: \(activity.rawValue)")
         
-        let (_, _, _, blockType, isShortBlock) = getActiveBlockInfo()
-        logger.info("Block type: \(blockType), isShortBlock: \(isShortBlock)")
+        // Extract block ID from activity name
+        guard let blockId = extractBlockId(from: activity) else {
+            logger.error("Failed to extract block ID from activity")
+            return
+        }
+        
+        let (_, _, _, blockType, isShortBlock) = getActiveBlockInfo(blockId: blockId)
+        logger.info("Block type: \(blockType), isShortBlock: \(isShortBlock), blockId: \(blockId)")
         
         // Only short blockNow uses this callback for cleanup
         if blockType == "blockNow" && isShortBlock {
-            handleShortBlockNowCompletion()
+            handleShortBlockNowCompletion(blockId: blockId)
         } else {
             // All other blocks: just send warning notification
             logger.info("Standard warning - no cleanup")
             sendNotification(title: "Focus Block Ending Soon", body: "Your focus block will end soon")
         }
         
-        logger.info("intervalWillEndWarning completed")
+        logger.info("intervalWillEndWarning completed for blockId: \(blockId)")
     }
     
     override func eventWillReachThresholdWarning(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
@@ -359,57 +334,4 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         logger.info("eventWillReachThresholdWarning completed")
     }
 }
-
-// Helper to decode AnyCodable values
-struct AnyCodable: Codable {
-    let value: Any
-    
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        
-        if let intVal = try? container.decode(Int.self) {
-            value = intVal
-        } else if let boolVal = try? container.decode(Bool.self) {
-            value = boolVal
-        } else if let stringVal = try? container.decode(String.self) {
-            value = stringVal
-        } else if let doubleVal = try? container.decode(Double.self) {
-            value = doubleVal
-        } else if let dateVal = try? container.decode(Date.self) {
-            value = dateVal
-        } else if let dictVal = try? container.decode([String: AnyCodable].self) {
-            value = dictVal
-        } else if let arrayVal = try? container.decode([AnyCodable].self) {
-            value = arrayVal
-        } else {
-            value = NSNull()
-        }
-    }
-    
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        
-        switch value {
-        case let intVal as Int:
-            try container.encode(intVal)
-        case let boolVal as Bool:
-            try container.encode(boolVal)
-        case let stringVal as String:
-            try container.encode(stringVal)
-        case let doubleVal as Double:
-            try container.encode(doubleVal)
-        case let dateVal as Date:
-            try container.encode(dateVal)
-        case let dictVal as [String: AnyCodable]:
-            try container.encode(dictVal)
-        case let arrayVal as [AnyCodable]:
-            try container.encode(arrayVal)
-        default:
-            try container.encodeNil()
-        }
-    }
-    
-
-}
-
 
