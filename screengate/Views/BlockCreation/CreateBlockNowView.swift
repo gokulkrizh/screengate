@@ -371,8 +371,6 @@ struct CreateBlockNowView: View {
         do {
             try blockManager.createBlock(block)
             try await blockManager.activateBlock(block)
-            // Reload to ensure latest state is reflected
-            blockManager.reloadFromUserDefaults()
             DispatchQueue.main.async {
                 dismiss()
             }

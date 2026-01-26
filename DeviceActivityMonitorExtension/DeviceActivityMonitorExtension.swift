@@ -141,27 +141,19 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             }
         }
         
-        // Mark block as inactive in the main blocks array (stored as JSON Data)
-        if let blocksData = userDefaults.data(forKey: "blocks") {
-            do {
-                // Try to decode as JSON array
-                if var blocksArray = try JSONSerialization.jsonObject(with: blocksData) as? [[String: Any]] {
-                    // Find block by ID and mark as inactive
-                    for i in 0..<blocksArray.count {
-                        if let bid = blocksArray[i]["id"] as? String, bid == blockId {
-                            blocksArray[i]["isActive"] = false
-                            logger.info("[clearActiveBlockData] Marked block as inactive: \(blockId)")
-                            
-                            // Re-encode and save
-                            let updatedData = try JSONSerialization.data(withJSONObject: blocksArray, options: [.prettyPrinted])
-                            userDefaults.set(updatedData, forKey: "blocks")
-                            break
-                        }
-                    }
-                }
-            } catch {
-                logger.warning("[clearActiveBlockData] Could not update blocks array: \(error.localizedDescription)")
+        // Mark block as inactive using per-block key (O(1) lookup)
+        let blockKey = "block_\(blockId)"
+        if let blockData = userDefaults.data(forKey: blockKey),
+           var blockDict = try? JSONSerialization.jsonObject(with: blockData) as? [String: Any] {
+            
+            blockDict["isActive"] = false
+            logger.info("[clearActiveBlockData] Marked block as inactive: \(blockId)")
+            
+            if let updatedData = try? JSONSerialization.data(withJSONObject: blockDict, options: []) {
+                userDefaults.set(updatedData, forKey: blockKey)
             }
+        } else {
+            logger.warning("[clearActiveBlockData] Could not find block with key: \(blockKey)")
         }
         
         userDefaults.synchronize()
@@ -176,6 +168,17 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         
         manager.removeRestrictions()
         clearActiveBlockData(blockId: blockId)
+        
+        // ✅ Broadcast change to main app via Darwin notification
+        CFNotificationCenterPostNotification(
+            CFNotificationCenterGetDarwinNotifyCenter(),
+            CFNotificationName("com.gia.screendiet.blocksChanged" as CFString),
+            nil,
+            nil,
+            true
+        )
+        logger.info("[handleShortBlockNowCompletion] Posted Darwin notification for block state change")
+        
         sendNotification(title: "Focus Session Complete", body: "Your focus block has ended!")
         logger.info("[handleShortBlockNowCompletion] Short blockNow cleanup completed for blockId: \(blockId)")
     }
@@ -188,6 +191,17 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         
         manager.removeRestrictions()
         clearActiveBlockData(blockId: blockId)
+        
+        // ✅ Broadcast change to main app via Darwin notification
+        CFNotificationCenterPostNotification(
+            CFNotificationCenterGetDarwinNotifyCenter(),
+            CFNotificationName("com.gia.screendiet.blocksChanged" as CFString),
+            nil,
+            nil,
+            true
+        )
+        logger.info("[handleLongBlockNowCompletion] Posted Darwin notification for block state change")
+        
         sendNotification(title: "Focus Session Complete", body: "Your focus block has ended!")
         logger.info("[handleLongBlockNowCompletion] Long blockNow cleanup completed for blockId: \(blockId)")
     }

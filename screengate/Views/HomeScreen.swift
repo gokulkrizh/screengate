@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 /// HomeScreen - Main focus/home screen after onboarding
 /// Shows active session, metrics, and quick templates
@@ -9,6 +10,7 @@ struct HomeScreen: View {
     @State private var showHowItWorks = false
     @State private var elapsedTime: TimeInterval = 0
     @State private var timer: Timer?
+    @State private var currentTime = Date()  // For live timer updates
     private let appTheme = AppTheme.shared
     
     var body: some View {
@@ -48,6 +50,10 @@ struct HomeScreen: View {
                 }
                 .tabViewStyle(.automatic)
                 .accentColor(appTheme.colors.primary)
+            }
+            .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { time in
+                currentTime = time
+                // This triggers UI re-render for live timer/progress updates
             }
         }
     }

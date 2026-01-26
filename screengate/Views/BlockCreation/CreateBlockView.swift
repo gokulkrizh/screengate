@@ -148,11 +148,6 @@ struct CreateBlockView: View {
             .padding(.bottom, 20)
         }
         .background(Color(red: 0.06, green: 0.13, blue: 0.09))
-        .onAppear {
-            // Reload blocks from UserDefaults when view appears
-            // This ensures we pick up changes made by the extension
-            blockManager.reloadFromUserDefaults()
-        }
     }
     
     // MARK: - Block Type Card

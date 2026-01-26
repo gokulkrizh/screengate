@@ -17,11 +17,15 @@ final class BlockManager {
     private let userDefaults: UserDefaults
     private var pauseTimer: Timer?
     
-    // MARK: - Constants
+    // MARK: - Constants (Optimized per-block storage)
     
-    private let blocksKey = "blocks"
+    private let blockIdsKey = "blockIds"  // [String] array of block UUIDs
     private let activeBlockIdKey = "activeBlockId"
     private let pausedUntilKey = "pausedUntil"
+    
+    // Helper functions for per-block keys
+    private func blockKey(_ id: UUID) -> String { "block_\(id.uuidString)" }
+    private func metadataKey(_ id: UUID) -> String { "activeBlockMetadata_\(id.uuidString)" }
     
     // MARK: - Initialization
     
@@ -32,10 +36,43 @@ final class BlockManager {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             self?.loadFromUserDefaults()
         }
+        
+        // ✅ REACTIVE: Listen for Darwin notifications from extension
+        setupDarwinNotificationObserver()
     }
     
     deinit {
         pauseTimer?.invalidate()
+        // Remove Darwin notification observer
+        let center = CFNotificationCenterGetDarwinNotifyCenter()
+        let observer = Unmanaged.passUnretained(self).toOpaque()
+        CFNotificationCenterRemoveObserver(center, observer, nil, nil)
+    }
+    
+    // MARK: - Darwin Notification Observer (Cross-Process Communication)
+    
+    private func setupDarwinNotificationObserver() {
+        let center = CFNotificationCenterGetDarwinNotifyCenter()
+        let observer = Unmanaged.passUnretained(self).toOpaque()
+        
+        CFNotificationCenterAddObserver(
+            center,
+            observer,
+            { (center, observer, name, object, userInfo) in
+                guard let observer = observer else { return }
+                let manager = Unmanaged<BlockManager>.fromOpaque(observer).takeUnretainedValue()
+                
+                DispatchQueue.main.async {
+                    manager.loadFromUserDefaults()
+                    print("✅ [BlockManager] Received Darwin notification, reloaded blocks")
+                }
+            },
+            "com.gia.screendiet.blocksChanged" as CFString,
+            nil,
+            .deliverImmediately
+        )
+        
+        print("✅ [BlockManager] Darwin notification observer registered")
     }
     
     // MARK: - Computed Properties
@@ -86,11 +123,16 @@ final class BlockManager {
         notifyBlockCreated(newBlock)
     }
     
-    /// Update an existing block
+    /// Update an existing block (O(1) per-block update)
     func updateBlock(_ block: Block) throws {
         if let index = blocks.firstIndex(where: { $0.id == block.id }) {
             blocks[index] = block
-            saveToUserDefaults()
+            
+            // Update individual block
+            let blockData = try JSONEncoder().encode(block)
+            userDefaults.set(blockData, forKey: blockKey(block.id))
+            userDefaults.synchronize()
+            
             notifyBlockUpdated(block)
         }
     }
@@ -368,11 +410,15 @@ final class BlockManager {
     
     func saveToUserDefaults() {
         do {
-            let encoder = JSONEncoder()
+            // Save all blocks with per-block keys (O(n) but only on explicit save)
+            for block in blocks {
+                let blockData = try JSONEncoder().encode(block)
+                userDefaults.set(blockData, forKey: blockKey(block.id))
+            }
             
-            // Save blocks array
-            let blocksData = try encoder.encode(blocks)
-            userDefaults.set(blocksData, forKey: blocksKey)
+            // Save blockIds array (triggers Combine observer)
+            let ids = blocks.map { $0.id.uuidString }
+            userDefaults.set(ids, forKey: blockIdsKey)
             
             // Save active block ID
             if let activeBlockId = activeBlock?.id {
@@ -382,7 +428,6 @@ final class BlockManager {
             }
             
             // Save block-specific metadata for ALL active blocks (supports multiple concurrent blocks)
-            // Extension will use block ID from activity name to fetch the right metadata
             let activeBlocks = blocks.filter { $0.isActive && !$0.isPaused }
             var activeBlockIds: [String] = []
             
@@ -397,32 +442,15 @@ final class BlockManager {
                     metadata["isShortBlock"] = (block.type == .blockNow && duration < 15 * 60)
                 }
                 
-                // Save with block-specific key: "activeBlockMetadata_{blockId}"
-                let metadataKey = "activeBlockMetadata_\(block.id.uuidString)"
-                userDefaults.set(metadata, forKey: metadataKey)
+                userDefaults.set(metadata, forKey: metadataKey(block.id))
                 activeBlockIds.append(block.id.uuidString)
             }
             
-            // Save array of active block IDs for extension to iterate if needed
+            // Save array of active block IDs for extension
             if !activeBlockIds.isEmpty {
                 userDefaults.set(activeBlockIds, forKey: "activeBlockIds")
             } else {
                 userDefaults.removeObject(forKey: "activeBlockIds")
-            }
-            
-            // Keep legacy activeBlockMetadata for backwards compatibility with current active block
-            if let activeBlock = activeBlock {
-                var metadata: [String: Any] = [:]
-                metadata["id"] = activeBlock.id.uuidString
-                metadata["type"] = activeBlock.type.rawValue
-                metadata["createdAt"] = activeBlock.createdAt
-                if let duration = activeBlock.schedule.duration {
-                    metadata["duration"] = duration
-                    metadata["isShortBlock"] = (activeBlock.type == .blockNow && duration < 15 * 60)
-                }
-                userDefaults.set(metadata, forKey: "activeBlockMetadata")
-            } else {
-                userDefaults.removeObject(forKey: "activeBlockMetadata")
             }
             
             // Save paused until time
@@ -438,38 +466,46 @@ final class BlockManager {
         }
     }
     
-    /// Reload blocks from UserDefaults (called when app becomes active)
-    func reloadFromUserDefaults() {
-        loadFromUserDefaults()
-    }
-    
+    /// Load blocks from per-block UserDefaults keys (O(n) on startup only)
     func loadFromUserDefaults() {
-        do {
-            let decoder = JSONDecoder()
-            
-            // Load blocks array
-            if let blocksData = userDefaults.data(forKey: blocksKey) {
-                blocks = try decoder.decode([Block].self, from: blocksData)
+        guard let ids = userDefaults.stringArray(forKey: blockIdsKey) else {
+            blocks = []
+            activeBlock = nil
+            return
+        }
+        
+        // Load each block individually (O(n) but only on app launch)
+        let loadedBlocks: [Block] = ids.compactMap { idString in
+            guard let uuid = UUID(uuidString: idString),
+                  let data = userDefaults.data(forKey: blockKey(uuid)),
+                  let block = try? JSONDecoder().decode(Block.self, from: data) else {
+                return nil
             }
-            
-            // Load active block ID
-            if let activeBlockIdString = userDefaults.string(forKey: activeBlockIdKey),
-               let activeBlockId = UUID(uuidString: activeBlockIdString) {
-                activeBlock = blocks.first { $0.id == activeBlockId }
-            }
+            return block
+        }
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.blocks = loadedBlocks
+            self?.updateActiveBlock()
             
             // Load paused until time
-            if let pausedUntil = userDefaults.object(forKey: pausedUntilKey) as? Date {
-                self.pausedUntil = pausedUntil
+            if let pausedUntil = self?.userDefaults.object(forKey: self?.pausedUntilKey ?? "") as? Date {
+                self?.pausedUntil = pausedUntil
                 
                 // If pause is still active, restart timer
                 if pausedUntil > Date() {
-                    startPauseTimer()
+                    self?.startPauseTimer()
                 }
             }
-        } catch {
-            print("Error loading blocks from UserDefaults: \(error)")
-            blocks = []
+        }
+    }
+    
+    /// Update active block from activeBlockId (called by Combine observer)
+    private func updateActiveBlock() {
+        if let activeId = userDefaults.string(forKey: activeBlockIdKey),
+           let uuid = UUID(uuidString: activeId) {
+            activeBlock = blocks.first { $0.id == uuid }
+        } else {
             activeBlock = nil
         }
     }
