@@ -54,8 +54,9 @@ struct DeviceActivityMonitorDemoApp: App {
     var body: some Scene {
         WindowGroup {
             if hasCompletedOnboarding {
-                HomeScreen()
-                    .environment(blockManager)
+//                ContentView()
+               HomeScreen()
+                   .environment(blockManager)
             } else {
                 NavigationStack {
                     SplashView(onCompletion: {

@@ -26,7 +26,7 @@ final class BlockManager {
     // MARK: - Initialization
     
     init() {
-        self.userDefaults = UserDefaults(suiteName: "group.com.gia.screengate") ?? .standard
+        self.userDefaults = UserDefaults(suiteName: "group.com.gia.screendiet") ?? .standard
         
         // Load from UserDefaults asynchronously to avoid blocking UI
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
@@ -139,10 +139,61 @@ final class BlockManager {
         // Determine action based on block type
         switch block.type {
         case .blockNow:
-            // Apply restrictions immediately
+            // For blockNow: Two strategies based on duration
+            guard let duration = block.schedule.duration else {
+                throw NSError(domain: "BlockManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Block duration is required"])
+            }
+            
+            // Apply immediate restrictions first
             try deviceActivityManager.applyImmediateRestrictions(
                 activitySelection: block.appSelection
             )
+            
+            let now = Date()
+            let monitorName = block.getMonitorName()
+            
+            if duration < 15 * 60 {
+                // For blocks < 15 minutes:
+                // - Schedule: Always 15 min (DeviceActivity minimum)
+                // - Warning: Fires at ACTUAL duration by calculating offset from end
+                //   Formula: warningTime = 15min - duration
+                //   Example: 5min block → warning at (15-5) = 10min before end = at 5min mark ✅
+                // - Threshold: 0 (not used)
+                // - Cleanup: Handle in intervalWillEndWarning callback
+                
+                let scheduleEnd = now.addingTimeInterval(15 * 60)  // 15 min schedule
+                let warningOffset = (15 * 60) - duration           // Time BEFORE end
+                let warningMinutes = Int(warningOffset / 60)
+                
+                try deviceActivityManager.startMonitor(
+                    activitySelection: block.appSelection,
+                    shieldThreshold: .hms(0, 0, 0),              // Threshold = 0 (not used)
+                    start: now,
+                    end: scheduleEnd,                             // 15 min
+                    repeatDaily: false,
+                    activityName: monitorName.rawValue,
+                    warningTimeMinutes: warningMinutes            // e.g., 10 for 5-min block
+                )
+                
+            } else {
+                // For blocks ≥ 15 minutes:
+                // - Schedule: Actual duration
+                // - Warning: 10 min before end (standard)
+                // - Threshold: 0 (not used)
+                // - Cleanup: Handle in intervalDidEnd callback
+                
+                let scheduleEnd = now.addingTimeInterval(duration)
+                
+                try deviceActivityManager.startMonitor(
+                    activitySelection: block.appSelection,
+                    shieldThreshold: .hms(0, 0, 0),              // Threshold = 0 (not used)
+                    start: now,
+                    end: scheduleEnd,                             // Actual duration
+                    repeatDaily: false,
+                    activityName: monitorName.rawValue,
+                    warningTimeMinutes: 10                        // Standard 10 min warning
+                )
+            }
             
         case .scheduled:
             // Start monitor for scheduled time range
@@ -256,7 +307,7 @@ final class BlockManager {
     func cancelBlock() async throws {
         guard let activeBlock = activeBlock else { return }
         
-        // Remove restrictions
+        // Remove restrictions immediately
         try deviceActivityManager.removeRestrictions()
         
         // Stop all monitors for this block
@@ -268,7 +319,7 @@ final class BlockManager {
         pauseTimer?.invalidate()
         pauseTimer = nil
         
-        // Update block state
+        // Update block state in blocks array
         var updatedBlock = activeBlock
         updatedBlock.isActive = false
         updatedBlock.isPaused = false
@@ -280,7 +331,8 @@ final class BlockManager {
         
         saveToUserDefaults()
         
-        postNotification(title: "Session cancelled", body: "Focus session has been cancelled")
+        let reason = pausedUntil == nil ? "cancelled" : "expired"
+        postNotification(title: "Session \(reason)", body: "Focus session has \(reason)")
     }
     
     /// Extend active block duration
@@ -327,6 +379,22 @@ final class BlockManager {
                 userDefaults.set(activeBlockId.uuidString, forKey: activeBlockIdKey)
             } else {
                 userDefaults.removeObject(forKey: activeBlockIdKey)
+            }
+            
+            // Save active block metadata (for extension to use without parsing full blocks array)
+            if let activeBlock = activeBlock {
+                var metadata: [String: Any] = [:]
+                metadata["id"] = activeBlock.id.uuidString
+                metadata["type"] = activeBlock.type.rawValue
+                metadata["createdAt"] = activeBlock.createdAt
+                if let duration = activeBlock.schedule.duration {
+                    metadata["duration"] = duration
+                    // Pre-calculate isShortBlock to avoid calculation in extension (limited 5MB memory)
+                    metadata["isShortBlock"] = (activeBlock.type == .blockNow && duration < 15 * 60)
+                }
+                userDefaults.set(metadata, forKey: "activeBlockMetadata")
+            } else {
+                userDefaults.removeObject(forKey: "activeBlockMetadata")
             }
             
             // Save paused until time

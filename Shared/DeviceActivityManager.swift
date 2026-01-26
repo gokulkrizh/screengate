@@ -59,7 +59,7 @@ class DeviceActivityManager {
     
     
     // If the specified applications, categories, and webDomains have been in use longer than the event’s `threshold` within the activity’s scheduled interval (start - end), we will shield those applications.
-    func startMonitor(activitySelection: FamilyActivitySelection, shieldThreshold: TimeInterval, start: Date, end: Date, repeatDaily: Bool, activityName: String) throws {
+    func startMonitor(activitySelection: FamilyActivitySelection, shieldThreshold: TimeInterval, start: Date, end: Date, repeatDaily: Bool, activityName: String, warningTimeMinutes: Int = 10) throws {
         print(#function)
         let (start, end) = repeatDaily ? createRepeatDailySchedule(start: start, end: end) : createOneTimeSchedule(start: start, end: end)
 
@@ -71,8 +71,8 @@ class DeviceActivityManager {
         let schedule = DeviceActivitySchedule(
             intervalStart: start,
             intervalEnd:end,
-            repeats: true,
-            warningTime: nil
+            repeats: false,
+            warningTime: DateComponents(minute: warningTimeMinutes)
         )
         
         // If our app didn’t specify any applications, categories, or webDomains,

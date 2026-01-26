@@ -14,7 +14,7 @@ import Foundation
 // Make sure that your class name matches the NSExtensionPrincipalClass in your Info.plist.
 class ShieldActionExtension: ShieldActionDelegate {
     private var manager = DeviceActivityManager()
-    private let userDefaults = UserDefaults(suiteName: "group.com.gia.screengate")
+    private let userDefaults = UserDefaults(suiteName: "group.com.gia.screendiet")
     private let jsonDecoder = JSONDecoder()
 
     // MARK: - Helpers

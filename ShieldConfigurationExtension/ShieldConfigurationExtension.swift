@@ -15,7 +15,7 @@ import Foundation
 // Make sure that your class name matches the NSExtensionPrincipalClass in your Info.plist.
 class ShieldConfigurationExtension: ShieldConfigurationDataSource {
     
-    private let userDefaults = UserDefaults(suiteName: "group.com.gia.screengate")
+    private let userDefaults = UserDefaults(suiteName: "group.com.gia.screendiet")
     private let jsonDecoder = JSONDecoder()
     
     // MARK: - Helpers

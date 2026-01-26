@@ -348,9 +348,11 @@ struct CreateBlockNowView: View {
         defer { isCreating = false }
         
         let duration = TimeInterval((selectedHours * 3600) + (selectedMinutes * 60))
+        let endTime = Date(timeIntervalSinceNow: duration)
+        
         let schedule = Block.BlockSchedule(
             startTime: nil,
-            endTime: nil,
+            endTime: endTime,
             duration: duration,
             threshold: nil,
             repeatDays: nil,
