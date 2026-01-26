@@ -438,6 +438,11 @@ final class BlockManager {
         }
     }
     
+    /// Reload blocks from UserDefaults (called when app becomes active)
+    func reloadFromUserDefaults() {
+        loadFromUserDefaults()
+    }
+    
     func loadFromUserDefaults() {
         do {
             let decoder = JSONDecoder()

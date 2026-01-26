@@ -141,6 +141,29 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             }
         }
         
+        // Mark block as inactive in the main blocks array (stored as JSON Data)
+        if let blocksData = userDefaults.data(forKey: "blocks") {
+            do {
+                // Try to decode as JSON array
+                if var blocksArray = try JSONSerialization.jsonObject(with: blocksData) as? [[String: Any]] {
+                    // Find block by ID and mark as inactive
+                    for i in 0..<blocksArray.count {
+                        if let bid = blocksArray[i]["id"] as? String, bid == blockId {
+                            blocksArray[i]["isActive"] = false
+                            logger.info("[clearActiveBlockData] Marked block as inactive: \(blockId)")
+                            
+                            // Re-encode and save
+                            let updatedData = try JSONSerialization.data(withJSONObject: blocksArray, options: [.prettyPrinted])
+                            userDefaults.set(updatedData, forKey: "blocks")
+                            break
+                        }
+                    }
+                }
+            } catch {
+                logger.warning("[clearActiveBlockData] Could not update blocks array: \(error.localizedDescription)")
+            }
+        }
+        
         userDefaults.synchronize()
         logger.info("[clearActiveBlockData] Cleared block data for blockId: \(blockId)")
     }
@@ -233,12 +256,19 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         
         // Extract block ID from activity name
         guard let blockId = extractBlockId(from: activity) else {
-            logger.error("Failed to extract block ID from activity")
+            logger.error("[intervalDidEnd] Failed to extract block ID from activity")
             return
         }
         
         let (_, _, _, blockType, isShortBlock) = getActiveBlockInfo(blockId: blockId)
-        logger.info("Block type: \(blockType), isShortBlock: \(isShortBlock), blockId: \(blockId)")
+        
+        // If no block type found, this is a stale monitor - ignore it
+        guard !blockType.isEmpty else {
+            logger.warning("[intervalDidEnd] No metadata for blockId: \(blockId) - stale monitor, ignoring")
+            return
+        }
+        
+        logger.info("[intervalDidEnd] Block type: \(blockType), isShortBlock: \(isShortBlock), blockId: \(blockId)")
         
         // Route to appropriate handler based on block type
         switch blockType {

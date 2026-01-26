@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CreateBlockView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(BlockManager.self) var blockManager
     @State private var selectedBlockType: BlockType = .scheduled
     private let appTheme = AppTheme.shared
     
@@ -15,6 +16,13 @@ struct CreateBlockView: View {
         case openLimit = "open_limit"
         case appTimeLimit = "app_time_limit"
         case blockNow = "block_now"
+    }
+    
+    /// Check if a blockNow is already active
+    private var isBlockNowActive: Bool {
+        blockManager.blocks.contains { block in
+            block.type == .blockNow && block.isActive && !block.isPaused
+        }
     }
     
     var body: some View {
@@ -97,7 +105,8 @@ struct CreateBlockView: View {
                         title: "Block Now",
                         subtitle: "Emergency. Lock instantly.",
                         type: .blockNow,
-                        isEmphasis: true
+                        isEmphasis: true,
+                        isDisabled: isBlockNowActive
                     )
                 }
                 .padding(.horizontal, 20)
@@ -139,6 +148,11 @@ struct CreateBlockView: View {
             .padding(.bottom, 20)
         }
         .background(Color(red: 0.06, green: 0.13, blue: 0.09))
+        .onAppear {
+            // Reload blocks from UserDefaults when view appears
+            // This ensures we pick up changes made by the extension
+            blockManager.reloadFromUserDefaults()
+        }
     }
     
     // MARK: - Block Type Card
@@ -147,35 +161,47 @@ struct CreateBlockView: View {
         title: String,
         subtitle: String,
         type: BlockType,
-        isEmphasis: Bool = false
+        isEmphasis: Bool = false,
+        isDisabled: Bool = false
     ) -> some View {
         Button(action: { selectedBlockType = type }) {
             HStack(spacing: 12) {
                 // Icon
                 ZStack {
-                    if isEmphasis {
+                    if isEmphasis && !isDisabled {
                         RoundedRectangle(cornerRadius: 8)
                             .fill(appTheme.colors.primary.opacity(0.1))
                     } else {
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.white.opacity(0.05))
+                            .fill(Color.white.opacity(isDisabled ? 0.02 : 0.05))
                     }
                     
                     Image(systemName: icon)
                         .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(isEmphasis ? appTheme.colors.primary : .white.opacity(0.7))
+                        .foregroundColor(
+                            isDisabled ? .white.opacity(0.3) :
+                            isEmphasis ? appTheme.colors.primary : .white.opacity(0.7)
+                        )
                 }
                 .frame(width: 44, height: 44)
                 
                 // Content
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(.system(size: 16, weight: .bold, design: .default))
-                        .foregroundColor(.white)
+                    HStack(spacing: 8) {
+                        Text(title)
+                            .font(.system(size: 16, weight: .bold, design: .default))
+                            .foregroundColor(isDisabled ? .white.opacity(0.4) : .white)
+                        
+                        if isDisabled {
+                            Text("(active)")
+                                .font(.system(size: 12, weight: .medium, design: .default))
+                                .foregroundColor(.white.opacity(0.4))
+                        }
+                    }
                     
                     Text(subtitle)
                         .font(.system(size: 13, weight: .regular, design: .default))
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(.white.opacity(isDisabled ? 0.3 : 0.5))
                 }
                 
                 Spacer()
@@ -184,7 +210,7 @@ struct CreateBlockView: View {
                 ZStack {
                     Circle()
                         .stroke(
-                            selectedBlockType == type ? appTheme.colors.primary : Color.white.opacity(0.2),
+                            selectedBlockType == type ? appTheme.colors.primary : Color.white.opacity(isDisabled ? 0.1 : 0.2),
                             lineWidth: 2
                         )
                         .frame(width: 24, height: 24)
@@ -201,12 +227,14 @@ struct CreateBlockView: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(
-                        selectedBlockType == type ? appTheme.colors.primary : Color.white.opacity(0.05),
+                        selectedBlockType == type ? appTheme.colors.primary : Color.white.opacity(isDisabled ? 0.02 : 0.05),
                         lineWidth: selectedBlockType == type ? 2 : 1
                     )
             )
             .cornerRadius(16)
+            .opacity(isDisabled ? 0.6 : 1.0)
         }
+        .disabled(isDisabled)
     }
 }
 

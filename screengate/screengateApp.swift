@@ -44,6 +44,7 @@ struct DeviceActivityMonitorDemoApp: App {
     @State private var showRestrictionLifted = false
     @State private var hasCompletedOnboarding = OnboardingData.hasCompletedOnboarding()
     @State private var blockManager = BlockManager()
+    @Environment(\.scenePhase) private var scenePhase
     private let notificationDelegate = NotificationDelegate()
 
     init() {
@@ -63,6 +64,12 @@ struct DeviceActivityMonitorDemoApp: App {
                         hasCompletedOnboarding = true
                     })
                 }
+            }
+        }
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            if newPhase == .active {
+                // Reload blocks when app becomes active (extension may have updated them)
+                blockManager.reloadFromUserDefaults()
             }
         }
     }
