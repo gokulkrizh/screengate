@@ -27,12 +27,12 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         let prefix = "com.gia.screendiet.com.gia.screengate."
         
         guard activityString.hasPrefix(prefix) else {
-            logger.warning("Activity name doesn't match expected format: \(activityString)")
+            logger.warning("[extractBlockId] Activity name doesn't match expected format: \(activityString)")
             return nil
         }
         
         let blockId = String(activityString.dropFirst(prefix.count))
-        logger.info("Extracted block ID: \(blockId) from activity: \(activityString)")
+        logger.info("[extractBlockId] Extracted block ID: \(blockId) from activity: \(activityString)")
         return blockId
     }
     
@@ -68,7 +68,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         // Direct key lookup - O(1), no JSON parsing
         let metadataKey = "activeBlockMetadata_\(blockId)"
         guard let metadata = userDefaults.dictionary(forKey: metadataKey) as? [String: Any] else {
-            logger.warning("No metadata found for blockId: \(blockId)")
+            logger.warning("[getActiveBlockInfo] No metadata found for blockId: \(blockId)")
             return (id: "", createdAt: nil, duration: nil, type: "", isShortBlock: false)
         }
         
@@ -97,7 +97,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     
     /// Send notification for block event
     private func sendNotification(title: String, body: String) {
-        logger.info("sendNotification called: title=\(title)")
+        logger.info("[sendNotification] sendNotification called: title=\(title)")
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
@@ -111,10 +111,10 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
-                self.logger.error("Error sending notification: \(error.localizedDescription)")
+                self.logger.error("[sendNotification] Error sending notification: \(error.localizedDescription)")
                 print("Error sending notification: \(error)")
             } else {
-                self.logger.info("Notification sent successfully")
+                self.logger.info("[sendNotification] Notification sent successfully")
             }
         }
     }
@@ -142,67 +142,67 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         }
         
         userDefaults.synchronize()
-        logger.info("Cleared block data for blockId: \(blockId)")
+        logger.info("[clearActiveBlockData] Cleared block data for blockId: \(blockId)")
     }
     
     /// Handle short blockNow completion (<15 min) - called from intervalWillEndWarning
     private func handleShortBlockNowCompletion(blockId: String) {
-        logger.info("Handling short blockNow completion for blockId: \(blockId)")
+        logger.info("[handleShortBlockNowCompletion] Handling short blockNow completion for blockId: \(blockId)")
         
         // Note: Pause check removed - each block is independent
         
         manager.removeRestrictions()
         clearActiveBlockData(blockId: blockId)
         sendNotification(title: "Focus Session Complete", body: "Your focus block has ended!")
-        logger.info("Short blockNow cleanup completed for blockId: \(blockId)")
+        logger.info("[handleShortBlockNowCompletion] Short blockNow cleanup completed for blockId: \(blockId)")
     }
     
     /// Handle long blockNow completion (≥15 min) - called from intervalDidEnd
     private func handleLongBlockNowCompletion(blockId: String) {
-        logger.info("Handling long blockNow completion for blockId: \(blockId)")
+        logger.info("[handleLongBlockNowCompletion] Handling long blockNow completion for blockId: \(blockId)")
         
         // Note: Pause check removed - each block is independent
         
         manager.removeRestrictions()
         clearActiveBlockData(blockId: blockId)
         sendNotification(title: "Focus Session Complete", body: "Your focus block has ended!")
-        logger.info("Long blockNow cleanup completed for blockId: \(blockId)")
+        logger.info("[handleLongBlockNowCompletion] Long blockNow cleanup completed for blockId: \(blockId)")
     }
     
     /// Handle scheduled block completion - called from intervalDidEnd
     private func handleScheduledBlockCompletion(blockId: String) {
-        logger.info("Handling scheduled block completion for blockId: \(blockId)")
+        logger.info("[handleScheduledBlockCompletion] Handling scheduled block completion for blockId: \(blockId)")
         
         // Note: Pause check removed - each block is independent
         
         manager.removeRestrictions()
         clearActiveBlockData(blockId: blockId)
         sendNotification(title: "Focus Block Ended", body: "Your scheduled block has completed!")
-        logger.info("Scheduled block cleanup completed for blockId: \(blockId)")
+        logger.info("[handleScheduledBlockCompletion] Scheduled block cleanup completed for blockId: \(blockId)")
     }
     
     /// Handle app time limit threshold reached - called from eventDidReachThreshold
     private func handleAppTimeLimitReached() {
-        logger.info("Handling app time limit threshold reached")
+        logger.info("[handleAppTimeLimitReached] Handling app time limit threshold reached")
         
         if isCurrentlyPaused() {
-            logger.warning("Block is paused, skipping threshold action")
+            logger.warning("[handleAppTimeLimitReached] Block is paused, skipping threshold action")
             return
         }
         
         // App time limit uses threshold to trigger restrictions
         // Restrictions stay until intervalDidEnd
         sendNotification(title: "App Limit Reached", body: "You've reached your daily app usage limit!")
-        logger.info("App time limit threshold action completed")
+        logger.info("[handleAppTimeLimitReached] App time limit threshold action completed")
     }
         
     override func intervalDidStart(for activity: DeviceActivityName) {
         super.intervalDidStart(for: activity)
-        logger.info("intervalDidStart called for activity")
+        logger.info("[intervalDidStart] intervalDidStart called for activity")
         
         // Check if paused - if so, don't apply restrictions
         if isCurrentlyPaused() {
-            logger.warning("Block is paused, skipping restrictions")
+            logger.warning("[intervalDidStart] Block is paused, skipping restrictions")
             print("Block is paused, skipping restrictions for \(activity)")
             return
         }
@@ -210,10 +210,10 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         // Handle the start of the interval.
         // if the threshold is 0, the eventDidReachThreshold is not be triggered correctly sometimes.
         let events = manager.getEvents(activityName: activity, details: true)
-        logger.info("Found \(events.count) events for activity")
+        logger.info("[intervalDidStart] Found \(events.count) events for activity")
         for (_, event) in events {
             if event.threshold.hour == 0 && event.threshold.minute == 0 {
-                logger.info("Applying immediate restrictions for zero threshold")
+                logger.info("[intervalDidStart] Applying immediate restrictions for zero threshold")
                 manager.applyImmediateRestrictions(
                     applicationTokens: event.applications,
                     categoryTokens: event.categories,
@@ -229,7 +229,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     
     override func intervalDidEnd(for activity: DeviceActivityName) {
         super.intervalDidEnd(for: activity)
-        logger.info("intervalDidEnd called for activity: \(activity.rawValue)")
+        logger.info("[intervalDidEnd] intervalDidEnd called for activity: \(activity.rawValue)")
         
         // Extract block ID from activity name
         guard let blockId = extractBlockId(from: activity) else {
@@ -245,7 +245,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         case "blockNow":
             if isShortBlock {
                 // Short blocks already cleaned up in intervalWillEndWarning
-                logger.info("Short blockNow - already handled, skipping")
+                logger.info("[intervalDidEnd] Short blockNow - already handled, skipping")
             } else {
                 // Long blocks clean up here
                 handleLongBlockNowCompletion(blockId: blockId)
@@ -258,24 +258,24 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             handleScheduledBlockCompletion(blockId: blockId) // Same cleanup as scheduled
             
         default:
-            logger.warning("Unknown block type: \(blockType)")
+            logger.warning("[intervalDidEnd] Unknown block type: \(blockType)")
         }
         
-        logger.info("intervalDidEnd completed for blockId: \(blockId)")
+        logger.info("[intervalDidEnd] intervalDidEnd completed for blockId: \(blockId)")
     }
     
     override func eventDidReachThreshold(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
         super.eventDidReachThreshold(event, activity: activity)
-        logger.info("eventDidReachThreshold fired for activity: \(activity.rawValue)")
+        logger.info("[eventDidReachThreshold] eventDidReachThreshold fired for activity: \(activity.rawValue)")
         
         // Extract block ID from activity name
         guard let blockId = extractBlockId(from: activity) else {
-            logger.error("Failed to extract block ID from activity")
+            logger.error("[eventDidReachThreshold] Failed to extract block ID from activity")
             return
         }
         
         let (_, _, _, blockType, _) = getActiveBlockInfo(blockId: blockId)
-        logger.info("Block type: \(blockType), blockId: \(blockId)")
+        logger.info("[eventDidReachThreshold] Block type: \(blockType), blockId: \(blockId)")
         
         // Route to appropriate handler based on block type
         switch blockType {
@@ -284,54 +284,54 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             
         case "blockNow":
             // blockNow uses warningTime for cleanup, not threshold
-            logger.info("blockNow uses warningTime callback, ignoring threshold")
+            logger.info("[eventDidReachThreshold] blockNow uses warningTime callback, ignoring threshold")
             
         default:
-            logger.info("No threshold action for block type: \(blockType)")
+            logger.info("[eventDidReachThreshold] No threshold action for block type: \(blockType)")
         }
     }
     
     override func intervalWillStartWarning(for activity: DeviceActivityName) {
         super.intervalWillStartWarning(for: activity)
-        logger.info("intervalWillStartWarning called")
+        logger.info("[intervalWillStartWarning] intervalWillStartWarning called")
         
         // Handle the warning before the interval starts.
         sendNotification(title: "Focus Block Starting Soon", body: "Your focus block will start in 1 minute")
-        logger.info("intervalWillStartWarning completed")
+        logger.info("[intervalWillStartWarning] intervalWillStartWarning completed")
     }
     
     override func intervalWillEndWarning(for activity: DeviceActivityName) {
         super.intervalWillEndWarning(for: activity)
-        logger.info("intervalWillEndWarning called for activity: \(activity.rawValue)")
+        logger.info("[intervalWillEndWarning] intervalWillEndWarning called for activity: \(activity.rawValue)")
         
         // Extract block ID from activity name
         guard let blockId = extractBlockId(from: activity) else {
-            logger.error("Failed to extract block ID from activity")
+            logger.error("[intervalWillEndWarning] Failed to extract block ID from activity")
             return
         }
         
         let (_, _, _, blockType, isShortBlock) = getActiveBlockInfo(blockId: blockId)
-        logger.info("Block type: \(blockType), isShortBlock: \(isShortBlock), blockId: \(blockId)")
+        logger.info("[intervalWillEndWarning] Block type: \(blockType), isShortBlock: \(isShortBlock), blockId: \(blockId)")
         
         // Only short blockNow uses this callback for cleanup
         if blockType == "blockNow" && isShortBlock {
             handleShortBlockNowCompletion(blockId: blockId)
         } else {
             // All other blocks: just send warning notification
-            logger.info("Standard warning - no cleanup")
+            logger.info("[intervalWillEndWarning] Standard warning - no cleanup")
             sendNotification(title: "Focus Block Ending Soon", body: "Your focus block will end soon")
         }
         
-        logger.info("intervalWillEndWarning completed for blockId: \(blockId)")
+        logger.info("[intervalWillEndWarning] intervalWillEndWarning completed for blockId: \(blockId)")
     }
     
     override func eventWillReachThresholdWarning(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
         super.eventWillReachThresholdWarning(event, activity: activity)
-        logger.info("eventWillReachThresholdWarning called")
+        logger.info("[eventWillReachThresholdWarning] eventWillReachThresholdWarning called")
         
         // Handle the warning before the event reaches its threshold.
         sendNotification(title: "Daily Limit Warning", body: "You're approaching your usage limit!")
-        logger.info("eventWillReachThresholdWarning completed")
+        logger.info("[eventWillReachThresholdWarning] eventWillReachThresholdWarning completed")
     }
 }
 
