@@ -202,11 +202,49 @@ struct CreateBlockNowView: View {
                             
                             // Quick Presets
                             HStack(spacing: 12) {
-                                presetButton(10, selected: selectedPreset == 10)
-                                presetButton(25, selected: selectedPreset == 25)
-                                presetButton(45, selected: selectedPreset == 45)
+                                Button(action: { setPreset(10) }) {
+                                    Text("10m")
+                                        .font(.system(size: 14, weight: .semibold, design: .default))
+                                        .foregroundColor(selectedPreset == 10 ? appTheme.colors.primary : .white)
+                                        .frame(height: 36)
+                                        .padding(.horizontal, 16)
+                                        .background(Color(red: 0.1, green: 0.2, blue: 0.14))
+                                        .cornerRadius(18)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 18)
+                                                .stroke(selectedPreset == 10 ? appTheme.colors.primary.opacity(0.3) : Color.white.opacity(0.05), lineWidth: 1)
+                                        )
+                                }
                                 
-                                Button(action: { selectedPreset = 60 }) {
+                                Button(action: { setPreset(20) }) {
+                                    Text("20m")
+                                        .font(.system(size: 14, weight: .semibold, design: .default))
+                                        .foregroundColor(selectedPreset == 20 ? appTheme.colors.primary : .white)
+                                        .frame(height: 36)
+                                        .padding(.horizontal, 16)
+                                        .background(Color(red: 0.1, green: 0.2, blue: 0.14))
+                                        .cornerRadius(18)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 18)
+                                                .stroke(selectedPreset == 20 ? appTheme.colors.primary.opacity(0.3) : Color.white.opacity(0.05), lineWidth: 1)
+                                        )
+                                }
+                                
+                                Button(action: { setPreset(45) }) {
+                                    Text("45m")
+                                        .font(.system(size: 14, weight: .semibold, design: .default))
+                                        .foregroundColor(selectedPreset == 45 ? appTheme.colors.primary : .white)
+                                        .frame(height: 36)
+                                        .padding(.horizontal, 16)
+                                        .background(Color(red: 0.1, green: 0.2, blue: 0.14))
+                                        .cornerRadius(18)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 18)
+                                                .stroke(selectedPreset == 45 ? appTheme.colors.primary.opacity(0.3) : Color.white.opacity(0.05), lineWidth: 1)
+                                        )
+                                }
+                                
+                                Button(action: { setPreset(60) }) {
                                     Text("1h")
                                         .font(.system(size: 14, weight: .semibold, design: .default))
                                         .foregroundColor(selectedPreset == 60 ? appTheme.colors.primary : .white)
@@ -327,6 +365,12 @@ struct CreateBlockNowView: View {
     
     // MARK: - Private Methods
     
+    private func setPreset(_ minutes: Int) {
+        selectedPreset = minutes
+        selectedHours = minutes / 60
+        selectedMinutes = minutes % 60
+    }
+    
     @MainActor
     private func createBlockNow() async {
         guard !blockName.trimmingCharacters(in: .whitespaces).isEmpty else {
@@ -377,23 +421,6 @@ struct CreateBlockNowView: View {
         } catch {
             print("Error creating block: \(error)")
             self.error = "Failed to create block: \(error.localizedDescription)"
-        }
-    }
-    
-    private func presetButton(_ minutes: Int, selected: Bool) -> some View {
-        Button(action: { selectedPreset = minutes }) {
-            Text("\(minutes)m")
-                .font(.system(size: 14, weight: .semibold, design: .default))
-                .foregroundColor(selected ? appTheme.colors.primary : .white)
-                .frame(height: 36)
-                .padding(.horizontal, 16)
-                .background(Color(red: 0.1, green: 0.2, blue: 0.14))
-                .cornerRadius(18)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 18)
-                        .stroke(selected ? appTheme.colors.primary.opacity(0.3) : Color.white.opacity(0.05), lineWidth: 1)
-                )
-                .shadow(color: selected ? appTheme.colors.primary.opacity(0.1) : Color.clear, radius: 8, x: 0, y: 0)
         }
     }
 }
