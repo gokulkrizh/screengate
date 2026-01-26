@@ -8,10 +8,25 @@ struct HomeScreen: View {
     @State private var selectedTab = 0
     @State private var showFocusSession = false
     @State private var showHowItWorks = false
-    @State private var elapsedTime: TimeInterval = 0
-    @State private var timer: Timer?
     @State private var currentTime = Date()  // For live timer updates
     private let appTheme = AppTheme.shared
+    
+    // MARK: - Computed Properties
+    
+    private var elapsedTime: TimeInterval {
+        guard let activeBlock = blockManager.activeBlock else { return 0 }
+        
+        // Calculate elapsed time from when block was created
+        let elapsed = currentTime.timeIntervalSince(activeBlock.createdAt)
+        
+        // If paused, subtract remaining pause time
+        if let pausedUntil = blockManager.pausedUntil, pausedUntil > currentTime {
+            let pauseRemaining = pausedUntil.timeIntervalSince(currentTime)
+            return max(0, elapsed - pauseRemaining)
+        }
+        
+        return max(0, elapsed)
+    }
     
     var body: some View {
         if showFocusSession {
@@ -175,19 +190,23 @@ struct HomeScreen: View {
                             .padding(16)
                             
                             // Progress bar
-                            ZStack(alignment: .leading) {
-                                RoundedRectangle(cornerRadius: 2)
-                                    .fill(Color.white.opacity(0.1))
-                                    .frame(height: 4)
-                                
-                                if let duration = activeBlock.schedule.duration, duration > 0 {
-                                    let progress = min(elapsedTime / duration, 1.0)
+                            GeometryReader { geometry in
+                                ZStack(alignment: .leading) {
                                     RoundedRectangle(cornerRadius: 2)
-                                        .fill(appTheme.colors.primary)
-                                        .frame(width: CGFloat(progress * 268), height: 4)
-                                        .shadow(color: appTheme.colors.primary.opacity(0.8), radius: 4)
+                                        .fill(Color.white.opacity(0.1))
+                                        .frame(height: 4)
+                                    
+                                    if let duration = activeBlock.schedule.duration, duration > 0 {
+                                        let progress = min(elapsedTime / duration, 1.0)
+                                        let barWidth = geometry.size.width * progress
+                                        RoundedRectangle(cornerRadius: 2)
+                                            .fill(appTheme.colors.primary)
+                                            .frame(width: barWidth, height: 4)
+                                            .shadow(color: appTheme.colors.primary.opacity(0.8), radius: 4)
+                                    }
                                 }
                             }
+                            .frame(height: 4)
                             .padding(.horizontal, 16)
                             .padding(.bottom, 12)
                         }
@@ -197,12 +216,6 @@ struct HomeScreen: View {
                         .padding(.horizontal, 20)
                         .onTapGesture {
                             showFocusSession = true
-                        }
-                        .onAppear {
-                            startTimer()
-                        }
-                        .onDisappear {
-                            stopTimer()
                         }
                     } else {
                         // No active block - show empty state
@@ -498,37 +511,6 @@ struct HomeScreen: View {
         // }
         // .background(Color(red: 0.06, green: 0.13, blue: 0.09))
         // .ignoresSafeArea()
-    }
-    
-    // MARK: - Timer Management
-    
-    private func startTimer() {
-        stopTimer()
-        
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            guard let activeBlock = blockManager.activeBlock else {
-                stopTimer()
-                return
-            }
-            
-            // Calculate elapsed time based on when block was activated
-            if let activatedAt = activeBlock.createdAt as Date? {
-                let elapsed = Date().timeIntervalSince(activatedAt)
-                
-                // Account for pause state
-                if let pausedUntil = blockManager.pausedUntil, pausedUntil > Date() {
-                    // Don't count time while paused
-                    elapsedTime = elapsed - (pausedUntil.timeIntervalSince(Date()))
-                } else {
-                    elapsedTime = elapsed
-                }
-            }
-        }
-    }
-    
-    private func stopTimer() {
-        timer?.invalidate()
-        timer = nil
     }
     
     // MARK: - Helper Functions
