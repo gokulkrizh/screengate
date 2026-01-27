@@ -382,8 +382,9 @@ struct FocusSessionScreen: View {
                     
                     FocusInterruptedModal(
                         isPresented: $showFocusInterruptedModal,
+                        strictMode: blockManager.activeBlock?.strictMode ?? .medium,
                         onEndSession: {
-                            isPresented = false
+                            cancelSession()
                         }
                     )
                     .transition(.scale.combined(with: .opacity))
@@ -457,9 +458,16 @@ struct FocusSessionScreen: View {
     
     private func cancelSession() {
         Task {
-            try await blockManager.cancelBlock()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                isPresented = false
+            do {
+                print("🔴 [FocusSessionScreen] Canceling session...")
+                try await blockManager.cancelBlock()
+                print("✅ [FocusSessionScreen] Session canceled successfully")
+                
+                await MainActor.run {
+                    isPresented = false
+                }
+            } catch {
+                print("❌ [FocusSessionScreen] Failed to cancel session: \(error)")
             }
         }
     }

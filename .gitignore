@@ -159,3 +159,11 @@ Config.local.xcconfig
 *.orig
 
 specs/
+BLOCK_LIFECYCLE.md
+BUG_FIXES.md
+IMPLEMENTATION_SUMMARY.md
+QUICK_REFERENCE.md
+THRESHOLD_ARCHITECTURE.md
+tools.md
+.github/copilot-instructions.md
+.github/copilot-instructions.md

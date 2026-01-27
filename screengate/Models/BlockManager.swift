@@ -213,7 +213,8 @@ final class BlockManager {
                     start: now,
                     end: scheduleEnd,                             // 15 min
                     repeatDaily: false,
-                    activityName: monitorName.rawValue,
+                    activityName: block.id.uuidString,
+                    eventName: block.type.rawValue,
                     warningTimeMinutes: warningMinutes            // e.g., 10 for 5-min block
                 )
                 
@@ -232,7 +233,8 @@ final class BlockManager {
                     start: now,
                     end: scheduleEnd,                             // Actual duration
                     repeatDaily: false,
-                    activityName: monitorName.rawValue,
+                    activityName: block.id.uuidString,
+                    eventName: block.type.rawValue,
                     warningTimeMinutes: 10                        // Standard 10 min warning
                 )
             }
@@ -246,14 +248,15 @@ final class BlockManager {
                 
                 // Create monitors for each day
                 for day in dayMonitors {
-                    let monitorName = block.getMonitorName(for: day)
+                    let activityName = dayMonitors.count > 1 ? "\(block.id.uuidString).day\(day)" : block.id.uuidString
                     try deviceActivityManager.startMonitor(
                         activitySelection: block.appSelection,
                         shieldThreshold: .hms(0, 0, 0),
                         start: startTime,
                         end: endTime,
                         repeatDaily: isRepeating,
-                        activityName: monitorName.rawValue
+                        activityName: activityName,
+                        eventName: block.type.rawValue
                     )
                 }
             }
@@ -263,7 +266,6 @@ final class BlockManager {
             if let startTime = block.schedule.startTime,
                let endTime = block.schedule.endTime,
                let threshold = block.schedule.threshold {
-                let monitorName = block.getMonitorName()
                 let (h, m, _) = threshold.hms
                 try deviceActivityManager.startMonitor(
                     activitySelection: block.appSelection,
@@ -271,7 +273,8 @@ final class BlockManager {
                     start: startTime,
                     end: endTime,
                     repeatDaily: block.schedule.isRepeating,
-                    activityName: monitorName.rawValue
+                    activityName: block.id.uuidString,
+                    eventName: block.type.rawValue
                 )
             }
             
@@ -347,19 +350,31 @@ final class BlockManager {
     
     /// Cancel the active block (stop restrictions and clear active state)
     func cancelBlock() async throws {
-        guard let activeBlock = activeBlock else { return }
+        print("🔴 [BlockManager] cancelBlock called")
+        guard let activeBlock = activeBlock else {
+            print("⚠️ [BlockManager] No active block to cancel")
+            return
+        }
+        
+        print("🔴 [BlockManager] Canceling block: \(activeBlock.name)")
         
         // Remove restrictions immediately
-        try deviceActivityManager.removeRestrictions()
+        print("🔴 [BlockManager] Removing restrictions...")
+        deviceActivityManager.removeRestrictions()
+        print("✅ [BlockManager] Restrictions removed")
         
         // Stop all monitors for this block
+        print("🔴 [BlockManager] Stopping monitors...")
         await stopAllMonitorsForBlock(activeBlock)
+        print("✅ [BlockManager] Monitors stopped")
         
         // Clear active state
+        print("🔴 [BlockManager] Clearing active state...")
         self.activeBlock = nil
         self.pausedUntil = nil
         pauseTimer?.invalidate()
         pauseTimer = nil
+        print("✅ [BlockManager] Active state cleared")
         
         // Update block state in blocks array
         var updatedBlock = activeBlock
@@ -369,12 +384,15 @@ final class BlockManager {
         
         if let index = blocks.firstIndex(where: { $0.id == activeBlock.id }) {
             blocks[index] = updatedBlock
+            print("✅ [BlockManager] Block updated in array")
         }
         
         saveToUserDefaults()
+        print("✅ [BlockManager] State saved to UserDefaults")
         
         let reason = pausedUntil == nil ? "cancelled" : "expired"
         postNotification(title: "Session \(reason)", body: "Focus session has \(reason)")
+        print("✅ [BlockManager] cancelBlock completed successfully")
     }
     
     /// Extend active block duration
@@ -513,18 +531,23 @@ final class BlockManager {
     // MARK: - Private Helpers
     
     private func stopAllMonitorsForBlock(_ block: Block) async {
-        if block.schedule.repeatDays == nil {
+        print("🔴 [BlockManager] stopAllMonitorsForBlock called for: \(block.name)")
+        
+        if block.schedule.repeatDays == nil || block.schedule.repeatDays!.count == 1 {
             // Single monitor
-            let monitorName = block.getMonitorName()
-            deviceActivityManager.stopMonitor(activityName: monitorName.rawValue)
+            print("🔴 [BlockManager] Stopping single monitor: \(block.id.uuidString)")
+            deviceActivityManager.stopMonitor(activityName: block.id.uuidString)
         } else {
             // Multiple day-based monitors
             let dayMonitors = block.schedule.repeatDays ?? Set()
+            print("🔴 [BlockManager] Stopping \(dayMonitors.count) day-based monitors")
             for day in dayMonitors {
-                let monitorName = block.getMonitorName(for: day)
-                deviceActivityManager.stopMonitor(activityName: monitorName.rawValue)
+                let activityName = "\(block.id.uuidString).day\(day)"
+                print("🔴 [BlockManager] Stopping monitor for day \(day): \(activityName)")
+                deviceActivityManager.stopMonitor(activityName: activityName)
             }
         }
+        print("✅ [BlockManager] All monitors stopped")
     }
     
     private func startPauseTimer() {

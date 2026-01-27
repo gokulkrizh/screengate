@@ -24,8 +24,7 @@ class DeviceActivityManager {
     // * All instances are equivalent and manage the activities monitored by the application’s extension.
     private let deviceActivityCenter: DeviceActivityCenter = DeviceActivityCenter()
     
-    private let eventName: DeviceActivityEvent.Name = DeviceActivityEvent.Name(rawValue: nameIdentifier)
-    
+
     private let userDefaults: UserDefaults = UserDefaults(suiteName: "group.com.gia.screendiet") ?? .standard
     private let jsonEncoder = JSONEncoder()
     private let jsonDecoder = JSONDecoder()
@@ -51,22 +50,27 @@ class DeviceActivityManager {
     
     
     func removeRestrictions() {
-        print(#function)
+        print("🔴 [DeviceActivityManager] removeRestrictions called")
+        print("🔴 [DeviceActivityManager] Clearing shield.applications...")
         managedSettingsStore.shield.applications = nil
+        print("🔴 [DeviceActivityManager] Clearing shield.applicationCategories...")
         managedSettingsStore.shield.applicationCategories = nil
+        print("🔴 [DeviceActivityManager] Clearing shield.webDomains...")
         managedSettingsStore.shield.webDomains = nil
+        print("✅ [DeviceActivityManager] All restrictions cleared")
     }
     
     
     // If the specified applications, categories, and webDomains have been in use longer than the event’s `threshold` within the activity’s scheduled interval (start - end), we will shield those applications.
-    func startMonitor(activitySelection: FamilyActivitySelection, shieldThreshold: TimeInterval, start: Date, end: Date, repeatDaily: Bool, activityName: String, warningTimeMinutes: Int = 10) throws {
+    func startMonitor(activitySelection: FamilyActivitySelection, shieldThreshold: TimeInterval, start: Date, end: Date, repeatDaily: Bool, activityName: String, eventName: String = "threshold", warningTimeMinutes: Int = 10) throws {
         print(#function)
         let (start, end) = repeatDaily ? createRepeatDailySchedule(start: start, end: end) : createOneTimeSchedule(start: start, end: end)
 
         // The unique name of an activity.
         let deviceActivityName = makeActivityName(activityName)
+        let deviceEventName = DeviceActivityEvent.Name(eventName)
         
-        try self.saveSelection(activitySelection, activityName: deviceActivityName, eventName: self.eventName)
+        try self.saveSelection(activitySelection, activityName: deviceActivityName, eventName: deviceEventName)
 
         let schedule = DeviceActivitySchedule(
             intervalStart: start,
@@ -97,7 +101,7 @@ class DeviceActivityManager {
             // If this parameter is empty,
             // the application extension only receives callbacks for the start and end times of the schedule’s interval.
             events: [
-                eventName : event
+                deviceEventName : event
             ]
         )
         
@@ -110,19 +114,32 @@ class DeviceActivityManager {
     }
     
     func stopMonitor(activityName: DeviceActivityName) {
-        print(#function)
+        print("🔴 [DeviceActivityManager] stopMonitor called for: \(activityName)")
         
+        // Check if monitor exists by checking for schedule
+        let schedule = self.deviceActivityCenter.schedule(for: activityName)
+        guard schedule != nil else {
+            print("⚠️ [DeviceActivityManager] No monitor found for \(activityName.rawValue), skipping stopMonitoring")
+            return
+        }
+        
+        print("✅ [DeviceActivityManager] Monitor found, proceeding to stop")
         let events = self.getEvents(activityName: activityName, details: false)
+        print("🔴 [DeviceActivityManager] Found \(events.count) events to remove")
+        
         events.keys.forEach({
             let key = makeUserDefaultsKey(activityName: activityName, eventName: $0)
+            print("🔴 [DeviceActivityManager] Removing saved selection for key: \(key)")
             self.removeSavedSelection(key: key)
         })
 
         // If the array for the activity name is empty, ie: no activities are explicitly specified,
         // this method stops monitoring all activities.
         // Also, by calling this method, any shields (restrictions) applied for the activities (within the DeviceActivityMonitor extension) will be removed automatically
+        print("🔴 [DeviceActivityManager] Calling deviceActivityCenter.stopMonitoring...")
         self.deviceActivityCenter.stopMonitoring([activityName])
         self.monitoringActivities.removeAll(where: {$0 == parseActivityName(activityName)})
+        print("✅ [DeviceActivityManager] Monitor stopped successfully")
     }
     
     
