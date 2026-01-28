@@ -93,8 +93,9 @@ struct UpcomingBlocksView: View {
                 // Scrollable Content
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        // Today Section
-                        let todayBlocks = blockManager.blocks.filter { block in
+                        // Use prioritizedBlocks for correct ordering
+                        // Separate today's blocks from tomorrow's
+                        let todayBlocks = blockManager.prioritizedBlocks.filter { block in
                             if let startTime = block.schedule.startTime {
                                 return Calendar.current.isDateInToday(startTime)
                             }
@@ -141,7 +142,7 @@ struct UpcomingBlocksView: View {
                         }
                         
                         // Tomorrow Section
-                        let tomorrowBlocks = blockManager.blocks.filter { block in
+                        let tomorrowBlocks = blockManager.prioritizedBlocks.filter { block in
                             if let startTime = block.schedule.startTime {
                                 return Calendar.current.isDateInTomorrow(startTime)
                             }

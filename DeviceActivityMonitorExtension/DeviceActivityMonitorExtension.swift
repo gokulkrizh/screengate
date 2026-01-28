@@ -296,7 +296,13 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             }
             
         case "scheduled":
-            handleScheduledBlockCompletion(blockId: blockId)
+            if isShortBlock {
+                // Short scheduled blocks already cleaned up in intervalWillEndWarning
+                logger.info("[intervalDidEnd] Short scheduled block - already handled, skipping")
+            } else {
+                // Long scheduled blocks clean up here
+                handleScheduledBlockCompletion(blockId: blockId)
+            }
             
         case "appTimeLimit":
             handleScheduledBlockCompletion(blockId: blockId) // Same cleanup as scheduled
@@ -360,6 +366,8 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         // Only short blockNow uses this callback for cleanup
         if blockType == "blockNow" && isShortBlock {
             handleShortBlockNowCompletion(blockId: blockId)
+        } else if blockType == "scheduled" && isShortBlock {
+            handleScheduledBlockCompletion(blockId: blockId)
         } else {
             // All other blocks: just send warning notification
             logger.info("[intervalWillEndWarning] Standard warning - no cleanup")

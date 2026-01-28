@@ -27,6 +27,104 @@ final class BlockManager {
     private func blockKey(_ id: UUID) -> String { "block_\(id.uuidString)" }
     private func metadataKey(_ id: UUID) -> String { "activeBlockMetadata_\(id.uuidString)" }
     
+    // MARK: - Computed Properties
+    
+    /// The block that should be displayed on the Home screen (first prioritized block)
+    var displayBlock: Block? {
+        return prioritizedBlocks.first
+    }
+    
+    /// Prioritized blocks for display - active blocks first (most recent start), then upcoming (soonest start)
+    var prioritizedBlocks: [Block] {
+        let now = Date()
+        let calendar = Calendar.current
+        let todayWeekday = calendar.component(.weekday, from: now)
+        
+        // Helper: Check if block should run today based on repeat rules
+        func shouldRunToday(_ block: Block) -> Bool {
+            guard let repeatDays = block.schedule.repeatDays else {
+                // No repeat pattern: one-time block
+                // Check if scheduled date matches today
+                if let startTime = block.schedule.startTime {
+                    return calendar.isDate(startTime, inSameDayAs: now)
+                }
+                return true // For blockNow types without specific date
+            }
+            
+            // Repeating block: check if today is in repeatDays
+            return repeatDays.contains(todayWeekday)
+        }
+        
+        // Helper: Convert block schedule to actual Date for comparison
+        func toDate(from block: Block, useStart: Bool) -> Date? {
+            // Special handling for blockNow type - uses createdAt + duration
+            if block.type == .blockNow {
+                if useStart {
+                    return block.createdAt
+                } else {
+                    guard let duration = block.schedule.duration else { return nil }
+                    return block.createdAt.addingTimeInterval(duration)
+                }
+            }
+            
+            // For scheduled blocks, use startTime/endTime
+            let timeDate = useStart ? block.schedule.startTime : block.schedule.endTime
+            guard let timeDate = timeDate else { return nil }
+            
+            // For repeating blocks, use today's date + scheduled time
+            if block.schedule.repeatDays != nil {
+                var todayComponents = calendar.dateComponents([.year, .month, .day], from: now)
+                let timeComponents = calendar.dateComponents([.hour, .minute, .second], from: timeDate)
+                todayComponents.hour = timeComponents.hour
+                todayComponents.minute = timeComponents.minute
+                todayComponents.second = timeComponents.second
+                return calendar.date(from: todayComponents)
+            }
+            
+            // For one-time blocks, use the stored date
+            return timeDate
+        }
+        
+        // Filter blocks that should run today
+        let relevantBlocks = blocks.filter { shouldRunToday($0) }
+        
+        // Separate into active and upcoming
+        let activeBlocks = relevantBlocks.filter { block in
+            guard let startDate = toDate(from: block, useStart: true),
+                  let endDate = toDate(from: block, useStart: false) else {
+                return false
+            }
+            return now >= startDate && now < endDate
+        }
+        
+        let upcomingBlocks = relevantBlocks.filter { block in
+            guard let startDate = toDate(from: block, useStart: true) else {
+                return false
+            }
+            return now < startDate
+        }
+        
+        // Sort active blocks by most recent start (newest first)
+        let sortedActive = activeBlocks.sorted { block1, block2 in
+            guard let start1 = toDate(from: block1, useStart: true),
+                  let start2 = toDate(from: block2, useStart: true) else {
+                return false
+            }
+            return start1 > start2 // Most recent (later) start time first
+        }
+        
+        // Sort upcoming blocks by soonest start (earliest first)
+        let sortedUpcoming = upcomingBlocks.sorted { block1, block2 in
+            guard let start1 = toDate(from: block1, useStart: true),
+                  let start2 = toDate(from: block2, useStart: true) else {
+                return false
+            }
+            return start1 < start2 // Soonest (earlier) start time first
+        }
+        
+        return sortedActive + sortedUpcoming
+    }
+    
     // MARK: - Initialization
     
     init() {
@@ -246,18 +344,54 @@ final class BlockManager {
                 let isRepeating = block.schedule.isRepeating
                 let dayMonitors = block.schedule.repeatDays ?? Set([Calendar.current.component(.weekday, from: Date())])
                 
+                // Calculate duration to determine if short block strategy needed
+                let duration = endTime.timeIntervalSince(startTime)
+                let isShortBlock = duration < 15 * 60
+                
                 // Create monitors for each day
                 for day in dayMonitors {
                     let activityName = dayMonitors.count > 1 ? "\(block.id.uuidString).day\(day)" : block.id.uuidString
-                    try deviceActivityManager.startMonitor(
-                        activitySelection: block.appSelection,
-                        shieldThreshold: .hms(0, 0, 0),
-                        start: startTime,
-                        end: endTime,
-                        repeatDaily: isRepeating,
-                        activityName: activityName,
-                        eventName: block.type.rawValue
-                    )
+                    
+                    if isShortBlock {
+                        // Short scheduled block (< 15 min): Use warningTime strategy
+                        // - Schedule: Always 15 min from start (DeviceActivity minimum)
+                        // - Warning: Fires at ACTUAL end time
+                        //   Formula: warningTime = 15min - duration
+                        //   Example: 8:00-8:10 (10 min) → schedule 8:00-8:15, warning at 5 min before = 8:10 ✅
+                        // - Cleanup: Handle in intervalWillEndWarning callback
+                        
+                        let calendar = Calendar.current
+                        let extendedEnd = calendar.date(byAdding: .minute, value: 15, to: startTime) ?? endTime
+                        let warningOffset = (15 * 60) - duration
+                        let warningMinutes = Int(warningOffset / 60)
+                        
+                        try deviceActivityManager.startMonitor(
+                            activitySelection: block.appSelection,
+                            shieldThreshold: .hms(0, 0, 0),
+                            start: startTime,
+                            end: extendedEnd,                      // Start + 15 min
+                            repeatDaily: isRepeating,
+                            activityName: activityName,
+                            eventName: block.type.rawValue,
+                            warningTimeMinutes: warningMinutes     // Custom warning offset
+                        )
+                    } else {
+                        // Long scheduled block (≥ 15 min): Use normal strategy
+                        // - Schedule: Actual duration
+                        // - Warning: 10 min before end (standard)
+                        // - Cleanup: Handle in intervalDidEnd callback
+                        
+                        try deviceActivityManager.startMonitor(
+                            activitySelection: block.appSelection,
+                            shieldThreshold: .hms(0, 0, 0),
+                            start: startTime,
+                            end: endTime,                          // Actual end time
+                            repeatDaily: isRepeating,
+                            activityName: activityName,
+                            eventName: block.type.rawValue,
+                            warningTimeMinutes: 10                 // Standard 10 min warning
+                        )
+                    }
                 }
             }
             
@@ -454,10 +588,23 @@ final class BlockManager {
                 metadata["id"] = block.id.uuidString
                 metadata["type"] = block.type.rawValue
                 metadata["createdAt"] = block.createdAt
+                
+                // Calculate duration and isShortBlock based on block type
+                var calculatedDuration: TimeInterval?
+                var isShortBlock = false
+                
                 if let duration = block.schedule.duration {
+                    calculatedDuration = duration
+                    isShortBlock = duration < 15 * 60
+                } else if let startTime = block.schedule.startTime, let endTime = block.schedule.endTime {
+                    // For scheduled blocks, calculate duration from start to end
+                    calculatedDuration = endTime.timeIntervalSince(startTime)
+                    isShortBlock = calculatedDuration! < 15 * 60
+                }
+                
+                if let duration = calculatedDuration {
                     metadata["duration"] = duration
-                    // Pre-calculate isShortBlock to avoid calculation in extension (limited 5MB memory)
-                    metadata["isShortBlock"] = (block.type == .blockNow && duration < 15 * 60)
+                    metadata["isShortBlock"] = isShortBlock
                 }
                 
                 userDefaults.set(metadata, forKey: metadataKey(block.id))

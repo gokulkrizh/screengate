@@ -5,7 +5,7 @@ struct CreateScheduledBlockView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(BlockManager.self) private var blockManager
     
-    @State private var blockName = ""
+    @State private var blockName = "Schedule Focus Session"
     @State private var startTime = Date()
     @State private var endTime = Date()
     @State private var selectedDays: Set<Int> = [1, 2, 3, 4, 5] // M-F

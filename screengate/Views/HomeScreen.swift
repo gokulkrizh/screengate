@@ -14,10 +14,11 @@ struct HomeScreen: View {
     // MARK: - Computed Properties
     
     private var elapsedTime: TimeInterval {
-        guard let activeBlock = blockManager.activeBlock else { return 0 }
+        // Use displayBlock for UI, but check activeBlock for pause state
+        guard let displayBlock = blockManager.displayBlock else { return 0 }
         
         // Calculate elapsed time from when block was created
-        let elapsed = currentTime.timeIntervalSince(activeBlock.createdAt)
+        let elapsed = currentTime.timeIntervalSince(displayBlock.createdAt)
         
         // If paused, subtract remaining pause time
         if let pausedUntil = blockManager.pausedUntil, pausedUntil > currentTime {
@@ -121,8 +122,8 @@ struct HomeScreen: View {
             // Content
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 24) {
-                    // Active Session Card
-                    if let activeBlock = blockManager.activeBlock {
+                    // Active Session Card - use displayBlock for UI
+                    if let displayBlock = blockManager.displayBlock {
                         VStack(spacing: 0) {
                             HStack(spacing: 12) {
                                 // Icon badge
@@ -162,7 +163,7 @@ struct HomeScreen: View {
                                 }
                                 
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(activeBlock.name)
+                                    Text(displayBlock.name)
                                         .font(.system(size: 14, weight: .bold, design: .default))
                                         .foregroundColor(.white)
                                         .lineLimit(1)
@@ -180,7 +181,7 @@ struct HomeScreen: View {
                                         .font(.system(size: 20, weight: .bold, design: .default))
                                         .foregroundColor(.white)
                                     
-                                    if let duration = activeBlock.schedule.duration {
+                                    if let duration = displayBlock.schedule.duration {
                                         Text("of \(formatTime(duration)) Total")
                                             .font(.system(size: 10, weight: .semibold, design: .default))
                                             .foregroundColor(.white.opacity(0.6))
@@ -196,7 +197,7 @@ struct HomeScreen: View {
                                         .fill(Color.white.opacity(0.1))
                                         .frame(height: 4)
                                     
-                                    if let duration = activeBlock.schedule.duration, duration > 0 {
+                                    if let duration = displayBlock.schedule.duration, duration > 0 {
                                         let progress = min(elapsedTime / duration, 1.0)
                                         let barWidth = geometry.size.width * progress
                                         RoundedRectangle(cornerRadius: 2)
