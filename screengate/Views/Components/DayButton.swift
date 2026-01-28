@@ -20,8 +20,10 @@ struct DayButton: View {
 }
 
 /// Helper to convert day index to label
+/// day parameter uses Calendar.component(.weekday) values:
+/// 1=Sunday, 2=Monday, 3=Tuesday, 4=Wednesday, 5=Thursday, 6=Friday, 7=Saturday
 func dayLabel(_ day: Int) -> String {
-    ["M", "T", "W", "T", "F", "S", "S"][day - 1]
+    ["S", "M", "T", "W", "T", "F", "S"][day - 1]
 }
 
 #Preview {

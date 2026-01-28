@@ -210,12 +210,12 @@ final class BlockManager {
     
     // MARK: - CRUD Operations
     
-    /// Create a new block and save it
+    /// Create a new block (in-memory only - not persisted until activated)
     func createBlock(_ block: Block) throws {
         var newBlock = block
         newBlock.createdAt = Date()
         blocks.append(newBlock)
-        saveToUserDefaults()
+        // Don't save to UserDefaults yet - only save after successful activation
         
         // Post notification for successful creation
         notifyBlockCreated(newBlock)
@@ -267,18 +267,21 @@ final class BlockManager {
         activeBlock.isPaused = false
         activeBlock.pausedUntil = nil
         
-        self.activeBlock = activeBlock
+        // Store original state for rollback on failure
+        let originalActiveBlock = self.activeBlock
+        let originalBlocksState = blocks
         
-        // Update in blocks array
+        // Update in-memory state (will rollback if monitor fails)
+        self.activeBlock = activeBlock
         if let index = blocks.firstIndex(where: { $0.id == block.id }) {
             blocks[index] = activeBlock
         }
         
-        saveToUserDefaults()
-        
         // Determine action based on block type
-        switch block.type {
-        case .blockNow:
+        // NOTE: saveToUserDefaults() is called AFTER successful monitor setup
+        do {
+            switch block.type {
+            case .blockNow:
             // For blockNow: Two strategies based on duration
             guard let duration = block.schedule.duration else {
                 throw NSError(domain: "BlockManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Block duration is required"])
@@ -305,6 +308,8 @@ final class BlockManager {
                 let warningOffset = (15 * 60) - duration           // Time BEFORE end
                 let warningMinutes = Int(warningOffset / 60)
                 
+                // COMMENTED OUT FOR TESTING VISUALIZATION
+                /*
                 try deviceActivityManager.startMonitor(
                     activitySelection: block.appSelection,
                     shieldThreshold: .hms(0, 0, 0),              // Threshold = 0 (not used)
@@ -315,6 +320,7 @@ final class BlockManager {
                     eventName: block.type.rawValue,
                     warningTimeMinutes: warningMinutes            // e.g., 10 for 5-min block
                 )
+                */
                 
             } else {
                 // For blocks ≥ 15 minutes:
@@ -325,6 +331,8 @@ final class BlockManager {
                 
                 let scheduleEnd = now.addingTimeInterval(duration)
                 
+                // COMMENTED OUT FOR TESTING VISUALIZATION
+                /*
                 try deviceActivityManager.startMonitor(
                     activitySelection: block.appSelection,
                     shieldThreshold: .hms(0, 0, 0),              // Threshold = 0 (not used)
@@ -335,6 +343,7 @@ final class BlockManager {
                     eventName: block.type.rawValue,
                     warningTimeMinutes: 10                        // Standard 10 min warning
                 )
+                */
             }
             
         case .scheduled:
@@ -365,6 +374,8 @@ final class BlockManager {
                         let warningOffset = (15 * 60) - duration
                         let warningMinutes = Int(warningOffset / 60)
                         
+                        // COMMENTED OUT FOR TESTING VISUALIZATION
+                        /*
                         try deviceActivityManager.startMonitor(
                             activitySelection: block.appSelection,
                             shieldThreshold: .hms(0, 0, 0),
@@ -375,12 +386,15 @@ final class BlockManager {
                             eventName: block.type.rawValue,
                             warningTimeMinutes: warningMinutes     // Custom warning offset
                         )
+                        */
                     } else {
                         // Long scheduled block (≥ 15 min): Use normal strategy
                         // - Schedule: Actual duration
                         // - Warning: 10 min before end (standard)
                         // - Cleanup: Handle in intervalDidEnd callback
                         
+                        // COMMENTED OUT FOR TESTING VISUALIZATION
+                        /*
                         try deviceActivityManager.startMonitor(
                             activitySelection: block.appSelection,
                             shieldThreshold: .hms(0, 0, 0),
@@ -391,6 +405,7 @@ final class BlockManager {
                             eventName: block.type.rawValue,
                             warningTimeMinutes: 10                 // Standard 10 min warning
                         )
+                        */
                     }
                 }
             }
@@ -401,6 +416,8 @@ final class BlockManager {
                let endTime = block.schedule.endTime,
                let threshold = block.schedule.threshold {
                 let (h, m, _) = threshold.hms
+                // COMMENTED OUT FOR TESTING VISUALIZATION
+                /*
                 try deviceActivityManager.startMonitor(
                     activitySelection: block.appSelection,
                     shieldThreshold: .hms(h, m, 0),
@@ -410,12 +427,24 @@ final class BlockManager {
                     activityName: block.id.uuidString,
                     eventName: block.type.rawValue
                 )
+                */
             }
             
-        case .openLimit:
-            // Parked for v2 - no action yet
-            break
+            case .openLimit:
+                // Parked for v2 - no action yet
+                break
+            }
+        } catch {
+            // ❌ Monitor creation failed - rollback state
+            print("❌ [BlockManager] Monitor creation failed: \(error)")
+            self.activeBlock = originalActiveBlock
+            self.blocks = originalBlocksState
+            // Don't save - UserDefaults never had the failed block since we only save on success
+            throw error  // Re-throw to notify caller
         }
+        
+        // ✅ Save to UserDefaults only after successful monitor setup
+        saveToUserDefaults()
         
         postNotification(title: "\(block.name) started", body: "Focus session is now active")
     }
@@ -726,6 +755,7 @@ final class BlockManager {
     }
     
     private func postNotification(title: String, body: String) {
+        return // Disable for now
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body

@@ -8,7 +8,7 @@ struct CreateScheduledBlockView: View {
     @State private var blockName = "Schedule Focus Session"
     @State private var startTime = Date()
     @State private var endTime = Date()
-    @State private var selectedDays: Set<Int> = [1, 2, 3, 4, 5] // M-F
+    @State private var selectedDays: Set<Int> = [2, 3, 4, 5, 6] // Mon-Fri (Calendar weekday values)
     @State private var strictMode: StrictMode = .medium
     @State private var showStartTimePicker = false
     @State private var showEndTimePicker = false
@@ -274,7 +274,7 @@ struct CreateScheduledBlockView: View {
                 .frame(height: 52)
                 .background(appTheme.colors.primary)
                 .cornerRadius(12)
-                .disabled(isCreating || blockName.isEmpty || activitySelection.applicationTokens.isEmpty)
+                .disabled(isCreating || blockName.isEmpty) // Removed app selection check for simulator testing
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
             }
@@ -309,10 +309,13 @@ struct CreateScheduledBlockView: View {
             return
         }
         
+        // COMMENTED FOR SIMULATOR TESTING - Family Controls requires physical device
+        /*
         guard !activitySelection.applicationTokens.isEmpty else {
             error = "Please select at least one app"
             return
         }
+        */
         
         guard startTime < endTime else {
             error = "Start time must be before end time"
