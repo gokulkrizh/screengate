@@ -58,28 +58,32 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         return (id: activeBlockId, isPaused: isPaused, pausedUntil: pausedUntil)
     }
     
-    /// Get active block info for a specific block ID (optimized for 5MB memory limit)
-    /// Only reads block-specific metadata key - no JSON parsing
-    private func getActiveBlockInfo(blockId: String) -> (id: String, createdAt: Date?, duration: TimeInterval?, type: String, isShortBlock: Bool) {
-        guard let userDefaults = userDefaults else {
-            return (id: "", createdAt: nil, duration: nil, type: "", isShortBlock: false)
+    /// Get block type info from event names (no UserDefaults dependency)
+    /// Event names format: "blocknow-short", "blocknow-long", "scheduled-short", "scheduled-long", "apptimelimit"
+    private func getBlockTypeFromEvents(activity: DeviceActivityName) -> (type: String, isShortBlock: Bool)? {
+        let events = manager.getEvents(activityName: activity, details: false)
+        
+        // Check event names to determine block type
+        for (eventName, _) in events {
+            let eventString = eventName.rawValue
+            logger.info("[getBlockTypeFromEvents] Found event: \(eventString)")
+            
+            // Parse event name to extract type and duration strategy
+            if eventString == "blocknow-short" {
+                return (type: "blockNow", isShortBlock: true)
+            } else if eventString == "blocknow-long" {
+                return (type: "blockNow", isShortBlock: false)
+            } else if eventString == "scheduled-short" {
+                return (type: "scheduled", isShortBlock: true)
+            } else if eventString == "scheduled-long" {
+                return (type: "scheduled", isShortBlock: false)
+            } else if eventString == "apptimelimit" {
+                return (type: "appTimeLimit", isShortBlock: false)
+            }
         }
         
-        // Direct key lookup - O(1), no JSON parsing
-        let metadataKey = "activeBlockMetadata_\(blockId)"
-        guard let metadata = userDefaults.dictionary(forKey: metadataKey) as? [String: Any] else {
-            logger.warning("[getActiveBlockInfo] No metadata found for blockId: \(blockId)")
-            return (id: "", createdAt: nil, duration: nil, type: "", isShortBlock: false)
-        }
-        
-        // All values pre-calculated by main app - just read them
-        return (
-            id: (metadata["id"] as? String) ?? "",
-            createdAt: metadata["createdAt"] as? Date,
-            duration: metadata["duration"] as? TimeInterval,
-            type: (metadata["type"] as? String) ?? "",
-            isShortBlock: (metadata["isShortBlock"] as? Bool) ?? false
-        )
+        logger.warning("[getBlockTypeFromEvents] No recognized event found for activity")
+        return nil
     }
     
     /// Check if block is currently paused (pausedUntil > now)
@@ -124,9 +128,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     /// Clear specific block data from UserDefaults (supports multiple concurrent blocks)
     private func clearActiveBlockData(blockId: String) {
         guard let userDefaults = userDefaults else { return }
-        
-        // Remove block-specific metadata
-        userDefaults.removeObject(forKey: "activeBlockMetadata_\(blockId)")
         
         // Remove from active blocks array
         if var activeBlockIds = userDefaults.array(forKey: "activeBlockIds") as? [String] {
@@ -179,7 +180,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         )
         logger.info("[handleShortBlockNowCompletion] Posted Darwin notification for block state change")
         
-        sendNotification(title: "Focus Session Complete", body: "Your focus block has ended!")
+       // sendNotification(title: "Focus Session Complete", body: "Your focus block has ended!")
         logger.info("[handleShortBlockNowCompletion] Short blockNow cleanup completed for blockId: \(blockId)")
     }
     
@@ -202,7 +203,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         )
         logger.info("[handleLongBlockNowCompletion] Posted Darwin notification for block state change")
         
-        sendNotification(title: "Focus Session Complete", body: "Your focus block has ended!")
+        //sendNotification(title: "Focus Session Complete", body: "Your focus block has ended!")
         logger.info("[handleLongBlockNowCompletion] Long blockNow cleanup completed for blockId: \(blockId)")
     }
     
@@ -214,7 +215,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         
         manager.removeRestrictions()
         clearActiveBlockData(blockId: blockId)
-        sendNotification(title: "Focus Block Ended", body: "Your scheduled block has completed!")
+       // sendNotification(title: "Focus Block Ended", body: "Your scheduled block has completed!")
         logger.info("[handleScheduledBlockCompletion] Scheduled block cleanup completed for blockId: \(blockId)")
     }
     
@@ -229,7 +230,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         
         // App time limit uses threshold to trigger restrictions
         // Restrictions stay until intervalDidEnd
-        sendNotification(title: "App Limit Reached", body: "You've reached your daily app usage limit!")
+        //sendNotification(title: "App Limit Reached", body: "You've reached your daily app usage limit!")
         logger.info("[handleAppTimeLimitReached] App time limit threshold action completed")
     }
         
@@ -258,8 +259,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                 )
                 
                 // Send notification for block start
-                let (_, _, _) = getActiveBlock()
-                sendNotification(title: "Focus Block Started", body: "Your focus session has begun!")
+                //sendNotification(title: "Focus Block Started", body: "Your focus session has begun!")
             }
         }
     }
@@ -274,11 +274,9 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             return
         }
         
-        let (_, _, _, blockType, isShortBlock) = getActiveBlockInfo(blockId: blockId)
-        
-        // If no block type found, this is a stale monitor - ignore it
-        guard !blockType.isEmpty else {
-            logger.warning("[intervalDidEnd] No metadata for blockId: \(blockId) - stale monitor, ignoring")
+        // Get block type from event names (no UserDefaults dependency)
+        guard let (blockType, isShortBlock) = getBlockTypeFromEvents(activity: activity) else {
+            logger.warning("[intervalDidEnd] Could not determine block type from events - stale monitor, ignoring")
             return
         }
         
@@ -324,7 +322,11 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             return
         }
         
-        let (_, _, _, blockType, _) = getActiveBlockInfo(blockId: blockId)
+        // Get block type from event names (no UserDefaults dependency)
+        guard let (blockType, _) = getBlockTypeFromEvents(activity: activity) else {
+            logger.warning("[eventDidReachThreshold] Could not determine block type from events")
+            return
+        }
         logger.info("[eventDidReachThreshold] Block type: \(blockType), blockId: \(blockId)")
         
         // Route to appropriate handler based on block type
@@ -346,7 +348,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         logger.info("[intervalWillStartWarning] intervalWillStartWarning called")
         
         // Handle the warning before the interval starts.
-        sendNotification(title: "Focus Block Starting Soon", body: "Your focus block will start in 1 minute")
+       // sendNotification(title: "Focus Block Starting Soon", body: "Your focus block will start in 1 minute")
         logger.info("[intervalWillStartWarning] intervalWillStartWarning completed")
     }
     
@@ -360,7 +362,11 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             return
         }
         
-        let (_, _, _, blockType, isShortBlock) = getActiveBlockInfo(blockId: blockId)
+        // Get block type from event names (no UserDefaults dependency)
+        guard let (blockType, isShortBlock) = getBlockTypeFromEvents(activity: activity) else {
+            logger.warning("[intervalWillEndWarning] Could not determine block type from events")
+            return
+        }
         logger.info("[intervalWillEndWarning] Block type: \(blockType), isShortBlock: \(isShortBlock), blockId: \(blockId)")
         
         // Only short blockNow uses this callback for cleanup
@@ -371,7 +377,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         } else {
             // All other blocks: just send warning notification
             logger.info("[intervalWillEndWarning] Standard warning - no cleanup")
-            sendNotification(title: "Focus Block Ending Soon", body: "Your focus block will end soon")
+           // sendNotification(title: "Focus Block Ending Soon", body: "Your focus block will end soon")
         }
         
         logger.info("[intervalWillEndWarning] intervalWillEndWarning completed for blockId: \(blockId)")
@@ -382,7 +388,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         logger.info("[eventWillReachThresholdWarning] eventWillReachThresholdWarning called")
         
         // Handle the warning before the event reaches its threshold.
-        sendNotification(title: "Daily Limit Warning", body: "You're approaching your usage limit!")
+       // sendNotification(title: "Daily Limit Warning", body: "You're approaching your usage limit!")
         logger.info("[eventWillReachThresholdWarning] eventWillReachThresholdWarning completed")
     }
 }

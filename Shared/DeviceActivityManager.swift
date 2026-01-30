@@ -74,8 +74,8 @@ class DeviceActivityManager {
 
         let schedule = DeviceActivitySchedule(
             intervalStart: start,
-            intervalEnd:end,
-            repeats: false,
+            intervalEnd: end,
+            repeats: repeatDaily,
             warningTime: DateComponents(minute: warningTimeMinutes)
         )
         
@@ -101,7 +101,7 @@ class DeviceActivityManager {
             // If this parameter is empty,
             // the application extension only receives callbacks for the start and end times of the schedule’s interval.
             events: [
-                deviceEventName : event
+                deviceEventName : event,
             ]
         )
         
@@ -163,7 +163,8 @@ class DeviceActivityManager {
                 applications: tokens.applicationTokens,
                 categories: tokens.categoryTokens,
                 webDomains: tokens.webDomainTokens,
-                threshold: value.threshold, includesPastActivity: value.includesPastActivity
+                threshold: value.threshold, 
+                includesPastActivity: value.includesPastActivity
             )
         }
         

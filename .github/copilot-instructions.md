@@ -25,29 +25,39 @@ ScreenGate is an iOS digital wellness app using **Family Controls framework** fo
 ## Development Workflows
 
 ### Building & Running (Always use XcodeBuildMCP tools)
+
+**⚠️ CRITICAL: Always use physical device for building and running**
+
+DeviceActivity threshold events (used for block expiry) do NOT work reliably on simulator. All development and testing must be done on physical device.
+
 ```bash
 # Discover projects
 mcp__XcodeBuildMCP__discover_projs({ workspaceRoot: "/Users/gokul/Work/apps/screengate" })
 
-# Build & run on physical device (PREFERRED - Family Controls requires real device)
+# Build & run on physical device (REQUIRED - not optional)
 mcp__XcodeBuildMCP__build_run_device()
 
-# Alternative: Simulator (note: DeviceActivity thresholds may not trigger reliably)
-mcp__XcodeBuildMCP__build_run_sim()
+# List connected devices (if needed)
+mcp__XcodeBuildMCP__list_devices()
 ```
+
+**❌ DO NOT USE SIMULATOR** - Threshold events will not fire correctly, blocks will not expire, and restrictions will not be removed.
 
 ### Development Workflow with XcodeBuildMCP
 When making code changes, always follow this workflow:
 
 1. **Make code changes** to the desired file(s)
-2. **Build the app** using XcodeBuildMCP:
+2. **Build the app** using XcodeBuildMCP on **physical device**:
    ```bash
-   mcp__XcodeBuildMCP__build_run_sim()  # or build_device() for physical device
+   mcp__XcodeBuildMCP__build_run_device()
    ```
 3. **Verify build success** - Check for any compilation errors
-4. **Test the changes** - Interact with the app in simulator/device
+4. **Test the changes** - Interact with the app on physical device
 
-**Important**: Physical device testing is essential—Family Controls and DeviceActivity threshold events don't work properly on simulators.
+**Important**: 
+- Physical device is **MANDATORY** for proper testing
+- DeviceActivity threshold events (block expiry, app time limits) only work on real devices
+- Simulator can be used only for UI layout verification, never for functional testing
 
 ### Current Testing Status
 No test infrastructure exists. Manual testing on physical device required.
@@ -91,11 +101,12 @@ Screen-based multi-step flow controlled by `OnboardingData`:
 
 ## Known Limitations & Workarounds
 
-1. **Simulator DeviceActivity bug**: Threshold events with non-zero values don't trigger on simulator—use physical device
+1. **CRITICAL - Simulator Not Supported**: DeviceActivity threshold events (block expiry) do NOT work on simulator—**ALWAYS use physical device** for development and testing
 2. **Token fields empty**: `deviceActivityCenter.events(for:)` returns empty token arrays—must read from saved UserDefaults selection
 3. **No error recovery**: Limited error handling in extension methods
-4. **No test suite**: Manual testing only; use physical device for verification
+4. **No test suite**: Manual testing only; physical device required for all functional testing
 5. **Hardcoded strings**: Shield configuration has UI strings not localized
+6. **Minimum schedule interval**: DeviceActivity requires 15-minute minimum schedule—use threshold for shorter durations
 
 ## File Organization Reference
 

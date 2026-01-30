@@ -274,7 +274,7 @@ struct CreateScheduledBlockView: View {
                 .frame(height: 52)
                 .background(appTheme.colors.primary)
                 .cornerRadius(12)
-                .disabled(isCreating || blockName.isEmpty) // Removed app selection check for simulator testing
+                .disabled(isCreating || blockName.isEmpty || activitySelection.applicationTokens.isEmpty) // Removed app selection check for simulator testing
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
             }
@@ -310,12 +310,12 @@ struct CreateScheduledBlockView: View {
         }
         
         // COMMENTED FOR SIMULATOR TESTING - Family Controls requires physical device
-        /*
+        
         guard !activitySelection.applicationTokens.isEmpty else {
             error = "Please select at least one app"
             return
         }
-        */
+        
         
         guard startTime < endTime else {
             error = "Start time must be before end time"

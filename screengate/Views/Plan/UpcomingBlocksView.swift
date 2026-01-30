@@ -4,6 +4,7 @@ import Combine
 struct UpcomingBlocksView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(BlockManager.self) private var blockManager
+    @State private var timelineBuilder: BlockTimelineBuilder?
     @State private var showCreateBlock = false
     @State private var showScheduledBlock = false
     @State private var showOpenLimit = false
@@ -11,17 +12,17 @@ struct UpcomingBlocksView: View {
     @State private var showBlockNow = false
     @State private var showAllDays = false // Filter toggle: false = 2 days, true = 7 days
     @State private var currentTime = Date() // For real-time updates
-    @State private var refreshTrigger = UUID() // Force refresh when needed
     private let appTheme = AppTheme.shared
     
     // Timer to update UI every minute
-    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect() // Changed to 1 second for testing
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     // Helper struct for day data
     private struct DayData: Identifiable {
         let id: Int
         let offset: Int
         let date: Date
+        let blocks: [Block]
     }
     
     // MARK: - Helper Functions
@@ -51,25 +52,17 @@ struct UpcomingBlocksView: View {
         }
     }
     
-    private func getTomorrowDate() -> Date {
-        return Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
+    // MARK: - Timeline Helpers
+    
+    private func initializeTimeline() {
+        if timelineBuilder == nil {
+            timelineBuilder = BlockTimelineBuilder(blockManager: blockManager)
+        }
+        timelineBuilder?.buildTimeline(days: showAllDays ? 7 : 2, referenceDate: currentTime)
     }
     
-    // Helper: Check if block should run on a specific date
-    private func shouldRunOnDate(_ block: Block, _ date: Date) -> Bool {
-        let calendar = Calendar.current
-        let weekday = calendar.component(.weekday, from: date)
-        
-        guard let repeatDays = block.schedule.repeatDays else {
-            // One-time block: check if scheduled date matches
-            if let startTime = block.schedule.startTime {
-                return calendar.isDate(startTime, inSameDayAs: date)
-            }
-            return false
-        }
-        
-        // Repeating block: check if weekday is in repeatDays
-        return repeatDays.contains(weekday)
+    private func getTomorrowDate() -> Date {
+        return Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
     }
     
     var body: some View {
@@ -136,76 +129,19 @@ struct UpcomingBlocksView: View {
                     let calendar = Calendar.current
                     let today = Date()
                     
-                    let daysData: [DayData] = (0..<(showAllDays ? 7 : 2)).map { offset in
-                        DayData(id: offset, offset: offset, date: calendar.date(byAdding: .day, value: offset, to: today) ?? today)
+                    let daysData: [DayData] = (0..<(showAllDays ? 7 : 2)).compactMap { offset in
+                        guard let date = calendar.date(byAdding: .day, value: offset, to: today),
+                              let blocks = timelineBuilder?.weekBlocks[offset] else {
+                            return nil
+                        }
+                        return DayData(id: offset, offset: offset, date: date, blocks: blocks)
                     }
                     
-                    let hasAnyBlocks = daysData.contains { dayData in
-                        let blocks = blockManager.blocks.filter { shouldRunOnDate($0, dayData.date) }
-                        if dayData.offset == 0 {
-                            // For today, check if there are any non-ended blocks
-                            var currentComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: currentTime)
-                            currentComponents.second = 0
-                            let normalizedNow = calendar.date(from: currentComponents) ?? currentTime
-                            
-                            return blocks.contains { block in
-                                guard let endTime = block.schedule.endTime else { return true }
-                                let todayEnd: Date
-                                if block.schedule.repeatDays != nil {
-                                    var todayComponents = calendar.dateComponents([.year, .month, .day], from: currentTime)
-                                    let endTimeComponents = calendar.dateComponents([.hour, .minute], from: endTime)
-                                    todayComponents.hour = endTimeComponents.hour
-                                    todayComponents.minute = endTimeComponents.minute
-                                    todayComponents.second = 0
-                                    todayEnd = calendar.date(from: todayComponents) ?? endTime
-                                } else {
-                                    todayEnd = endTime
-                                }
-                                return normalizedNow < todayEnd
-                            }
-                        }
-                        return !blocks.isEmpty
-                    }
+                    let hasAnyBlocks = timelineBuilder?.hasAnyBlocks(forDays: showAllDays ? 7 : 2) ?? false
                     
                     VStack(alignment: .leading, spacing: 0) {
                         ForEach(daysData) { dayData in
-                            let allDayBlocks = blockManager.blocks.filter { shouldRunOnDate($0, dayData.date) }
-                            
-                            let dayBlocks: [Block] = {
-                                if dayData.offset == 0 {
-                                    // Today: only show blocks that haven't ended yet
-                                    var currentComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: currentTime)
-                                    currentComponents.second = 0
-                                    let normalizedNow = calendar.date(from: currentComponents) ?? currentTime
-                                    
-                                    return allDayBlocks.filter { block in
-                                        guard let endTime = block.schedule.endTime else { return true }
-                                        
-                                        // Calculate today's end time for the block
-                                        let todayEnd: Date
-                                        if block.schedule.repeatDays != nil {
-                                            var todayComponents = calendar.dateComponents([.year, .month, .day], from: currentTime)
-                                            let endTimeComponents = calendar.dateComponents([.hour, .minute], from: endTime)
-                                            todayComponents.hour = endTimeComponents.hour
-                                            todayComponents.minute = endTimeComponents.minute
-                                            todayComponents.second = 0
-                                            todayEnd = calendar.date(from: todayComponents) ?? endTime
-                                        } else {
-                                            todayEnd = endTime
-                                        }
-                                        
-                                        // Only include if block hasn't ended yet
-                                        return normalizedNow < todayEnd
-                                    }
-                                } else {
-                                    // Future days: show all blocks
-                                    return allDayBlocks
-                                }
-                            }()
-                            
-                            let sortedBlocks = dayBlocks.sorted { ($0.schedule.startTime ?? Date()) < ($1.schedule.startTime ?? Date()) }
-                            
-                            if !sortedBlocks.isEmpty {
+                            if !dayData.blocks.isEmpty {
                                 Group {
                                     // Section header
                                     let dayTitle: String = {
@@ -222,67 +158,18 @@ struct UpcomingBlocksView: View {
                                     
                                     sectionHeader(title: dayTitle, date: formatDate(dayData.date))
                                     
-                                    ForEach(Array(sortedBlocks.enumerated()), id: \.element.id) { index, block in
-                                        let isBlockActive: Bool = {
-                                            guard dayData.offset == 0 else { return false }
-                                            guard let startTime = block.schedule.startTime,
-                                                  let endTime = block.schedule.endTime else { return false }
-                                            
-                                            let calendar = Calendar.current
-                                            
-                                            // Normalize current time to start of minute (ignore seconds)
-                                            var currentComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: currentTime)
-                                            currentComponents.second = 0
-                                            let normalizedNow = calendar.date(from: currentComponents) ?? currentTime
-                                            
-                                            // For repeating blocks, construct today's date with the block's time
-                                            let todayStart: Date
-                                            let todayEnd: Date
-                                            
-                                            if block.schedule.repeatDays != nil {
-                                                // Repeating block: use today's date + block's time components
-                                                var todayComponents = calendar.dateComponents([.year, .month, .day], from: currentTime)
-                                                let startTimeComponents = calendar.dateComponents([.hour, .minute], from: startTime)
-                                                let endTimeComponents = calendar.dateComponents([.hour, .minute], from: endTime)
-                                                
-                                                todayComponents.hour = startTimeComponents.hour
-                                                todayComponents.minute = startTimeComponents.minute
-                                                todayComponents.second = 0
-                                                todayStart = calendar.date(from: todayComponents) ?? startTime
-                                                
-                                                todayComponents.hour = endTimeComponents.hour
-                                                todayComponents.minute = endTimeComponents.minute
-                                                todayComponents.second = 0
-                                                todayEnd = calendar.date(from: todayComponents) ?? endTime
-                                            } else {
-                                                // One-time block: use stored dates
-                                                todayStart = startTime
-                                                todayEnd = endTime
-                                            }
-                                            
-                                            let result = normalizedNow >= todayStart && normalizedNow < todayEnd
-                                            
-                                            // Debug logging
-                                            let formatter = DateFormatter()
-                                            formatter.timeStyle = .short
-                                            print("🔍 Block: \(block.name)")
-                                            print("   Current: \(formatter.string(from: normalizedNow))")
-                                            print("   Start: \(formatter.string(from: todayStart))")
-                                            print("   End: \(formatter.string(from: todayEnd))")
-                                            print("   Active: \(result)")
-                                            
-                                            return result
-                                        }()
+                                    ForEach(Array(dayData.blocks.enumerated()), id: \.element.id) { index, block in
+                                        let isBlockActive = dayData.offset == 0 && (timelineBuilder?.isBlockActive(block, at: currentTime) ?? false)
                                         
                                         TimelineBlockView(
-                                            icon: "timer.circle.fill",
-                                            iconColor: appTheme.colors.primary,
+                                            icon: block.icon,
+                                            iconColor: Color(hex: block.iconColor),
                                             title: block.name,
                                             timeRange: formatTimeRange(block.schedule.startTime ?? Date(), block.schedule.endTime ?? Date()),
                                             duration: block.schedule.duration != nil ? formatDuration(block.schedule.duration!) : nil,
                                             isActive: isBlockActive,
                                             isFirst: index == 0,
-                                            isLast: index == dayBlocks.count - 1,
+                                            isLast: index == dayData.blocks.count - 1,
                                             actionIcon: isBlockActive ? "pause.circle" : "ellipsis",
                                             isFuture: dayData.offset > 0
                                         )
@@ -356,10 +243,15 @@ struct UpcomingBlocksView: View {
         }
         .navigationBarHidden(true)
         .onAppear {
-            currentTime = Date() // Refresh time when view appears
+            currentTime = Date()
+            initializeTimeline()
+        }
+        .onChange(of: showAllDays) { _, _ in
+            initializeTimeline()
         }
         .onReceive(timer) { _ in
-            currentTime = Date() // Update current time every minute to refresh active block highlighting
+            currentTime = Date()
+            timelineBuilder?.updateActiveBlocks(referenceDate: currentTime)
         }
         .sheet(isPresented: $showCreateBlock) {
             CreateBlockView(

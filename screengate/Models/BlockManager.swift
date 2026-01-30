@@ -23,9 +23,8 @@ final class BlockManager {
     private let activeBlockIdKey = "activeBlockId"
     private let pausedUntilKey = "pausedUntil"
     
-    // Helper functions for per-block keys
+    // Helper function for per-block keys
     private func blockKey(_ id: UUID) -> String { "block_\(id.uuidString)" }
-    private func metadataKey(_ id: UUID) -> String { "activeBlockMetadata_\(id.uuidString)" }
     
     // MARK: - Computed Properties
     
@@ -267,6 +266,10 @@ final class BlockManager {
         activeBlock.isPaused = false
         activeBlock.pausedUntil = nil
         
+        // Generate and save activityName for linking to DeviceActivityCenter
+        let activityName = DeviceActivityName("com.gia.screengate.\(block.id.uuidString)")
+        activeBlock.activityName = activityName
+        
         // Store original state for rollback on failure
         let originalActiveBlock = self.activeBlock
         let originalBlocksState = blocks
@@ -303,13 +306,12 @@ final class BlockManager {
                 //   Example: 5min block → warning at (15-5) = 10min before end = at 5min mark ✅
                 // - Threshold: 0 (not used)
                 // - Cleanup: Handle in intervalWillEndWarning callback
+                // - Event name: "blocknow-short" for extension routing
                 
                 let scheduleEnd = now.addingTimeInterval(15 * 60)  // 15 min schedule
                 let warningOffset = (15 * 60) - duration           // Time BEFORE end
                 let warningMinutes = Int(warningOffset / 60)
                 
-                // COMMENTED OUT FOR TESTING VISUALIZATION
-                /*
                 try deviceActivityManager.startMonitor(
                     activitySelection: block.appSelection,
                     shieldThreshold: .hms(0, 0, 0),              // Threshold = 0 (not used)
@@ -317,10 +319,9 @@ final class BlockManager {
                     end: scheduleEnd,                             // 15 min
                     repeatDaily: false,
                     activityName: block.id.uuidString,
-                    eventName: block.type.rawValue,
+                    eventName: "blocknow-short",                  // Descriptive event name
                     warningTimeMinutes: warningMinutes            // e.g., 10 for 5-min block
                 )
-                */
                 
             } else {
                 // For blocks ≥ 15 minutes:
@@ -328,11 +329,10 @@ final class BlockManager {
                 // - Warning: 10 min before end (standard)
                 // - Threshold: 0 (not used)
                 // - Cleanup: Handle in intervalDidEnd callback
+                // - Event name: "blocknow-long" for extension routing
                 
                 let scheduleEnd = now.addingTimeInterval(duration)
                 
-                // COMMENTED OUT FOR TESTING VISUALIZATION
-                /*
                 try deviceActivityManager.startMonitor(
                     activitySelection: block.appSelection,
                     shieldThreshold: .hms(0, 0, 0),              // Threshold = 0 (not used)
@@ -340,10 +340,9 @@ final class BlockManager {
                     end: scheduleEnd,                             // Actual duration
                     repeatDaily: false,
                     activityName: block.id.uuidString,
-                    eventName: block.type.rawValue,
+                    eventName: "blocknow-long",                   // Descriptive event name
                     warningTimeMinutes: 10                        // Standard 10 min warning
                 )
-                */
             }
             
         case .scheduled:
@@ -368,14 +367,13 @@ final class BlockManager {
                         //   Formula: warningTime = 15min - duration
                         //   Example: 8:00-8:10 (10 min) → schedule 8:00-8:15, warning at 5 min before = 8:10 ✅
                         // - Cleanup: Handle in intervalWillEndWarning callback
+                        // - Event name: "scheduled-short" for extension routing
                         
                         let calendar = Calendar.current
                         let extendedEnd = calendar.date(byAdding: .minute, value: 15, to: startTime) ?? endTime
                         let warningOffset = (15 * 60) - duration
                         let warningMinutes = Int(warningOffset / 60)
                         
-                        // COMMENTED OUT FOR TESTING VISUALIZATION
-                        /*
                         try deviceActivityManager.startMonitor(
                             activitySelection: block.appSelection,
                             shieldThreshold: .hms(0, 0, 0),
@@ -383,18 +381,16 @@ final class BlockManager {
                             end: extendedEnd,                      // Start + 15 min
                             repeatDaily: isRepeating,
                             activityName: activityName,
-                            eventName: block.type.rawValue,
+                            eventName: "scheduled-short",          // Descriptive event name
                             warningTimeMinutes: warningMinutes     // Custom warning offset
                         )
-                        */
                     } else {
                         // Long scheduled block (≥ 15 min): Use normal strategy
                         // - Schedule: Actual duration
                         // - Warning: 10 min before end (standard)
                         // - Cleanup: Handle in intervalDidEnd callback
+                        // - Event name: "scheduled-long" for extension routing
                         
-                        // COMMENTED OUT FOR TESTING VISUALIZATION
-                        /*
                         try deviceActivityManager.startMonitor(
                             activitySelection: block.appSelection,
                             shieldThreshold: .hms(0, 0, 0),
@@ -402,10 +398,9 @@ final class BlockManager {
                             end: endTime,                          // Actual end time
                             repeatDaily: isRepeating,
                             activityName: activityName,
-                            eventName: block.type.rawValue,
+                            eventName: "scheduled-long",           // Descriptive event name
                             warningTimeMinutes: 10                 // Standard 10 min warning
                         )
-                        */
                     }
                 }
             }
@@ -416,8 +411,7 @@ final class BlockManager {
                let endTime = block.schedule.endTime,
                let threshold = block.schedule.threshold {
                 let (h, m, _) = threshold.hms
-                // COMMENTED OUT FOR TESTING VISUALIZATION
-                /*
+                
                 try deviceActivityManager.startMonitor(
                     activitySelection: block.appSelection,
                     shieldThreshold: .hms(h, m, 0),
@@ -425,9 +419,8 @@ final class BlockManager {
                     end: endTime,
                     repeatDaily: block.schedule.isRepeating,
                     activityName: block.id.uuidString,
-                    eventName: block.type.rawValue
+                    eventName: "apptimelimit"                  // Descriptive event name
                 )
-                */
             }
             
             case .openLimit:
@@ -608,39 +601,10 @@ final class BlockManager {
                 userDefaults.removeObject(forKey: activeBlockIdKey)
             }
             
-            // Save block-specific metadata for ALL active blocks (supports multiple concurrent blocks)
+            // Save array of active block IDs for extension (block metadata no longer needed - using event names)
             let activeBlocks = blocks.filter { $0.isActive && !$0.isPaused }
-            var activeBlockIds: [String] = []
+            let activeBlockIds = activeBlocks.map { $0.id.uuidString }
             
-            for block in activeBlocks {
-                var metadata: [String: Any] = [:]
-                metadata["id"] = block.id.uuidString
-                metadata["type"] = block.type.rawValue
-                metadata["createdAt"] = block.createdAt
-                
-                // Calculate duration and isShortBlock based on block type
-                var calculatedDuration: TimeInterval?
-                var isShortBlock = false
-                
-                if let duration = block.schedule.duration {
-                    calculatedDuration = duration
-                    isShortBlock = duration < 15 * 60
-                } else if let startTime = block.schedule.startTime, let endTime = block.schedule.endTime {
-                    // For scheduled blocks, calculate duration from start to end
-                    calculatedDuration = endTime.timeIntervalSince(startTime)
-                    isShortBlock = calculatedDuration! < 15 * 60
-                }
-                
-                if let duration = calculatedDuration {
-                    metadata["duration"] = duration
-                    metadata["isShortBlock"] = isShortBlock
-                }
-                
-                userDefaults.set(metadata, forKey: metadataKey(block.id))
-                activeBlockIds.append(block.id.uuidString)
-            }
-            
-            // Save array of active block IDs for extension
             if !activeBlockIds.isEmpty {
                 userDefaults.set(activeBlockIds, forKey: "activeBlockIds")
             } else {
@@ -655,6 +619,16 @@ final class BlockManager {
             }
             
             userDefaults.synchronize()
+            
+            // Post notification to trigger timeline rebuild
+            CFNotificationCenterPostNotification(
+                CFNotificationCenterGetDarwinNotifyCenter(),
+                CFNotificationName("com.gia.screendiet.blocksChanged" as CFString),
+                nil,
+                nil,
+                true
+            )
+            print("📡 [BlockManager] Posted blocks changed notification")
         } catch {
             print("Error saving blocks to UserDefaults: \(error)")
         }

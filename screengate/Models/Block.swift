@@ -7,6 +7,8 @@ import DeviceActivity
 struct Block: Codable, Identifiable {
     let id: UUID
     var name: String
+    var icon: String
+    var iconColor: String  // Hex color for Codable support
     var type: BlockType
     var appSelection: FamilyActivitySelection
     var schedule: BlockSchedule
@@ -15,6 +17,8 @@ struct Block: Codable, Identifiable {
     var isPaused: Bool
     var pausedUntil: Date?
     var createdAt: Date
+    var activityName: DeviceActivityName?  // Link to system monitor
+    var appCount: Int?
     
     /// Block type determines how the block is executed
     enum BlockType: String, Codable, CaseIterable {
@@ -37,6 +41,8 @@ struct Block: Codable, Identifiable {
     init(
         id: UUID = UUID(),
         name: String,
+        icon: String = "app.fill",
+        iconColor: String = "#66C5A8",
         type: BlockType,
         appSelection: FamilyActivitySelection,
         schedule: BlockSchedule,
@@ -44,10 +50,14 @@ struct Block: Codable, Identifiable {
         isActive: Bool = false,
         isPaused: Bool = false,
         pausedUntil: Date? = nil,
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        activityName: DeviceActivityName? = nil,
+        appCount: Int? = nil
     ) {
         self.id = id
         self.name = name
+        self.icon = icon
+        self.iconColor = iconColor
         self.type = type
         self.appSelection = appSelection
         self.schedule = schedule
@@ -56,6 +66,8 @@ struct Block: Codable, Identifiable {
         self.isPaused = isPaused
         self.pausedUntil = pausedUntil
         self.createdAt = createdAt
+        self.activityName = activityName
+        self.appCount = appCount
     }
     
     // MARK: - Computed Properties
@@ -82,6 +94,9 @@ struct Block: Codable, Identifiable {
     
     /// Get monitor name for this block
     func getMonitorName(for day: Int? = nil) -> DeviceActivityName {
+        if let activityName = activityName {
+            return activityName
+        }
         if let day = day {
             return DeviceActivityName("com.gia.screengate.\(id.uuidString).day\(day)")
         } else {
