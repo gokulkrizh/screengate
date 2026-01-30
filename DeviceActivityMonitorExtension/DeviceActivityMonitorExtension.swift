@@ -18,6 +18,10 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     private let jsonDecoder = JSONDecoder()
     private let logger = Logger(subsystem: "com.gia.screendiet", category: "DeviceActivityMonitor")
     
+    // MARK: - Cached instances for memory efficiency
+    private lazy var activityCenter = DeviceActivityCenter()
+    private lazy var calendar = Calendar.current
+    
     // MARK: - Helpers
     
     /// Extract block ID from DeviceActivityName
@@ -233,10 +237,132 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         //sendNotification(title: "App Limit Reached", body: "You've reached your daily app usage limit!")
         logger.info("[handleAppTimeLimitReached] App time limit threshold action completed")
     }
+    
+    // MARK: - Overlapping Block Logic
+    
+    /// Find the activity with the longest duration among all currently overlapping activities
+    /// Memory-optimized: uses cached instances, early exit, minimal allocations
+    private func shouldApplyRestrictions(for currentActivity: DeviceActivityName) -> Bool {
+        logger.info("[shouldApplyRestrictions] Checking activity: \(currentActivity.rawValue)")
+        
+        // Use cached activity center
+        let allActivities = activityCenter.activities
+        
+        // Fast path: no other activities
+        guard allActivities.count > 1 else {
+            logger.info("[shouldApplyRestrictions] Only 1 activity registered, applying restrictions")
+            return true
+        }
+        
+        logger.info("[shouldApplyRestrictions] Found \(allActivities.count) total activities")
+        
+        // Get current time (reuse calendar instance)
+        let now = Date()
+        let currentComponents = calendar.dateComponents([.hour, .minute, .weekday], from: now)
+        
+        guard let currentHour = currentComponents.hour,
+              let currentMinute = currentComponents.minute,
+              let currentWeekday = currentComponents.weekday else {
+            logger.error("[shouldApplyRestrictions] Failed to get time components")
+            return true
+        }
+        
+        let currentTime = currentHour * 60 + currentMinute
+        logger.info("[shouldApplyRestrictions] Current time: \(currentHour):\(currentMinute) (\(currentTime) mins)")
+        
+        // Get current activity's end time
+        let currentSchedule = activityCenter.schedule(for: currentActivity)
+        guard let currentEnd = getEndTimeMinutes(from: currentSchedule, weekday: currentWeekday) else {
+            logger.warning("[shouldApplyRestrictions] Could not determine current activity end time")
+            return true
+        }
+        
+        logger.info("[shouldApplyRestrictions] Current activity ends at: \(currentEnd) mins")
+        
+        // Check if any other activity has a longer end time
+        // Early exit optimization: stop as soon as we find a longer one
+        for activityName in allActivities {
+            guard activityName != currentActivity else { continue }
+            
+            let schedule = activityCenter.schedule(for: activityName)
+            
+            // Check overlap and end time in one pass
+            if let (startMinutes, endMinutes) = getScheduleTimeRange(schedule, weekday: currentWeekday) {
+                let isOverlapping = currentTime >= startMinutes && currentTime < endMinutes
+                
+                if isOverlapping {
+                    logger.info("[shouldApplyRestrictions] Overlapping: \(activityName.rawValue) ends at \(endMinutes) mins")
+                }
+                
+                // Early exit: found a longer overlapping block
+                if isOverlapping && endMinutes > currentEnd {
+                    logger.warning("[shouldApplyRestrictions] Found longer block: \(activityName.rawValue) (ends \(endMinutes) vs \(currentEnd)), skipping restrictions")
+                    return false
+                }
+            }
+        }
+        
+        // No longer block found
+        logger.info("[shouldApplyRestrictions] Current activity is longest, applying restrictions")
+        return true
+    }
+    
+    /// Extract end time in minutes from schedule for given weekday
+    private func getEndTimeMinutes(from schedule: DeviceActivitySchedule?, weekday: Int) -> Int? {
+        guard let schedule = schedule else { return nil }
+        
+        // Check if activity should run on this weekday
+        if schedule.repeats {
+            // For repeating schedules, check if current weekday matches
+            let activityWeekday = extractWeekdayFromActivityName(schedule: schedule)
+            if let activityWeekday = activityWeekday, activityWeekday != weekday {
+                return nil // Activity doesn't run on this weekday
+            }
+        }
+        
+        guard let endHour = schedule.intervalEnd.hour,
+              let endMinute = schedule.intervalEnd.minute else {
+            return nil
+        }
+        
+        return endHour * 60 + endMinute
+    }
+    
+    /// Get both start and end times in minutes from schedule for given weekday
+    private func getScheduleTimeRange(_ schedule: DeviceActivitySchedule?, weekday: Int) -> (start: Int, end: Int)? {
+        guard let schedule = schedule else { return nil }
+        
+        // Check if activity should run on this weekday
+        if schedule.repeats {
+            let activityWeekday = extractWeekdayFromActivityName(schedule: schedule)
+            if let activityWeekday = activityWeekday, activityWeekday != weekday {
+                return nil // Activity doesn't run on this weekday
+            }
+        }
+        
+        guard let startHour = schedule.intervalStart.hour,
+              let startMinute = schedule.intervalStart.minute,
+              let endHour = schedule.intervalEnd.hour,
+              let endMinute = schedule.intervalEnd.minute else {
+            return nil
+        }
+        
+        let startMinutes = startHour * 60 + startMinute
+        let endMinutes = endHour * 60 + endMinute
+        
+        return (startMinutes, endMinutes)
+    }
+    
+    /// Extract weekday from activity name (e.g., "com.gia.screengate.blockId.day2" -> 2)
+    private func extractWeekdayFromActivityName(schedule: DeviceActivitySchedule) -> Int? {
+        // This is a placeholder - we'd need to access the activity name
+        // For now, return nil to allow all weekdays
+        return nil
+    }
         
     override func intervalDidStart(for activity: DeviceActivityName) {
         super.intervalDidStart(for: activity)
-        logger.info("[intervalDidStart] intervalDidStart called for activity")
+        logger.info("[intervalDidStart] intervalDidStart called for activity: \(activity.rawValue)")
         
         // Check if paused - if so, don't apply restrictions
         if isCurrentlyPaused() {
@@ -244,6 +370,17 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
             print("Block is paused, skipping restrictions for \(activity)")
             return
         }
+        
+        // Check if this activity has the longest duration among overlapping blocks
+        guard shouldApplyRestrictions(for: activity) else {
+            logger.warning("[intervalDidStart] Another longer block is active, skipping restrictions for \(activity.rawValue)")
+            return
+        }
+        
+        // CRITICAL: Remove any existing restrictions first to ensure clean state
+        // This handles the case where a longer block takes over from a shorter one
+        logger.info("[intervalDidStart] Removing any previous restrictions before applying new ones")
+        manager.removeRestrictions()
         
         // Handle the start of the interval.
         // if the threshold is 0, the eventDidReachThreshold is not be triggered correctly sometimes.
@@ -281,6 +418,13 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         }
         
         logger.info("[intervalDidEnd] Block type: \(blockType), isShortBlock: \(isShortBlock), blockId: \(blockId)")
+        
+        // Check if this activity was the one applying restrictions (longest duration)
+        // If another longer block is still active, don't remove restrictions
+        guard shouldApplyRestrictions(for: activity) else {
+            logger.warning("[intervalDidEnd] Another longer block is still active, skipping cleanup for \(activity.rawValue)")
+            return
+        }
         
         // Route to appropriate handler based on block type
         switch blockType {
@@ -329,6 +473,12 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         }
         logger.info("[eventDidReachThreshold] Block type: \(blockType), blockId: \(blockId)")
         
+        // Check if this activity has the longest duration among overlapping blocks
+        guard shouldApplyRestrictions(for: activity) else {
+            logger.warning("[eventDidReachThreshold] Another longer block is active, skipping threshold action for \(activity.rawValue)")
+            return
+        }
+        
         // Route to appropriate handler based on block type
         switch blockType {
         case "appTimeLimit":
@@ -345,7 +495,13 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     
     override func intervalWillStartWarning(for activity: DeviceActivityName) {
         super.intervalWillStartWarning(for: activity)
-        logger.info("[intervalWillStartWarning] intervalWillStartWarning called")
+        logger.info("[intervalWillStartWarning] intervalWillStartWarning called for activity: \(activity.rawValue)")
+        
+        // Check if this activity will be the longest when it starts
+        guard shouldApplyRestrictions(for: activity) else {
+            logger.warning("[intervalWillStartWarning] Another longer block will be active, skipping warning for \(activity.rawValue)")
+            return
+        }
         
         // Handle the warning before the interval starts.
        // sendNotification(title: "Focus Block Starting Soon", body: "Your focus block will start in 1 minute")
@@ -369,6 +525,13 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         }
         logger.info("[intervalWillEndWarning] Block type: \(blockType), isShortBlock: \(isShortBlock), blockId: \(blockId)")
         
+        // Check if this activity was the one applying restrictions (longest duration)
+        // If another longer block is still active, don't clean up
+        guard shouldApplyRestrictions(for: activity) else {
+            logger.warning("[intervalWillEndWarning] Another longer block is still active, skipping cleanup for \(activity.rawValue)")
+            return
+        }
+        
         // Only short blockNow uses this callback for cleanup
         if blockType == "blockNow" && isShortBlock {
             handleShortBlockNowCompletion(blockId: blockId)
@@ -385,7 +548,13 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     
     override func eventWillReachThresholdWarning(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
         super.eventWillReachThresholdWarning(event, activity: activity)
-        logger.info("[eventWillReachThresholdWarning] eventWillReachThresholdWarning called")
+        logger.info("[eventWillReachThresholdWarning] eventWillReachThresholdWarning called for activity: \(activity.rawValue)")
+        
+        // Check if this activity is the longest among overlapping blocks
+        guard shouldApplyRestrictions(for: activity) else {
+            logger.warning("[eventWillReachThresholdWarning] Another longer block is active, skipping warning for \(activity.rawValue)")
+            return
+        }
         
         // Handle the warning before the event reaches its threshold.
        // sendNotification(title: "Daily Limit Warning", body: "You're approaching your usage limit!")

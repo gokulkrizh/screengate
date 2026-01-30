@@ -159,7 +159,9 @@ struct UpcomingBlocksView: View {
                                     sectionHeader(title: dayTitle, date: formatDate(dayData.date))
                                     
                                     ForEach(Array(dayData.blocks.enumerated()), id: \.element.id) { index, block in
-                                        let isBlockActive = dayData.offset == 0 && (timelineBuilder?.isBlockActive(block, at: currentTime) ?? false)
+                                        // Only highlight the block that's actually applying restrictions (not all overlapping blocks)
+                                        let isBlockActive = dayData.offset == 0 && block.isActiveAmongOverlaps
+                                        let isOverlapped = dayData.offset == 0 && block.isOverlapped
                                         
                                         TimelineBlockView(
                                             icon: block.icon,

@@ -321,6 +321,7 @@ final class BlockTimelineBuilder {
     // MARK: - Active Block Detection
     
     /// Update which blocks are currently active using DeviceActivityCenter schedules
+    /// When multiple blocks overlap, only the one with the longest duration (latest end time) is considered active
     func updateActiveBlocks(referenceDate: Date = Date()) {
         var currentComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: referenceDate)
         currentComponents.second = 0
@@ -328,19 +329,68 @@ final class BlockTimelineBuilder {
         
         print("🔍 [BlockTimelineBuilder] Updating active blocks from \(todayBlocks.count) today blocks")
         
-        currentActiveBlocks = todayBlocks.filter { block in
+        // Find all blocks that are active in the system
+        let activeBlocks = todayBlocks.filter { block in
             guard let activityName = block.activityName else {
-                print("⚠️ [BlockTimelineBuilder] Block '\(block.name)' has no activityName")
                 return false
             }
-            let isActive = isBlockActiveInSystem(activityName: activityName, at: normalizedNow)
-            if isActive {
-                print("✅ [BlockTimelineBuilder] Block '\(block.name)' is ACTIVE")
-            }
-            return isActive
+            return isBlockActiveInSystem(activityName: activityName, at: normalizedNow)
         }
         
+        // Mark overlapping status on all today's blocks
+        todayBlocks = todayBlocks.map { block in
+            var updatedBlock = block
+            updatedBlock.isOverlapped = false
+            updatedBlock.isActiveAmongOverlaps = false
+            return updatedBlock
+        }
+        
+        // If multiple blocks overlap, mark them and find the longest
+        if activeBlocks.count > 1 {
+            let longestBlock = findLongestBlock(from: activeBlocks)
+            currentActiveBlocks = [longestBlock]
+            
+            // Mark all overlapping blocks
+            let overlappingBlockIds = Set(activeBlocks.map { $0.id })
+            todayBlocks = todayBlocks.map { block in
+                var updatedBlock = block
+                if overlappingBlockIds.contains(block.id) {
+                    updatedBlock.isOverlapped = true
+                    updatedBlock.isActiveAmongOverlaps = (block.id == longestBlock.id)
+                }
+                return updatedBlock
+            }
+            
+            print("✅ [BlockTimelineBuilder] \(activeBlocks.count) blocks overlapping - active: '\(longestBlock.name)'")
+        } else {
+            currentActiveBlocks = activeBlocks
+            // Mark single active block
+            if let activeBlock = activeBlocks.first {
+                todayBlocks = todayBlocks.map { block in
+                    var updatedBlock = block
+                    if block.id == activeBlock.id {
+                        updatedBlock.isActiveAmongOverlaps = true
+                    }
+                    return updatedBlock
+                }
+            }
+        }
+        
+        // CRITICAL: Sync todayBlocks back to weekBlocks[0] so UI sees the changes
+        weekBlocks[0] = todayBlocks
+        
         print("ℹ️ [BlockTimelineBuilder] Found \(currentActiveBlocks.count) active blocks")
+    }
+    
+    /// Among overlapping blocks, find the one with the latest end time
+    private func findLongestBlock(from blocks: [Block]) -> Block {
+        return blocks.max { block1, block2 in
+            guard let end1 = block1.schedule.endTime,
+                  let end2 = block2.schedule.endTime else {
+                return false
+            }
+            return end1 < end2 // block2 has later end time, so it's "greater"
+        } ?? blocks.first!
     }
     
     /// Check if an activity is currently active in the system

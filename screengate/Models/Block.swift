@@ -19,6 +19,8 @@ struct Block: Codable, Identifiable {
     var createdAt: Date
     var activityName: DeviceActivityName?  // Link to system monitor
     var appCount: Int?
+    var isOverlapped: Bool = false  // True if other blocks overlap with this one
+    var isActiveAmongOverlaps: Bool = false  // True if this is the active one among overlapping blocks
     
     /// Block type determines how the block is executed
     enum BlockType: String, Codable, CaseIterable {
@@ -52,7 +54,9 @@ struct Block: Codable, Identifiable {
         pausedUntil: Date? = nil,
         createdAt: Date = Date(),
         activityName: DeviceActivityName? = nil,
-        appCount: Int? = nil
+        appCount: Int? = nil,
+        isOverlapped: Bool = false,
+        isActiveAmongOverlaps: Bool = false
     ) {
         self.id = id
         self.name = name
@@ -68,6 +72,8 @@ struct Block: Codable, Identifiable {
         self.createdAt = createdAt
         self.activityName = activityName
         self.appCount = appCount
+        self.isOverlapped = isOverlapped
+        self.isActiveAmongOverlaps = isActiveAmongOverlaps
     }
     
     // MARK: - Computed Properties
