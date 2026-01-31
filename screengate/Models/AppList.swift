@@ -84,7 +84,7 @@ final class AppListManager {
     
     init() {
         // Use app group for cross-target access
-        self.userDefaults = UserDefaults(suiteName: "group.com.gia.screengate") ?? .standard
+        self.userDefaults = UserDefaults(suiteName: "group.com.gia.screendiet") ?? .standard
         loadFromUserDefaults()
     }
     
@@ -153,7 +153,7 @@ final class AppListManager {
         userDefaults.set(ids, forKey: listIdsKey)
         
         // 3. Post Darwin notification for cross-process sync (matching BlockManager pattern)
-        let notificationName = "com.gia.screengate.appListsChanged" as CFString
+        let notificationName = "com.gia.screendiet.appListsChanged" as CFString
         let center = CFNotificationCenterGetDarwinNotifyCenter()
         CFNotificationCenterPostNotification(center, CFNotificationName(notificationName), nil, nil, true)
     }

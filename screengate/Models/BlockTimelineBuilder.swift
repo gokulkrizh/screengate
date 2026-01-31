@@ -251,7 +251,27 @@ final class BlockTimelineBuilder {
         
         // Get metadata from cache (for display purposes)
         let activityKey = activityName.rawValue
-        let metadata = metadataCache[activityKey]
+        
+        // For repeating blocks, the activity name has ".dayN" appended, but metadata is stored under the base UUID
+        // Extract the base UUID by removing the ".dayN" suffix
+        let baseActivityKey: String
+        if let dayRange = activityKey.range(of: "\\.day\\d+$", options: .regularExpression) {
+            baseActivityKey = String(activityKey[..<dayRange.lowerBound])
+        } else {
+            baseActivityKey = activityKey
+        }
+        
+        let metadata = metadataCache[baseActivityKey]
+        
+        // Debug logging
+        print("🔍 [BlockTimelineBuilder] Creating block for activity: \(activityKey)")
+        print("   Base key: \(baseActivityKey)")
+        if let metadata = metadata {
+            print("   ✅ Found metadata: '\(metadata.name)'")
+        } else {
+            print("   ❌ No metadata found!")
+            print("   Available keys: \(metadataCache.keys.map { $0.components(separatedBy: ".").last ?? $0 })")
+        }
         
         // Determine block type from events
         let blockType = determineBlockType(from: events)
@@ -268,10 +288,30 @@ final class BlockTimelineBuilder {
             }
         }
         
+        // Use proper fallback names
+        let displayName: String
+        if let metadataName = metadata?.name {
+            displayName = metadataName
+            print("   ✅ Using metadata name: '\(displayName)'")
+        } else {
+            // Better fallback: use block type as name instead of UUID
+            switch blockType {
+            case .scheduled:
+                displayName = "Scheduled Block"
+            case .appTimeLimit:
+                displayName = "App Time Limit"
+            case .openLimit:
+                displayName = "Open Limit"
+            case .blockNow:
+                displayName = "Block Now"
+            }
+            print("   ⚠️ Using fallback name: '\(displayName)'")
+        }
+        
         // Create Block
         return Block(
             id: UUID(),
-            name: metadata?.name ?? activityKey,
+            name: displayName,
             icon: metadata?.icon ?? "app.fill",
             iconColor: metadata?.iconColor ?? "#66C5A8",
             type: metadata?.blockType ?? blockType,
@@ -304,7 +344,10 @@ final class BlockTimelineBuilder {
     private func loadMetadataCache() {
         metadataCache.removeAll()
         
-        // Read blocks from BlockManager (UserDefaults) for metadata
+        print("🔍 [BlockTimelineBuilder] Loading metadata cache...")
+        print("   BlockManager has \(blockManager.blocks.count) blocks")
+        
+        // 1. Load from BlockManager's blocks array
         for block in blockManager.blocks {
             if let activityName = block.activityName {
                 metadataCache[activityName.rawValue] = BlockMetadata(
@@ -314,8 +357,49 @@ final class BlockTimelineBuilder {
                     blockType: block.type,
                     appCount: block.appCount
                 )
+                print("   ✅ Cached metadata for '\(block.name)' with key: \(activityName.rawValue)")
+            } else {
+                print("   ⚠️ Block '\(block.name)' has no activityName")
             }
         }
+        
+        // 2. Also check UserDefaults directly for any metadata we might have missed
+        let defaults = UserDefaults(suiteName: "group.com.gia.screendiet") ?? .standard
+        
+        // Get all keys that look like activity names (contain "com.gia.screendiet")
+        if let allKeys = defaults.dictionaryRepresentation().keys as? [String] {
+            for key in allKeys where key.contains("com.gia.screendiet") && key.contains("-") {
+                // Skip if we already have metadata from BlockManager
+                if metadataCache[key] != nil {
+                    continue
+                }
+                
+                // Try to load metadata from UserDefaults
+                if let data = defaults.data(forKey: key),
+                   let decoded = try? JSONDecoder().decode(BlockMetadataStorage.self, from: data) {
+                    metadataCache[key] = BlockMetadata(
+                        name: decoded.name,
+                        icon: decoded.icon,
+                        iconColor: decoded.iconColor,
+                        blockType: decoded.blockType,
+                        appCount: decoded.appCount
+                    )
+                    print("   ✅ Loaded metadata from UserDefaults for: '\(decoded.name)' (key: \(key))")
+                }
+            }
+        }
+        
+        print("✅ [BlockTimelineBuilder] Loaded \(metadataCache.count) metadata entries")
+        print("   Available keys: \(metadataCache.keys.map { $0.components(separatedBy: ".").last ?? $0 })")
+    }
+    
+    // Helper struct for decoding UserDefaults metadata
+    private struct BlockMetadataStorage: Codable {
+        let name: String
+        let icon: String
+        let iconColor: String
+        let blockType: Block.BlockType
+        let appCount: Int?
     }
     
     // MARK: - Active Block Detection

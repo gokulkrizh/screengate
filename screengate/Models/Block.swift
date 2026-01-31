@@ -104,9 +104,9 @@ struct Block: Codable, Identifiable {
             return activityName
         }
         if let day = day {
-            return DeviceActivityName("com.gia.screengate.\(id.uuidString).day\(day)")
+            return DeviceActivityName("com.gia.screendiet.\(id.uuidString).day\(day)")
         } else {
-            return DeviceActivityName("com.gia.screengate.\(id.uuidString)")
+            return DeviceActivityName("com.gia.screendiet.\(id.uuidString)")
         }
     }
 }

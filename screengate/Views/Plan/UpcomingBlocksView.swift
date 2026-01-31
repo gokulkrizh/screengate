@@ -214,18 +214,17 @@ struct UpcomingBlocksView: View {
                                         let isBlockActive = dayData.offset == 0 && block.isActiveAmongOverlaps
                                         let isOverlapped = dayData.offset == 0 && block.isOverlapped
                                         
-                                        TimelineBlockView(
-                                            icon: block.icon,
-                                            iconColor: Color(hex: block.iconColor),
-                                            title: block.name,
-                                            timeRange: formatTimeRange(block.schedule.startTime ?? Date(), block.schedule.endTime ?? Date()),
-                                            duration: block.schedule.duration != nil ? formatDuration(block.schedule.duration!) : nil,
+                                        TimelineCardView(
+                                            blockName: block.name,
+                                            category: block.type.rawValue.capitalized,
+                                            startTime: block.schedule.startTime ?? Date(),
+                                            endTime: block.schedule.endTime ?? Date(),
+                                            selectedDays: block.schedule.repeatDays ?? [],
                                             isActive: isBlockActive,
-                                            isFirst: index == 0,
-                                            isLast: index == dayData.blocks.count - 1,
-                                            actionIcon: isBlockActive ? "pause.circle" : "ellipsis",
-                                            isFuture: dayData.offset > 0
+                                            appSelection: block.appSelection
                                         )
+                                        .padding(.horizontal, 20)
+                                        .padding(.bottom, 16)
                                         .contextMenu {
                                             Button(role: .destructive, action: {
                                                 try? blockManager.deleteBlock(block)
@@ -234,20 +233,6 @@ struct UpcomingBlocksView: View {
                                             }
                                         }
                                     }
-                                    
-                                    // End cap
-                                    HStack(spacing: 0) {
-                                        VStack {
-                                            Circle()
-                                                .fill(Color.white.opacity(0.2))
-                                                .frame(width: 6, height: 6)
-                                                .padding(.top, -10)
-                                        }
-                                        .frame(width: 50)
-                                        
-                                        Spacer()
-                                    }
-                                    .padding(.bottom, 32)
                                 }
                             }
                         }

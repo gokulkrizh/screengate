@@ -267,7 +267,7 @@ final class BlockManager {
         activeBlock.pausedUntil = nil
         
         // Generate and save activityName for linking to DeviceActivityCenter
-        let activityName = DeviceActivityName("com.gia.screengate.\(block.id.uuidString)")
+        let activityName = DeviceActivityName("com.gia.screendiet.\(block.id.uuidString)")
         activeBlock.activityName = activityName
         
         // Store original state for rollback on failure

@@ -25,10 +25,10 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     // MARK: - Helpers
     
     /// Extract block ID from DeviceActivityName
-    /// Format: "com.gia.screendiet.com.gia.screengate.{BLOCK_ID}"
+    /// Format: "com.gia.screendiet.{BLOCK_ID}.dayN"
     private func extractBlockId(from activity: DeviceActivityName) -> String? {
         let activityString = activity.rawValue
-        let prefix = "com.gia.screendiet.com.gia.screengate."
+        let prefix = "com.gia.screendiet."
         
         guard activityString.hasPrefix(prefix) else {
             logger.warning("[extractBlockId] Activity name doesn't match expected format: \(activityString)")
@@ -353,7 +353,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         return (startMinutes, endMinutes)
     }
     
-    /// Extract weekday from activity name (e.g., "com.gia.screengate.blockId.day2" -> 2)
+    /// Extract weekday from activity name (e.g., "com.gia.screendiet.blockId.day2" -> 2)
     private func extractWeekdayFromActivityName(schedule: DeviceActivitySchedule) -> Int? {
         // This is a placeholder - we'd need to access the activity name
         // For now, return nil to allow all weekdays
