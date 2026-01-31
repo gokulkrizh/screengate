@@ -214,24 +214,17 @@ struct UpcomingBlocksView: View {
                                         let isBlockActive = dayData.offset == 0 && block.isActiveAmongOverlaps
                                         let isOverlapped = dayData.offset == 0 && block.isOverlapped
                                         
-                                        TimelineCardView(
-                                            blockName: block.name,
-                                            category: block.type.rawValue.capitalized,
-                                            startTime: block.schedule.startTime ?? Date(),
-                                            endTime: block.schedule.endTime ?? Date(),
-                                            selectedDays: block.schedule.repeatDays ?? [],
-                                            isActive: isBlockActive,
-                                            appSelection: block.appSelection
-                                        )
-                                        .padding(.horizontal, 20)
-                                        .padding(.bottom, 16)
-                                        .contextMenu {
-                                            Button(role: .destructive, action: {
-                                                try? blockManager.deleteBlock(block)
-                                            }) {
-                                                Label("Delete", systemImage: "trash")
-                                            }
-                                        }
+                                         TimelineCardView(
+                                             blockName: block.name,
+                                             category: block.type.rawValue.capitalized,
+                                             startTime: block.schedule.startTime ?? Date(),
+                                             endTime: block.schedule.endTime ?? Date(),
+                                             selectedDays: block.schedule.repeatDays ?? [],
+                                             isActive: isBlockActive,
+                                             appSelection: block.appSelection
+                                         )
+                                         .padding(.horizontal, 20)
+                                         .padding(.bottom, 16)
                                     }
                                 }
                             }
