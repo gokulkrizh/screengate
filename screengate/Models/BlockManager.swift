@@ -680,7 +680,7 @@ final class BlockManager {
     
     // MARK: - Private Helpers
     
-    private func stopAllMonitorsForBlock(_ block: Block) async {
+    func stopAllMonitorsForBlock(_ block: Block) async {
         print("🔴 [BlockManager] stopAllMonitorsForBlock called for: \(block.name)")
         
         if block.schedule.repeatDays == nil || block.schedule.repeatDays!.count == 1 {

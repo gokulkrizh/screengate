@@ -10,6 +10,7 @@ struct UpcomingBlocksView: View {
     @State private var showOpenLimit = false
     @State private var showAppTimeLimit = false
     @State private var showBlockNow = false
+    @State private var blockToEdit: Block?
     @State private var currentTime = Date() // For real-time updates
     @State private var showResetConfirmation = false // For debug reset confirmation
     private let appTheme = AppTheme.shared
@@ -219,13 +220,8 @@ struct UpcomingBlocksView: View {
                                 let isBlockActive = block.isActiveAmongOverlaps
                                 
                                 TimelineCardView(
-                                    blockName: block.name,
-                                    category: block.type.rawValue.capitalized,
-                                    startTime: block.schedule.startTime ?? Date(),
-                                    endTime: block.schedule.endTime ?? Date(),
-                                    selectedDays: block.schedule.repeatDays ?? [],
-                                    isActive: isBlockActive,
-                                    appSelection: block.appSelection
+                                    block: block,
+                                    onTap: { blockToEdit = block }
                                 )
                                 .padding(.horizontal, 20)
                                 .padding(.bottom, 16)
@@ -237,15 +233,10 @@ struct UpcomingBlocksView: View {
                             sectionHeader(title: "Upcoming", date: "")
                             
                             ForEach(Array(upcomingBlocks.enumerated()), id: \.element.id) { index, block in
-                                TimelineCardView(
-                                    blockName: block.name,
-                                    category: block.type.rawValue.capitalized,
-                                    startTime: block.schedule.startTime ?? Date(),
-                                    endTime: block.schedule.endTime ?? Date(),
-                                    selectedDays: block.schedule.repeatDays ?? [],
-                                    isActive: false,
-                                    appSelection: block.appSelection
-                                )
+                            TimelineCardView(
+                                block: block,
+                                onTap: { blockToEdit = block }
+                            )
                                 .padding(.horizontal, 20)
                                 .padding(.bottom, 16)
                             }
@@ -341,8 +332,11 @@ struct UpcomingBlocksView: View {
             .presentationDragIndicator(.visible)
             .presentationBackground(Color(red: 0.06, green: 0.13, blue: 0.09))
         }
+        .fullScreenCover(item: $blockToEdit) { block in
+            CreateScheduledBlockView(editingBlock: block)
+        }
         .fullScreenCover(isPresented: $showScheduledBlock) {
-            CreateScheduledBlockView()
+            CreateScheduledBlockView(editingBlock: nil)
         }
         .fullScreenCover(isPresented: $showOpenLimit) {
             CreateOpenLimitView()

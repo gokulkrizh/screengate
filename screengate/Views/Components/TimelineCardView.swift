@@ -2,13 +2,8 @@ import SwiftUI
 import FamilyControls
 
 struct TimelineCardView: View {
-    let blockName: String
-    let category: String
-    let startTime: Date
-    let endTime: Date
-    let selectedDays: Set<Int>
-    let isActive: Bool
-    let appSelection: FamilyActivitySelection
+    let block: Block
+    let onTap: () -> Void
     
     private let appTheme = AppTheme.shared
     
@@ -21,11 +16,12 @@ struct TimelineCardView: View {
                     .stroke(borderColor, lineWidth: borderWidth)
             )
             .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+            .onTapGesture { onTap() }
     }
     
     private var cardContent: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if isActive {
+            if block.isActiveAmongOverlaps {
                 statusBadge
             }
             mainContent
@@ -46,85 +42,72 @@ struct TimelineCardView: View {
     }
     
     private var mainContent: some View {
-        HStack(alignment: .top, spacing: 16) {
-            leftContent
-            Spacer()
-            if !appSelection.applicationTokens.isEmpty || !appSelection.categoryTokens.isEmpty {
-                appIcons
-            }
-        }
-    }
-    
-    private var leftContent: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(blockName)
-                .font(.system(size: 24, weight: .bold, design: .default))
-                .foregroundColor(.white)
-                .padding(.top, isActive ? 8 : 20)
-            
-            timeInfo
-            
-            if !selectedDays.isEmpty {
-                repeatsSection
-            }
-        }
-        .padding(.leading, 20)
-    }
-    
-    private var timeInfo: some View {
-        HStack(spacing: 6) {
-            Text(category)
-                .font(.system(size: 15, weight: .medium, design: .default))
-                .foregroundColor(.white.opacity(0.6))
-            
-            Text("•")
-                .font(.system(size: 15, weight: .medium, design: .default))
-                .foregroundColor(.white.opacity(0.4))
-            
-            Text("\(formatTime(startTime)) - \(formatTime(endTime))")
-                .font(.system(size: 15, weight: .medium, design: .default))
-                .foregroundColor(.white.opacity(0.6))
-        }
-        .padding(.bottom, 20)
-    }
-    
-    private var repeatsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("REPEATS")
-                .font(.system(size: 11, weight: .bold, design: .default))
-                .tracking(0.5)
-                .foregroundColor(.white.opacity(0.5))
-            
-            HStack(spacing: 8) {
-                ForEach(1...7, id: \.self) { day in
-                    DayBadge(
-                        day: dayLabel(day),
-                        isSelected: selectedDays.contains(day)
-                    )
+        let isActive = block.isActiveAmongOverlaps
+        let selectedDays = block.schedule.repeatDays ?? []
+        
+        return HStack(alignment: .top, spacing: 16) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(block.name)
+                    .font(.system(size: 24, weight: .bold, design: .default))
+                    .foregroundColor(.white)
+                    .padding(.top, isActive ? 8 : 20)
+                
+                HStack(spacing: 6) {
+                    Text(block.type.rawValue.capitalized)
+                        .font(.system(size: 15, weight: .medium, design: .default))
+                        .foregroundColor(.white.opacity(0.6))
+                    
+                    Text("•")
+                        .font(.system(size: 15, weight: .medium, design: .default))
+                        .foregroundColor(.white.opacity(0.4))
+                    
+                    Text("\(formatTime(block.schedule.startTime ?? Date())) - \(formatTime(block.schedule.endTime ?? Date()))")
+                        .font(.system(size: 15, weight: .medium, design: .default))
+                        .foregroundColor(.white.opacity(0.6))
+                }
+                .padding(.bottom, 20)
+                
+                if !selectedDays.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("REPEATS")
+                            .font(.system(size: 11, weight: .bold, design: .default))
+                            .tracking(0.5)
+                            .foregroundColor(.white.opacity(0.5))
+                        
+                        HStack(spacing: 8) {
+                            ForEach(1...7, id: \.self) { day in
+                                DayBadge(
+                                    day: dayLabel(day),
+                                    isSelected: selectedDays.contains(day)
+                                )
+                            }
+                        }
+                    }
+                    .padding(.bottom, 20)
                 }
             }
-        }
-        .padding(.bottom, 20)
-    }
-    
-    private var appIcons: some View {
-        HStack(spacing: -8) {
-            ForEach(Array(appSelection.applicationTokens.prefix(3)), id: \.self) { token in
-                Circle()
-                    .fill(appTheme.colors.primary.opacity(0.3))
-                    .frame(width: 48, height: 48)
+            .padding(.leading, 20)
+            Spacer()
+            if !block.appSelection.applicationTokens.isEmpty || !block.appSelection.categoryTokens.isEmpty {
+                HStack(spacing: -8) {
+                    ForEach(Array(block.appSelection.applicationTokens.prefix(3)), id: \.self) { token in
+                        Circle()
+                            .fill(appTheme.colors.primary.opacity(0.3))
+                            .frame(width: 48, height: 48)
+                    }
+                }
+                .padding(.trailing, 20)
+                .padding(.top, isActive ? 8 : 20)
             }
         }
-        .padding(.trailing, 20)
-        .padding(.top, isActive ? 8 : 20)
     }
     
     private var borderColor: Color {
-        isActive ? appTheme.colors.primary.opacity(0.3) : Color.white.opacity(0.1)
+        block.isActiveAmongOverlaps ? appTheme.colors.primary.opacity(0.3) : Color.white.opacity(0.1)
     }
     
     private var borderWidth: CGFloat {
-        isActive ? 2 : 1
+        block.isActiveAmongOverlaps ? 2 : 1
     }
     
     private func formatTime(_ date: Date) -> String {
@@ -172,29 +155,51 @@ struct DayBadge: View {
             .ignoresSafeArea()
         
         VStack(spacing: 20) {
-            // Active block
-            TimelineCardView(
-                blockName: "Deep Work Phase",
-                category: "Development",
-                startTime: Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: Date())!,
-                endTime: Calendar.current.date(bySettingHour: 14, minute: 0, second: 0, of: Date())!,
-                selectedDays: [2, 3, 4, 5, 6], // Mon-Fri
+            let activeBlock = Block(
+                name: "Deep Work Phase",
+                icon: "app.fill",
+                iconColor: "#66C5A8",
+                type: .scheduled,
+                appSelection: FamilyActivitySelection(),
+                schedule: Block.BlockSchedule(
+                    startTime: Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: Date())!,
+                    endTime: Calendar.current.date(bySettingHour: 14, minute: 0, second: 0, of: Date())!,
+                    duration: nil,
+                    threshold: nil,
+                    repeatDays: [2, 3, 4, 5, 6],
+                    isRepeating: true
+                ),
+                strictMode: .medium,
                 isActive: true,
-                appSelection: FamilyActivitySelection()
+                appListId: nil,
+                appListName: nil
             )
-            .padding(.horizontal, 16)
             
-            // Inactive block
-            TimelineCardView(
-                blockName: "Evening Focus",
-                category: "Social Media",
-                startTime: Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: Date())!,
-                endTime: Calendar.current.date(bySettingHour: 21, minute: 0, second: 0, of: Date())!,
-                selectedDays: [1, 2, 3, 4, 5, 6, 7], // Every day
+            TimelineCardView(block: activeBlock, onTap: {})
+                .padding(.horizontal, 16)
+            
+            let inactiveBlock = Block(
+                name: "Evening Focus",
+                icon: "moon.fill",
+                iconColor: "#66C5A8",
+                type: .scheduled,
+                appSelection: FamilyActivitySelection(),
+                schedule: Block.BlockSchedule(
+                    startTime: Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: Date())!,
+                    endTime: Calendar.current.date(bySettingHour: 21, minute: 0, second: 0, of: Date())!,
+                    duration: nil,
+                    threshold: nil,
+                    repeatDays: [1, 2, 3, 4, 5, 6, 7],
+                    isRepeating: true
+                ),
+                strictMode: .medium,
                 isActive: false,
-                appSelection: FamilyActivitySelection()
+                appListId: nil,
+                appListName: nil
             )
-            .padding(.horizontal, 16)
+            
+            TimelineCardView(block: inactiveBlock, onTap: {})
+                .padding(.horizontal, 16)
         }
     }
 }

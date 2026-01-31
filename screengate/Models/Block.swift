@@ -21,6 +21,8 @@ struct Block: Codable, Identifiable {
     var appCount: Int?
     var isOverlapped: Bool = false  // True if other blocks overlap with this one
     var isActiveAmongOverlaps: Bool = false  // True if this is the active one among overlapping blocks
+    var appListId: UUID?
+    var appListName: String?
     
     /// Block type determines how the block is executed
     enum BlockType: String, Codable, CaseIterable {
@@ -56,7 +58,9 @@ struct Block: Codable, Identifiable {
         activityName: DeviceActivityName? = nil,
         appCount: Int? = nil,
         isOverlapped: Bool = false,
-        isActiveAmongOverlaps: Bool = false
+        isActiveAmongOverlaps: Bool = false,
+        appListId: UUID? = nil,
+        appListName: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -74,6 +78,8 @@ struct Block: Codable, Identifiable {
         self.appCount = appCount
         self.isOverlapped = isOverlapped
         self.isActiveAmongOverlaps = isActiveAmongOverlaps
+        self.appListId = appListId
+        self.appListName = appListName
     }
     
     // MARK: - Computed Properties

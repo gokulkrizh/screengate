@@ -3,6 +3,11 @@ import FamilyControls
 
 struct CreateScheduledBlockView: View {
     @Environment(\.dismiss) var dismiss
+    let editingBlock: Block?
+    
+    private var isEditing: Bool {
+        editingBlock != nil
+    }
     @Environment(BlockManager.self) private var blockManager
     @Environment(AppListManager.self) private var appListManager
     
@@ -20,6 +25,10 @@ struct CreateScheduledBlockView: View {
     @State private var selectedListIcon: String = ""
     @State private var error: String?
     @State private var isCreating = false
+    @State private var selectedAppListId: UUID?
+    @State private var selectedBlockIcon = "app.fill"
+    @State private var selectedBlockIconColor = "#66C5A8"
+    @State private var showIconPicker = false
     
     private let appTheme = AppTheme.shared
     
@@ -42,7 +51,7 @@ struct CreateScheduledBlockView: View {
                     
                     Spacer()
                     
-                    Text("Create Schedule")
+                    Text(isEditing ? "Edit Block" : "Create Schedule")
                         .font(.system(size: 18, weight: .bold, design: .default))
                         .foregroundColor(.white)
                     
@@ -65,6 +74,67 @@ struct CreateScheduledBlockView: View {
                         }
                         .padding(.horizontal, 20)
                         .padding(.top, 12)
+                        
+                        // Block Icon
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Icon")
+                                .font(.system(size: 16, weight: .semibold, design: .default))
+                                .foregroundColor(.white)
+                            
+                            Button(action: { showIconPicker.toggle() }) {
+                                HStack(spacing: 12) {
+                                    Circle()
+                                        .fill(appTheme.colors.primary.opacity(0.2))
+                                        .frame(width: 48, height: 48)
+                                        .overlay(
+                                            Image(systemName: selectedBlockIcon)
+                                                .font(.system(size: 20))
+                                                .foregroundColor(appTheme.colors.primary)
+                                        )
+                                    
+                                    Text("Choose Icon")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(.white)
+                                    
+                                    Spacer()
+                                    
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(Color.white.opacity(0.3))
+                                }
+                                .padding(16)
+                                .background(Color.white.opacity(0.05))
+                                .cornerRadius(12)
+                            }
+                            
+                            if showIconPicker {
+                                LazyVGrid(columns: [GridItem(.adaptive(minimum: 60))], spacing: 12) {
+                                    ForEach([
+                                        "app.fill", "flame.fill", "star.fill", "heart.fill",
+                                        "bolt.fill", "moon.fill", "sun.max.fill", "timer",
+                                        "calendar", "square.stack.3d.up.fill", "tray.fill", "folder.fill"
+                                    ], id: \.self) { icon in
+                                        Button(action: {
+                                            selectedBlockIcon = icon
+                                            showIconPicker = false
+                                        }) {
+                                            Circle()
+                                                .fill(selectedBlockIcon == icon ? appTheme.colors.primary.opacity(0.3) : Color.white.opacity(0.05))
+                                                .frame(width: 60, height: 60)
+                                                .overlay(
+                                                    Image(systemName: icon)
+                                                        .font(.system(size: 24))
+                                                        .foregroundColor(selectedBlockIcon == icon ? appTheme.colors.primary : .white)
+                                                )
+                                        }
+                                    }
+                                }
+                                .padding(16)
+                                .background(Color.white.opacity(0.03))
+                                .cornerRadius(12)
+                            }
+                        }
+                        .padding(.horizontal, 20)
                         
                         // Apps to Block
                         VStack(alignment: .leading, spacing: 12) {
@@ -245,7 +315,7 @@ struct CreateScheduledBlockView: View {
                             .tint(Color(red: 0.06, green: 0.13, blue: 0.09))
                     } else {
                         HStack(spacing: 8) {
-                            Text("Activate Schedule")
+                            Text(isEditing ? "Save Changes" : "Activate Schedule")
                                 .font(.system(size: 16, weight: .bold, design: .default))
                                 .foregroundColor(Color(red: 0.06, green: 0.13, blue: 0.09))
                             
@@ -281,15 +351,55 @@ struct CreateScheduledBlockView: View {
         .sheet(isPresented: $showAppListPicker) {
             AppListsView(isSelectionMode: true) { selectedList in
                 activitySelection = selectedList.selection
+                selectedAppListId = selectedList.id
                 selectedListName = selectedList.name
                 selectedListIcon = selectedList.icon
-                blockName = selectedList.name
+                if blockName == "Schedule Focus Session" {
+                    blockName = selectedList.name
+                }
             }
         }
         .alert("Error", isPresented: .constant(error != nil), presenting: error) { _ in
             Button("OK") { error = nil }
         } message: { errorMsg in
             Text(errorMsg)
+        }
+        .onAppear {
+            if let editingBlock = editingBlock {
+                blockName = editingBlock.name
+                startTime = editingBlock.schedule.startTime ?? Date()
+                endTime = editingBlock.schedule.endTime ?? Date()
+                selectedDays = editingBlock.schedule.repeatDays ?? []
+                strictMode = editingBlock.strictMode
+                activitySelection = editingBlock.appSelection
+                selectedBlockIcon = editingBlock.icon
+                selectedBlockIconColor = editingBlock.iconColor
+                
+                if let appListId = editingBlock.appListId {
+                    if let appList = appListManager.getList(id: appListId) {
+                        selectedAppListId = appList.id
+                        selectedListName = appList.name
+                        selectedListIcon = appList.icon
+                        print("✅ Pre-filled app list by UUID: \(appList.name)")
+                    } else {
+                        selectedListName = ""
+                        print("⚠️ App list with ID \(appListId) not found - was deleted")
+                    }
+                } else if let appListName = editingBlock.appListName {
+                    if let appList = appListManager.lists.first(where: { $0.name == appListName }) {
+                        selectedAppListId = appList.id
+                        selectedListName = appList.name
+                        selectedListIcon = appList.icon
+                        print("✅ Pre-filled app list by name: \(appList.name)")
+                    } else {
+                        selectedListName = ""
+                        print("⚠️ App list '\(appListName)' not found - was deleted")
+                    }
+                } else {
+                    print("ℹ️ Block has no associated app list")
+                    selectedListName = ""
+                }
+            }
         }
         .onChange(of: appListManager.lists) { oldLists, newLists in
             // If the selected list no longer exists, clear the selection
@@ -305,6 +415,10 @@ struct CreateScheduledBlockView: View {
         }
     }
     
+    init(editingBlock: Block? = nil) {
+        self.editingBlock = editingBlock
+    }
+    
     // MARK: - Private Methods
     
     @MainActor
@@ -314,13 +428,16 @@ struct CreateScheduledBlockView: View {
             return
         }
         
-        // COMMENTED FOR SIMULATOR TESTING - Family Controls requires physical device
-        
         guard !activitySelection.applicationTokens.isEmpty || !activitySelection.categoryTokens.isEmpty else {
             error = "Please select at least one app"
             return
         }
         
+        let duration = endTime.timeIntervalSince(startTime)
+        guard duration >= 15 * 60 else {
+            error = "Duration must be at least 15 minutes"
+            return
+        }
         
         guard startTime < endTime else {
             error = "Start time must be before end time"
@@ -338,23 +455,57 @@ struct CreateScheduledBlockView: View {
             isRepeating: !selectedDays.isEmpty
         )
         
-        let block = Block(
-            name: blockName,
-            type: .scheduled,
-            appSelection: activitySelection,
-            schedule: schedule,
-            strictMode: strictMode,
-            isActive: false
-        )
-        
-        do {
-            try blockManager.createBlock(block)
-            try await blockManager.activateBlock(block)
-            dismiss()
-        } catch {
-            self.error = error.localizedDescription
+        if let editingBlock = editingBlock {
+            let wasActive = editingBlock.isActive
+            
+            do {
+                if wasActive {
+                    await blockManager.stopAllMonitorsForBlock(editingBlock)
+                }
+                
+                var updatedBlock = editingBlock
+                updatedBlock.name = blockName
+                updatedBlock.icon = selectedBlockIcon
+                updatedBlock.iconColor = selectedBlockIconColor
+                updatedBlock.schedule = schedule
+                updatedBlock.strictMode = strictMode
+                updatedBlock.appSelection = activitySelection
+                updatedBlock.appListId = selectedAppListId
+                updatedBlock.appListName = selectedListName
+                try blockManager.updateBlock(updatedBlock)
+                
+                if wasActive {
+                    try await blockManager.activateBlock(updatedBlock)
+                }
+            } catch {
+                self.error = error.localizedDescription
+                isCreating = false
+                return
+            }
+        } else {
+            do {
+                let block = Block(
+                    name: blockName,
+                    icon: selectedBlockIcon,
+                    iconColor: selectedBlockIconColor,
+                    type: .scheduled,
+                    appSelection: activitySelection,
+                    schedule: schedule,
+                    strictMode: strictMode,
+                    isActive: false,
+                    appListId: selectedAppListId,
+                    appListName: selectedListName
+                )
+                try blockManager.createBlock(block)
+                try await blockManager.activateBlock(block)
+            } catch {
+                self.error = error.localizedDescription
+                isCreating = false
+                return
+            }
         }
         
+        dismiss()
         isCreating = false
     }
     

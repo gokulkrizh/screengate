@@ -7,6 +7,7 @@ struct CreateAppListView: View {
     
     var existingList: AppList?
     var appListManagerPassed: AppListManager? = nil  // For explicit passing from parent
+    var onListCreated: ((AppList) -> Void)? = nil
     
     @State private var listName = ""
     @State private var selectedIcon = "flame.fill"
@@ -317,6 +318,7 @@ struct CreateAppListView: View {
                 )
                 
                 try manager.createList(newList)
+                onListCreated?(newList)  // NEW - notify parent
             }
             
             dismiss()

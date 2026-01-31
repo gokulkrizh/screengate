@@ -14,6 +14,7 @@ struct AppListsView: View {
     @State private var showingCreateList = false
     @State private var listToEdit: AppList?
     @State private var defaultListId: UUID?
+    @State private var newlyCreatedListId: UUID?
     
     private let appTheme = AppTheme.shared
     
@@ -115,7 +116,14 @@ struct AppListsView: View {
             }
         }
         .sheet(isPresented: $showingCreateList) {
-            CreateAppListView(appListManagerPassed: appListManager)
+            CreateAppListView(appListManagerPassed: appListManager) { createdList in
+                newlyCreatedListId = createdList.id
+                try? appListManager.setAsDefault(createdList)
+                onSelect?(createdList)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    dismiss()
+                }
+            }
         }
         .sheet(item: $listToEdit) { list in
             CreateAppListView(existingList: list, appListManagerPassed: appListManager)
