@@ -4,6 +4,7 @@ import FamilyControls
 struct CreateScheduledBlockView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(BlockManager.self) private var blockManager
+    @Environment(AppListManager.self) private var appListManager
     
     @State private var blockName = "Schedule Focus Session"
     @State private var startTime = Date()
@@ -13,7 +14,10 @@ struct CreateScheduledBlockView: View {
     @State private var showStartTimePicker = false
     @State private var showEndTimePicker = false
     @State private var showActivityPicker = false
+    @State private var showAppListPicker = false
     @State private var activitySelection: FamilyActivitySelection = FamilyActivitySelection()
+    @State private var selectedListName: String = ""
+    @State private var selectedListIcon: String = ""
     @State private var error: String?
     @State private var isCreating = false
     
@@ -68,85 +72,66 @@ struct CreateScheduledBlockView: View {
                                 .font(.system(size: 20, weight: .bold, design: .default))
                                 .foregroundColor(.white)
                             
-                            Button(action: { showActivityPicker = true }) {
-                                HStack(spacing: 12) {
-                                    // Stacked Icons from selection
-                                    HStack(spacing: -12) {
-                                        if !activitySelection.applicationTokens.isEmpty {
-                                            ForEach(Array(activitySelection.applicationTokens).prefix(3), id: \.self) { token in
-                                                Circle()
-                                                    .fill(Color.blue.opacity(0.7))
-                                                    .frame(width: 40, height: 40)
-                                                    .overlay(
-                                                        Image(systemName: "app.fill")
-                                                            .font(.system(size: 16))
-                                                            .foregroundColor(.white)
-                                                    )
-                                                    .overlay(Circle().stroke(Color(red: 0.09, green: 0.16, blue: 0.12), lineWidth: 2))
-                                            }
-                                        } else {
-                                            // Show default icons
-                                            Circle()
-                                                .fill(LinearGradient(gradient: Gradient(colors: [Color.purple, Color.pink]), startPoint: .topLeading, endPoint: .bottomTrailing))
-                                                .frame(width: 40, height: 40)
-                                                .overlay(
-                                                    Image(systemName: "camera.fill")
-                                                        .font(.system(size: 16))
-                                                        .foregroundColor(.white)
-                                                )
-                                                .overlay(Circle().stroke(Color(red: 0.09, green: 0.16, blue: 0.12), lineWidth: 2))
-                                            
-                                            Circle()
-                                                .fill(Color.black)
-                                                .frame(width: 40, height: 40)
-                                                .overlay(
-                                                    Image(systemName: "music.note")
-                                                        .font(.system(size: 16))
-                                                        .foregroundColor(.white)
-                                                )
-                                                .overlay(Circle().stroke(Color(red: 0.09, green: 0.16, blue: 0.12), lineWidth: 2))
-                                            
-                                            Circle()
-                                                .fill(Color.blue)
-                                                .frame(width: 40, height: 40)
-                                                .overlay(
-                                                    Image(systemName: "chart.bar.fill")
-                                                        .font(.system(size: 16))
-                                                        .foregroundColor(.white)
-                                                )
-                                                .overlay(Circle().stroke(Color(red: 0.09, green: 0.16, blue: 0.12), lineWidth: 2))
-                                        }
+                            if activitySelection.applicationTokens.isEmpty {
+                                // Show only "From App List" button when no apps selected
+                                Button(action: { showAppListPicker = true }) {
+                                    HStack(spacing: 12) {
+                                        Image(systemName: "square.stack.3d.up.fill")
+                                            .font(.system(size: 20))
+                                            .foregroundColor(appTheme.colors.primary)
+                                        
+                                        Text(appListManager.lists.isEmpty ? "Create App List" : "From App List")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(.white)
+                                        
+                                        Spacer()
+                                        
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundColor(Color.white.opacity(0.3))
                                     }
-                                    
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        if activitySelection.applicationTokens.isEmpty {
-                                            Text("Select Apps")
-                                                .font(.system(size: 16, weight: .semibold, design: .default))
-                                                .foregroundColor(.white.opacity(0.7))
-                                        } else {
-                                            Text("\(activitySelection.applicationTokens.count) Apps Selected")
+                                    .padding(16)
+                                    .background(Color.white.opacity(0.05))
+                                    .cornerRadius(12)
+                                }
+                            } else {
+                                // Show selected apps with ability to modify
+                                Button(action: { showAppListPicker = true }) {
+                                    HStack(spacing: 12) {
+                                        // List Icon
+                                        Circle()
+                                            .fill(appTheme.colors.primary.opacity(0.2))
+                                            .frame(width: 48, height: 48)
+                                            .overlay(
+                                                Image(systemName: selectedListIcon)
+                                                    .font(.system(size: 20))
+                                                    .foregroundColor(appTheme.colors.primary)
+                                            )
+                                        
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(selectedListName)
                                                 .font(.system(size: 16, weight: .semibold, design: .default))
                                                 .foregroundColor(.white)
                                             
-                                            Text("Tap to modify")
+                                            Text("Tap to change")
                                                 .font(.system(size: 12, weight: .regular, design: .default))
                                                 .foregroundColor(.white.opacity(0.5))
                                         }
+                                        
+                                        Spacer()
+                                        
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 14))
+                                            .foregroundColor(.white.opacity(0.4))
                                     }
-                                    
-                                    Spacer()
-                                    
-                                    Image(systemName: "chevron.right")
-                                        .font(.system(size: 14))
-                                        .foregroundColor(.white.opacity(0.4))
+                                    .padding(16)
+                                    .background(Color(red: 0.09, green: 0.16, blue: 0.12))
+                                    .cornerRadius(16)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(Color.white.opacity(0.05), lineWidth: 1)
+                                    )
                                 }
-                                .padding(16)
-                                .background(Color(red: 0.09, green: 0.16, blue: 0.12))
-                                .cornerRadius(16)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .stroke(Color.white.opacity(0.05), lineWidth: 1)
-                                )
                             }
                         }
                         .padding(.horizontal, 16)
@@ -293,10 +278,30 @@ struct CreateScheduledBlockView: View {
         .sheet(isPresented: $showActivityPicker) {
             FamilyActivitySelectionView(selection: $activitySelection)
         }
+        .sheet(isPresented: $showAppListPicker) {
+            AppListsView(isSelectionMode: true) { selectedList in
+                activitySelection = selectedList.selection
+                selectedListName = selectedList.name
+                selectedListIcon = selectedList.icon
+                blockName = selectedList.name
+            }
+        }
         .alert("Error", isPresented: .constant(error != nil), presenting: error) { _ in
             Button("OK") { error = nil }
         } message: { errorMsg in
             Text(errorMsg)
+        }
+        .onChange(of: appListManager.lists) { oldLists, newLists in
+            // If the selected list no longer exists, clear the selection
+            if !selectedListName.isEmpty {
+                let selectedListExists = newLists.contains { $0.name == selectedListName && $0.icon == selectedListIcon }
+                if !selectedListExists {
+                    selectedListName = ""
+                    selectedListIcon = ""
+                    activitySelection = FamilyActivitySelection()
+                    blockName = "Schedule Focus Session"
+                }
+            }
         }
     }
     

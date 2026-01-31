@@ -44,6 +44,7 @@ struct DeviceActivityMonitorDemoApp: App {
     @State private var showRestrictionLifted = false
     @State private var hasCompletedOnboarding = OnboardingData.hasCompletedOnboarding()
     @State private var blockManager = BlockManager()
+    @State private var appListManager = AppListManager()
     private let notificationDelegate = NotificationDelegate()
 
     init() {
@@ -57,6 +58,7 @@ struct DeviceActivityMonitorDemoApp: App {
 //                ContentView()
                HomeScreen()
                    .environment(blockManager)
+                   .environment(appListManager)
             } else {
                 NavigationStack {
                     SplashView(onCompletion: {
