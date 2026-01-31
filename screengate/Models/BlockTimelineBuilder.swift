@@ -35,6 +35,7 @@ final class BlockTimelineBuilder {
         let iconColor: String
         let blockType: Block.BlockType
         let appCount: Int?
+        let repeatDays: Set<Int>?
     }
     
     // MARK: - Initialization
@@ -163,7 +164,7 @@ final class BlockTimelineBuilder {
             // Check if this activity should run on this date
             if shouldActivityRunOnDate(schedule, activityName: activityName, date: date) {
                 // Convert DeviceActivitySchedule to Block model
-                if let block = createBlock(from: schedule, events: events, activityName: activityName, referenceDate: referenceDate) {
+                if let block = createBlock(from: schedule, events: events, activityName: activityName, registeredActivities: registeredActivities, referenceDate: referenceDate) {
                     // For today, filter out blocks that have already ended
                     if dayOffset == 0 {
                         var currentComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: referenceDate)
@@ -219,7 +220,7 @@ final class BlockTimelineBuilder {
     }
     
     /// Convert DeviceActivitySchedule + events to Block model
-    private func createBlock(from schedule: DeviceActivitySchedule, events: [DeviceActivityEvent.Name: DeviceActivityEvent], activityName: DeviceActivityName, referenceDate: Date) -> Block? {
+    private func createBlock(from schedule: DeviceActivitySchedule, events: [DeviceActivityEvent.Name: DeviceActivityEvent], activityName: DeviceActivityName, registeredActivities: Set<DeviceActivityName>, referenceDate: Date) -> Block? {
         // Extract time components from schedule
         guard let startHour = schedule.intervalStart.hour,
               let startMinute = schedule.intervalStart.minute,
@@ -276,17 +277,8 @@ final class BlockTimelineBuilder {
         // Determine block type from events
         let blockType = determineBlockType(from: events)
         
-        // Build repeatDays if schedule repeats
-        var repeatDays: Set<Int>? = nil
-        if schedule.repeats {
-            // Extract weekday from schedule if available
-            if let weekday = schedule.intervalStart.weekday {
-                repeatDays = [weekday]
-            } else {
-                // Assume daily repeat
-                repeatDays = [1, 2, 3, 4, 5, 6, 7]
-            }
-        }
+        // Extract repeatDays directly from DeviceActivityCenter (source of truth)
+        let repeatDays = extractRepeatDays(from: activityName, registeredActivities: registeredActivities)
         
         // Use proper fallback names
         let displayName: String
@@ -355,7 +347,8 @@ final class BlockTimelineBuilder {
                     icon: block.icon,
                     iconColor: block.iconColor,
                     blockType: block.type,
-                    appCount: block.appCount
+                    appCount: block.appCount,
+                    repeatDays: block.schedule.repeatDays
                 )
                 print("   ✅ Cached metadata for '\(block.name)' with key: \(activityName.rawValue)")
             } else {
@@ -382,7 +375,8 @@ final class BlockTimelineBuilder {
                         icon: decoded.icon,
                         iconColor: decoded.iconColor,
                         blockType: decoded.blockType,
-                        appCount: decoded.appCount
+                        appCount: decoded.appCount,
+                        repeatDays: decoded.repeatDays
                     )
                     print("   ✅ Loaded metadata from UserDefaults for: '\(decoded.name)' (key: \(key))")
                 }
@@ -400,6 +394,7 @@ final class BlockTimelineBuilder {
         let iconColor: String
         let blockType: Block.BlockType
         let appCount: Int?
+        let repeatDays: Set<Int>?
     }
     
     // MARK: - Active Block Detection
@@ -539,6 +534,42 @@ final class BlockTimelineBuilder {
     }
     
     // MARK: - Helper Methods
+    
+    /// Extract repeatDays from DeviceActivityCenter by finding all day-specific activities for a block
+    private func extractRepeatDays(from activityName: DeviceActivityName, registeredActivities: Set<DeviceActivityName>) -> Set<Int>? {
+        let nameComponents = activityName.rawValue.split(separator: ".")
+        guard nameComponents.count >= 2 else {
+            return nil
+        }
+        
+        // Extract base UUID (remove .dayN suffix if present)
+        let baseName: String
+        if nameComponents.count >= 3 && nameComponents.last?.hasPrefix("day") == true {
+            // Activity name is like "UUID.day2" or "com.gia.screendiet.UUID.day2"
+            baseName = nameComponents.dropLast().joined(separator: ".")
+        } else {
+            // Single day block - no repeat
+            return nil
+        }
+        
+        // Find all activities with the same base name
+        var repeatDays = Set<Int>()
+        for registeredActivity in registeredActivities {
+            let registeredName = registeredActivity.rawValue
+            
+            // Check if this activity belongs to the same block
+            if registeredName.hasPrefix(baseName + ".day") {
+                // Extract day number
+                if let dayRange = registeredName.range(of: "\\.day\\d+$", options: .regularExpression),
+                   let dayString = registeredName[dayRange].split(separator: ".").last,
+                   let dayNumber = Int(dayString.dropFirst(3)) {
+                    repeatDays.insert(dayNumber)
+                }
+            }
+        }
+        
+        return repeatDays.isEmpty ? nil : repeatDays
+    }
     
     /// Check if there are any blocks for the specified days
     func hasAnyBlocks(forDays days: Int) -> Bool {
