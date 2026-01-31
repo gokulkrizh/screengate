@@ -142,6 +142,25 @@ class DeviceActivityManager {
         print("✅ [DeviceActivityManager] Monitor stopped successfully")
     }
     
+    func stopAllMonitors() {
+        print("🔴 [DeviceActivityManager] stopAllMonitors called")
+        print("🔴 [DeviceActivityManager] Current activities: \(deviceActivityCenter.activities.map { $0.rawValue })")
+        
+        let allActivities = Array(deviceActivityCenter.activities)
+        print("🔴 [DeviceActivityManager] Stopping \(allActivities.count) monitors")
+        
+        // Stop each monitor individually to ensure proper cleanup
+        for activityName in allActivities {
+            stopMonitor(activityName: activityName)
+        }
+        
+        // Also call stopMonitoring with empty array to ensure all are stopped
+        self.deviceActivityCenter.stopMonitoring([])
+        self.monitoringActivities.removeAll()
+        
+        print("✅ [DeviceActivityManager] All monitors stopped")
+    }
+    
     
     func getEvents(activityName: String, details: Bool) -> [DeviceActivityEvent.Name : DeviceActivityEvent] {
         return self.getEvents(activityName: makeActivityName(activityName), details: details)
@@ -222,6 +241,37 @@ extension DeviceActivityManager {
     
     private func makeUserDefaultsKey(activityName: DeviceActivityName, eventName: DeviceActivityEvent.Name) -> String {
         return "\(activityName.rawValue).\(eventName.rawValue)"
+    }
+    
+    /// Clear all UserDefaults data except onboarding-related keys (for development/debugging)
+    func clearAllData() {
+        print("🔴 [DeviceActivityManager] clearAllData called")
+        
+        let suiteDomain = userDefaults.dictionaryRepresentation()
+        
+        let onboardingKeys = suiteDomain.keys.filter { $0.lowercased().contains("onboarding") }
+        print("🔴 [DeviceActivityManager] Found \(onboardingKeys.count) onboarding keys to preserve")
+        
+        // Store onboarding values temporarily
+        var onboardingData: [String: Any] = [:]
+        for key in onboardingKeys {
+            if let value = suiteDomain[key] {
+                onboardingData[key] = value
+            }
+        }
+        
+        // Remove all keys
+        for key in suiteDomain.keys {
+            userDefaults.removeObject(forKey: key)
+        }
+        
+        // Restore onboarding data
+        for (key, value) in onboardingData {
+            userDefaults.set(value, forKey: key)
+        }
+        
+        userDefaults.synchronize()
+        print("✅ [DeviceActivityManager] All data cleared except \(onboardingData.count) onboarding keys")
     }
 }
 
