@@ -72,8 +72,8 @@ struct CreateScheduledBlockView: View {
                                 .font(.system(size: 20, weight: .bold, design: .default))
                                 .foregroundColor(.white)
                             
-                            if activitySelection.applicationTokens.isEmpty {
-                                // Show only "From App List" button when no apps selected
+                            if activitySelection.applicationTokens.isEmpty && activitySelection.categoryTokens.isEmpty {
+                                // Show only "From App List" button when no apps or categories selected
                                 Button(action: { showAppListPicker = true }) {
                                     HStack(spacing: 12) {
                                         Image(systemName: "square.stack.3d.up.fill")
@@ -259,7 +259,7 @@ struct CreateScheduledBlockView: View {
                 .frame(height: 52)
                 .background(appTheme.colors.primary)
                 .cornerRadius(12)
-                .disabled(isCreating || blockName.isEmpty || activitySelection.applicationTokens.isEmpty) // Removed app selection check for simulator testing
+                .disabled(isCreating || blockName.isEmpty || (activitySelection.applicationTokens.isEmpty && activitySelection.categoryTokens.isEmpty)) // Removed app selection check for simulator testing
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
             }
@@ -316,7 +316,7 @@ struct CreateScheduledBlockView: View {
         
         // COMMENTED FOR SIMULATOR TESTING - Family Controls requires physical device
         
-        guard !activitySelection.applicationTokens.isEmpty else {
+        guard !activitySelection.applicationTokens.isEmpty || !activitySelection.categoryTokens.isEmpty else {
             error = "Please select at least one app"
             return
         }

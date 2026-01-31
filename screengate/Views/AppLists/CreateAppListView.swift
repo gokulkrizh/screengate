@@ -203,6 +203,51 @@ struct CreateAppListView: View {
                                 }
                             }
                             
+                            // Categories Selection
+                            VStack(alignment: .leading, spacing: 12) {
+                                Text("Categories")
+                                    .font(.system(size: 16, weight: .semibold, design: .default))
+                                    .foregroundColor(.white)
+                                
+                                Button(action: { showActivityPicker = true }) {
+                                    HStack(spacing: 12) {
+                                        // Category Icon
+                                        HStack(spacing: -12) {
+                                            if !activitySelection.categoryTokens.isEmpty {
+                                                Image(systemName: "square.stack.3d.up.fill")
+                                                    .font(.system(size: 32))
+                                                    .foregroundColor(appTheme.colors.primary)
+                                            } else {
+                                                Image(systemName: "plus.circle.fill")
+                                                    .font(.system(size: 32))
+                                                    .foregroundColor(appTheme.colors.primary)
+                                            }
+                                        }
+                                        
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(activitySelection.categoryTokens.isEmpty ? "Select Categories" : "\(activitySelection.categoryTokens.count) categories selected")
+                                                .font(.system(size: 16, weight: .medium))
+                                                .foregroundColor(.white)
+                                            
+                                            if activitySelection.categoryTokens.isEmpty {
+                                                Text("Tap to choose categories to block")
+                                                    .font(.system(size: 14, weight: .regular))
+                                                    .foregroundColor(Color.white.opacity(0.5))
+                                            }
+                                        }
+                                        
+                                        Spacer()
+                                        
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundColor(Color.white.opacity(0.3))
+                                    }
+                                    .padding(16)
+                                    .background(Color.white.opacity(0.05))
+                                    .cornerRadius(12)
+                                }
+                            }
+                            
                             // Error Message
                             if let error = error {
                                 Text(error)
@@ -243,7 +288,7 @@ struct CreateAppListView: View {
     
     private var canSave: Bool {
         return !listName.trimmingCharacters(in: .whitespaces).isEmpty &&
-               !activitySelection.applicationTokens.isEmpty
+               (!activitySelection.applicationTokens.isEmpty || !activitySelection.categoryTokens.isEmpty)
     }
     
     // MARK: - Save Action

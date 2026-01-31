@@ -218,7 +218,7 @@ struct AppListCard: View {
                     
                     HStack(spacing: 8) {
                         // App icons preview
-                        if !list.selection.applicationTokens.isEmpty {
+                        if list.hasApps {
                             HStack(spacing: -8) {
                                 ForEach(Array(list.selection.applicationTokens).prefix(3), id: \.self) { _ in
                                     Circle()
@@ -232,17 +232,31 @@ struct AppListCard: View {
                                         .overlay(Circle().stroke(Color(red: 0.09, green: 0.16, blue: 0.12), lineWidth: 1))
                                 }
                             }
-                            
-                            Text("\(list.appCount) apps")
-                                .font(.system(size: 12, weight: .regular))
-                                .foregroundColor(Color.white.opacity(0.6))
                         }
+                        
+                        // Category indicator
+                        if list.hasCategories {
+                            HStack(spacing: 4) {
+                                Image(systemName: "square.stack.3d.up.fill")
+                                    .font(.system(size: 12))
+                                Text("Category")
+                                    .font(.system(size: 12, weight: .medium))
+                            }
+                            .foregroundColor(.white.opacity(0.7))
+                        }
+                        
+                        Spacer()
+                        
+                        // Item count
+                        Text("\(list.totalItemCount) item\(list.totalItemCount == 1 ? "" : "s")")
+                            .font(.system(size: 12, weight: .regular))
+                            .foregroundColor(Color.white.opacity(0.6))
                     }
                 }
                 
                 Spacer()
                 
-                if isManagementMode {
+                if isManagementMode { 
                     // Edit button in management mode
                     Button(action: { onEdit?() }) {
                         Image(systemName: "pencil")

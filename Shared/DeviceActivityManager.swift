@@ -43,9 +43,34 @@ class DeviceActivityManager {
     
     func applyImmediateRestrictions(applicationTokens: Set<ApplicationToken>, categoryTokens: Set<ActivityCategoryToken>, webDomainTokens: Set<WebDomainToken>) {
         print(#function)
-        managedSettingsStore.shield.applications = applicationTokens
-        managedSettingsStore.shield.applicationCategories = .specific(categoryTokens)
-        managedSettingsStore.shield.webDomains = webDomainTokens
+        print("📱 [applyImmediateRestrictions] Apps: \(applicationTokens.count), Categories: \(categoryTokens.count), WebDomains: \(webDomainTokens.count)")
+        
+        // Apply all restrictions
+        if !applicationTokens.isEmpty {
+            print("📱 [applyImmediateRestrictions] Setting \(applicationTokens.count) application restrictions")
+            managedSettingsStore.shield.applications = applicationTokens
+        } else {
+            print("📱 [applyImmediateRestrictions] Clearing application restrictions")
+            managedSettingsStore.shield.applications = nil
+        }
+        
+        if !categoryTokens.isEmpty {
+            print("📱 [applyImmediateRestrictions] Setting \(categoryTokens.count) category restrictions")
+            managedSettingsStore.shield.applicationCategories = .specific(categoryTokens)
+        } else {
+            print("📱 [applyImmediateRestrictions] Clearing category restrictions")
+            managedSettingsStore.shield.applicationCategories = nil
+        }
+        
+        if !webDomainTokens.isEmpty {
+            print("📱 [applyImmediateRestrictions] Setting \(webDomainTokens.count) web domain restrictions")
+            managedSettingsStore.shield.webDomains = webDomainTokens
+        } else {
+            print("📱 [applyImmediateRestrictions] Clearing web domain restrictions")
+            managedSettingsStore.shield.webDomains = nil
+        }
+        
+        print("✅ [applyImmediateRestrictions] All restrictions applied")
     }
     
     
@@ -178,6 +203,7 @@ class DeviceActivityManager {
         for (key, value) in events {
             let userDefaultsKey = self.makeUserDefaultsKey(activityName: activityName, eventName: key)
             let tokens = self.getSavedSelection(key: userDefaultsKey)
+            print("📱 [getEvents] Reconstructing event \(key.rawValue): Apps: \(tokens.applicationTokens.count), Categories: \(tokens.categoryTokens.count)")
             events[key] = DeviceActivityEvent(
                 applications: tokens.applicationTokens,
                 categories: tokens.categoryTokens,
@@ -224,14 +250,19 @@ extension DeviceActivityManager {
 extension DeviceActivityManager {
     private func getSavedSelection(key: String) -> FamilyActivitySelection {
         guard let data = userDefaults.data(forKey: key), let selection = try? self.jsonDecoder.decode(FamilyActivitySelection.self, from: data) else {
+            print("📱 [getSavedSelection] No saved selection for key: \(key)")
             return FamilyActivitySelection()
         }
+        print("📱 [getSavedSelection] Loaded selection for key: \(key) - Apps: \(selection.applicationTokens.count), Categories: \(selection.categoryTokens.count)")
         return selection
     }
     
     private func saveSelection(_ selection: FamilyActivitySelection, activityName: DeviceActivityName, eventName: DeviceActivityEvent.Name) throws {
+        let key = self.makeUserDefaultsKey(activityName: activityName, eventName: eventName)
+        print("📱 [saveSelection] Saving selection for key: \(key) - Apps: \(selection.applicationTokens.count), Categories: \(selection.categoryTokens.count)")
         let data = try self.jsonEncoder.encode(selection)
-        userDefaults.set(data, forKey: self.makeUserDefaultsKey(activityName: activityName, eventName: eventName))
+        userDefaults.set(data, forKey: key)
+        print("✅ [saveSelection] Selection saved successfully")
     }
     
     

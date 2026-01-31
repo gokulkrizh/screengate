@@ -25,7 +25,7 @@ struct CreateBlockNowView: View {
     private var isButtonEnabled: Bool {
         !isCreating && 
         !blockName.trimmingCharacters(in: .whitespaces).isEmpty && 
-        !activitySelection.applicationTokens.isEmpty &&
+        (!activitySelection.applicationTokens.isEmpty || !activitySelection.categoryTokens.isEmpty) &&
         (selectedHours > 0 || selectedMinutes > 0)
     }
     
@@ -76,8 +76,8 @@ struct CreateBlockNowView: View {
                                 .font(.system(size: 20, weight: .bold, design: .default))
                                 .foregroundColor(.white)
                             
-                            if activitySelection.applicationTokens.isEmpty {
-                                // Show only "From App List" button when no apps selected
+                            if activitySelection.applicationTokens.isEmpty && activitySelection.categoryTokens.isEmpty {
+                                // Show only "From App List" button when no apps or categories selected
                                 Button(action: { showAppListPicker = true }) {
                                     HStack(spacing: 12) {
                                         Image(systemName: "square.stack.3d.up.fill")
@@ -383,8 +383,8 @@ struct CreateBlockNowView: View {
             return
         }
         
-        guard !activitySelection.applicationTokens.isEmpty else {
-            error = "Please select at least one app"
+        guard !activitySelection.applicationTokens.isEmpty || !activitySelection.categoryTokens.isEmpty else {
+            error = "Please select at least one app or category"
             return
         }
         

@@ -39,6 +39,26 @@ struct AppList: Codable, Identifiable, Equatable {
     var appCount: Int {
         return selection.applicationTokens.count
     }
+    
+    /// Number of categories in this list
+    var categoryCount: Int {
+        return selection.categoryTokens.count
+    }
+    
+    /// Total number of items (apps + categories)
+    var totalItemCount: Int {
+        return appCount + categoryCount
+    }
+    
+    /// Whether this list has any apps selected
+    var hasApps: Bool {
+        return !selection.applicationTokens.isEmpty
+    }
+    
+    /// Whether this list has any categories selected
+    var hasCategories: Bool {
+        return !selection.categoryTokens.isEmpty
+    }
 }
 
 // MARK: - AppListManager
