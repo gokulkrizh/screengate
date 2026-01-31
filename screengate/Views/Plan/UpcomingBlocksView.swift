@@ -12,7 +12,9 @@ struct UpcomingBlocksView: View {
     @State private var showBlockNow = false
     @State private var showAllDays = false // Filter toggle: false = 2 days, true = 7 days
     @State private var currentTime = Date() // For real-time updates
+    @State private var showResetConfirmation = false // For debug reset confirmation
     private let appTheme = AppTheme.shared
+    private let deviceActivityManager = DeviceActivityManager()
     
     // Timer to update UI every minute
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -65,6 +67,45 @@ struct UpcomingBlocksView: View {
         return Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
     }
     
+    // MARK: - Debug Reset
+    
+    private func performDebugReset() {
+        print("🔴 [UpcomingBlocksView] Debug reset initiated")
+        
+        // 1. Stop all monitors
+        deviceActivityManager.stopAllMonitors()
+        
+        // 2. Remove all restrictions
+        deviceActivityManager.removeRestrictions()
+        
+        // 3. Clear all data except onboarding
+        deviceActivityManager.clearAllData()
+        
+        // 4. Also clear block manager data (if needed)
+        let userDefaults = UserDefaults(suiteName: "group.com.gia.screendiet") ?? .standard
+        
+        // Get all block-related keys
+        if let allKeys = userDefaults.dictionaryRepresentation().keys as? [String] {
+            let blockKeys = allKeys.filter { key in
+                // Keep onboarding keys
+                !key.lowercased().contains("onboarding")
+            }
+            
+            // Remove block-related keys
+            for key in blockKeys {
+                userDefaults.removeObject(forKey: key)
+            }
+        }
+        
+        userDefaults.synchronize()
+        
+        print("✅ [UpcomingBlocksView] Debug reset complete")
+        
+        // Force refresh the UI
+        currentTime = Date()
+        initializeTimeline()
+    }
+
     var body: some View {
         ZStack {
             // Background
@@ -103,6 +144,16 @@ struct UpcomingBlocksView: View {
                             .cornerRadius(20)
                     }
                     
+                    // Debug Reset Button (Development only)
+                    Button(action: { showResetConfirmation = true }) {
+                        Image(systemName: "trash.circle")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.red.opacity(0.8))
+                            .frame(width: 40, height: 40)
+                            .background(Color.red.opacity(0.1))
+                            .cornerRadius(20)
+                    }
+
                     // Add Button
                     Button(action: { showCreateBlock = true }) {
                         Image(systemName: "plus")
@@ -254,6 +305,14 @@ struct UpcomingBlocksView: View {
         .onReceive(timer) { _ in
             currentTime = Date()
             timelineBuilder?.updateActiveBlocks(referenceDate: currentTime)
+        }
+        .alert("Reset All Data?", isPresented: $showResetConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Reset", role: .destructive) {
+                performDebugReset()
+            }
+        } message: {
+            Text("This will stop all monitors, remove all restrictions, and clear all data (except onboarding). This is for development/debugging only.")
         }
         .sheet(isPresented: $showCreateBlock) {
             CreateBlockView(
