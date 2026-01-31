@@ -10,7 +10,6 @@ struct UpcomingBlocksView: View {
     @State private var showOpenLimit = false
     @State private var showAppTimeLimit = false
     @State private var showBlockNow = false
-    @State private var showAllDays = false // Filter toggle: false = 2 days, true = 7 days
     @State private var currentTime = Date() // For real-time updates
     @State private var showResetConfirmation = false // For debug reset confirmation
     private let appTheme = AppTheme.shared
@@ -18,14 +17,6 @@ struct UpcomingBlocksView: View {
     
     // Timer to update UI every minute
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    
-    // Helper struct for day data
-    private struct DayData: Identifiable {
-        let id: Int
-        let offset: Int
-        let date: Date
-        let blocks: [Block]
-    }
     
     // MARK: - Helper Functions
     
@@ -60,7 +51,7 @@ struct UpcomingBlocksView: View {
         if timelineBuilder == nil {
             timelineBuilder = BlockTimelineBuilder(blockManager: blockManager)
         }
-        timelineBuilder?.buildTimeline(days: showAllDays ? 7 : 2, referenceDate: currentTime)
+        timelineBuilder?.buildTimeline(days: 7, referenceDate: currentTime)
     }
     
     private func getTomorrowDate() -> Date {
@@ -85,23 +76,22 @@ struct UpcomingBlocksView: View {
         let userDefaults = UserDefaults(suiteName: "group.com.gia.screendiet") ?? .standard
         
         // Get all block-related keys
-        if let allKeys = userDefaults.dictionaryRepresentation().keys as? [String] {
-            let blockKeys = allKeys.filter { key in
-                // Keep onboarding keys
-                !key.lowercased().contains("onboarding")
-            }
-            
-            // Remove block-related keys
-            for key in blockKeys {
-                userDefaults.removeObject(forKey: key)
-            }
+        let allKeys = Array(userDefaults.dictionaryRepresentation().keys)
+        let blockKeys = allKeys.filter { key in
+            // Keep onboarding keys
+            !key.lowercased().contains("onboarding")
+        }
+        
+        // Remove block-related keys
+        for key in blockKeys {
+            userDefaults.removeObject(forKey: key)
         }
         
         userDefaults.synchronize()
         
         print("✅ [UpcomingBlocksView] Debug reset complete")
         
-        // Force refresh the UI
+        // Force refresh UI
         currentTime = Date()
         initializeTimeline()
     }
@@ -133,16 +123,6 @@ struct UpcomingBlocksView: View {
                         .foregroundColor(.white)
                     
                     Spacer()
-                    
-                    // Filter Button
-                    Button(action: { showAllDays.toggle() }) {
-                        Image(systemName: showAllDays ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(showAllDays ? appTheme.colors.primary : .white)
-                            .frame(width: 40, height: 40)
-                            .background(showAllDays ? appTheme.colors.primary.opacity(0.2) : Color.white.opacity(0.05))
-                            .cornerRadius(20)
-                    }
                     
                     // Debug Reset Button (Development only)
                     Button(action: { showResetConfirmation = true }) {
@@ -180,53 +160,94 @@ struct UpcomingBlocksView: View {
                     let calendar = Calendar.current
                     let today = Date()
                     
-                    let daysData: [DayData] = (0..<(showAllDays ? 7 : 2)).compactMap { offset in
-                        guard let date = calendar.date(byAdding: .day, value: offset, to: today),
-                              let blocks = timelineBuilder?.weekBlocks[offset] else {
-                            return nil
+                    let nowBlocks = timelineBuilder?.todayBlocks.filter { block in
+                        guard let endTime = block.schedule.endTime else { return false }
+                        let currentComponents = calendar.dateComponents([.hour, .minute], from: currentTime)
+                        let currentMinutes = (currentComponents.hour ?? 0) * 60 + (currentComponents.minute ?? 0)
+                        
+                        let startHour = calendar.component(.hour, from: block.schedule.startTime ?? Date())
+                        let startMinute = calendar.component(.minute, from: block.schedule.startTime ?? Date())
+                        let endHour = calendar.component(.hour, from: endTime)
+                        let endMinute = calendar.component(.minute, from: endTime)
+                        
+                        let startMinutes = startHour * 60 + startMinute
+                        let endMinutes = endHour * 60 + endMinute
+                        
+                        // Handle overnight schedules
+                        if startMinutes > endMinutes {
+                            return currentMinutes >= startMinutes || currentMinutes < endMinutes
+                        } else {
+                            return currentMinutes >= startMinutes && currentMinutes < endMinutes
                         }
-                        return DayData(id: offset, offset: offset, date: date, blocks: blocks)
+                    } ?? []
+                    
+                    // Get all upcoming blocks from future days
+                    let allUpcomingBlocks = (1..<7).compactMap { offset -> [Block] in
+                        guard let blocks = timelineBuilder?.weekBlocks[offset] else { return [] }
+                        return blocks
+                    }.flatMap { $0 }
+                    
+                    // Get block names of currently active blocks to exclude from upcoming
+                    let activeBlockNames = Set(nowBlocks.map { $0.name })
+                    
+                    // Filter out blocks that are currently active
+                    let filteredUpcoming = allUpcomingBlocks.filter { block in
+                        return !activeBlockNames.contains(block.name)
                     }
                     
-                    let hasAnyBlocks = timelineBuilder?.hasAnyBlocks(forDays: showAllDays ? 7 : 2) ?? false
+                    // Group repeating blocks by their name and schedule time - show only 1 card per group
+                    // This prevents showing 5 cards for a Mon-Fri repeating block
+                    let groupedUpcoming = Dictionary(grouping: filteredUpcoming) { block in
+                        let startTime = block.schedule.startTime ?? Date()
+                        let endTime = block.schedule.endTime ?? Date()
+                        return "\(block.name)-\(startTime.timeIntervalSince1970)-\(endTime.timeIntervalSince1970)"
+                    }
                     
-                    VStack(alignment: .leading, spacing: 0) {
-                        ForEach(daysData) { dayData in
-                            if !dayData.blocks.isEmpty {
-                                Group {
-                                    // Section header
-                                    let dayTitle: String = {
-                                        if dayData.offset == 0 {
-                                            return "Today"
-                                        } else if dayData.offset == 1 {
-                                            return "Tomorrow"
-                                        } else {
-                                            let formatter = DateFormatter()
-                                            formatter.dateFormat = "EEEE" // Full day name
-                                            return formatter.string(from: dayData.date)
-                                        }
-                                    }()
-                                    
-                                    sectionHeader(title: dayTitle, date: formatDate(dayData.date))
-                                    
-                                    ForEach(Array(dayData.blocks.enumerated()), id: \.element.id) { index, block in
-                                        // Only highlight the block that's actually applying restrictions (not all overlapping blocks)
-                                        let isBlockActive = dayData.offset == 0 && block.isActiveAmongOverlaps
-                                        let isOverlapped = dayData.offset == 0 && block.isOverlapped
-                                        
-                                         TimelineCardView(
-                                             blockName: block.name,
-                                             category: block.type.rawValue.capitalized,
-                                             startTime: block.schedule.startTime ?? Date(),
-                                             endTime: block.schedule.endTime ?? Date(),
-                                             selectedDays: block.schedule.repeatDays ?? [],
-                                             isActive: isBlockActive,
-                                             appSelection: block.appSelection
-                                         )
-                                         .padding(.horizontal, 20)
-                                         .padding(.bottom, 16)
-                                    }
-                                }
+                    // Take only one representative from each group (the earliest day)
+                    let upcomingBlocks = groupedUpcoming.values.map { blocks in
+                        return blocks.sorted { $0.schedule.startTime ?? Date() < $1.schedule.startTime ?? Date() }.first!
+                    }.sorted { $0.schedule.startTime ?? Date() < $1.schedule.startTime ?? Date() }
+                    
+                    let hasAnyBlocks = timelineBuilder?.hasAnyBlocks(forDays: 7) ?? false
+                    
+                    VStack(alignment: .leading, spacing: 24) {
+                        // Now Section
+                        if !nowBlocks.isEmpty {
+                            sectionHeader(title: "Now", date: formatDate(today))
+                            
+                            ForEach(Array(nowBlocks.enumerated()), id: \.element.id) { index, block in
+                                let isBlockActive = block.isActiveAmongOverlaps
+                                
+                                TimelineCardView(
+                                    blockName: block.name,
+                                    category: block.type.rawValue.capitalized,
+                                    startTime: block.schedule.startTime ?? Date(),
+                                    endTime: block.schedule.endTime ?? Date(),
+                                    selectedDays: block.schedule.repeatDays ?? [],
+                                    isActive: isBlockActive,
+                                    appSelection: block.appSelection
+                                )
+                                .padding(.horizontal, 20)
+                                .padding(.bottom, 16)
+                            }
+                        }
+                        
+                        // Upcoming Section
+                        if !upcomingBlocks.isEmpty {
+                            sectionHeader(title: "Upcoming", date: "")
+                            
+                            ForEach(Array(upcomingBlocks.enumerated()), id: \.element.id) { index, block in
+                                TimelineCardView(
+                                    blockName: block.name,
+                                    category: block.type.rawValue.capitalized,
+                                    startTime: block.schedule.startTime ?? Date(),
+                                    endTime: block.schedule.endTime ?? Date(),
+                                    selectedDays: block.schedule.repeatDays ?? [],
+                                    isActive: false,
+                                    appSelection: block.appSelection
+                                )
+                                .padding(.horizontal, 20)
+                                .padding(.bottom, 16)
                             }
                         }
                         
@@ -275,9 +296,6 @@ struct UpcomingBlocksView: View {
         .navigationBarHidden(true)
         .onAppear {
             currentTime = Date()
-            initializeTimeline()
-        }
-        .onChange(of: showAllDays) { _, _ in
             initializeTimeline()
         }
         .onReceive(timer) { _ in
@@ -346,9 +364,11 @@ struct UpcomingBlocksView: View {
             
             Spacer()
             
-            Text(date)
-                .font(.system(size: 14, weight: .medium, design: .default))
-                .foregroundColor(.white.opacity(0.5))
+            if !date.isEmpty {
+                Text(date)
+                    .font(.system(size: 14, weight: .medium, design: .default))
+                    .foregroundColor(.white.opacity(0.5))
+            }
         }
         .padding(.horizontal, 20)
         .padding(.top, 16)
