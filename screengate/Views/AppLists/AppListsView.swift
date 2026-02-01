@@ -8,12 +8,12 @@ struct AppListsView: View {
     /// Selection mode: show only list cards for quick selection in block creation
     /// Management mode: show full CRUD UI with edit/delete actions
     var isSelectionMode: Bool = false
+    var currentlySelectedListId: UUID?  // ⭐ App list currently selected for this block
     var onSelect: ((AppList) -> Void)?
     
     @State private var showingManagement = false
     @State private var showingCreateList = false
     @State private var listToEdit: AppList?
-    @State private var defaultListId: UUID?
     @State private var newlyCreatedListId: UUID?
     
     private let appTheme = AppTheme.shared
@@ -78,10 +78,9 @@ struct AppListsView: View {
                                 AppListCard(
                                     list: list,
                                     isManagementMode: showingManagement || !isSelectionMode,
-                                    isSelected: list.id == defaultListId,
+                                    isSelected: list.id == currentlySelectedListId,  // ⭐ Use current selection, not global default
                                     onSelect: {
-                                        defaultListId = list.id
-                                        try? appListManager.setAsDefault(list)
+                                        // ⭐ Don't change global default, just select for this block
                                         onSelect?(list)
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                             dismiss()
@@ -118,7 +117,7 @@ struct AppListsView: View {
         .sheet(isPresented: $showingCreateList) {
             CreateAppListView(appListManagerPassed: appListManager) { createdList in
                 newlyCreatedListId = createdList.id
-                try? appListManager.setAsDefault(createdList)
+                // ⭐ Don't set as default automatically
                 onSelect?(createdList)
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     dismiss()
@@ -128,12 +127,7 @@ struct AppListsView: View {
         .sheet(item: $listToEdit) { list in
             CreateAppListView(existingList: list, appListManagerPassed: appListManager)
         }
-        .onAppear {
-            // Load default list on appear
-            if let defaultList = appListManager.lists.first(where: { $0.isDefault }) {
-                defaultListId = defaultList.id
-            }
-        }
+        // ⭐ Removed onAppear - use passed parameter instead
     }
     
     // MARK: - Empty State

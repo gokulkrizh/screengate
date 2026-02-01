@@ -36,6 +36,8 @@ final class BlockTimelineBuilder {
         let blockType: Block.BlockType
         let appCount: Int?
         let repeatDays: Set<Int>?
+        let appListId: UUID?
+        let appListName: String?
     }
     
     // MARK: - Initialization
@@ -262,7 +264,22 @@ final class BlockTimelineBuilder {
             baseActivityKey = activityKey
         }
         
-        let metadata = metadataCache[baseActivityKey]
+        // Extract the block ID from the activity key
+        // Activity format: com.gia.screendiet.<BLOCK_ID>.<DAY>.<TYPE>
+        let blockIdFromActivity: UUID?
+        var blockIdString: String?
+        if let idString = baseActivityKey.components(separatedBy: ".").dropFirst(3).first {
+            blockIdFromActivity = UUID(uuidString: idString)
+            blockIdString = idString
+            print("🆔 [BlockTimelineBuilder] Extracted block ID from activity: \(idString)")
+        } else {
+            blockIdFromActivity = nil
+            blockIdString = nil
+            print("⚠️ [BlockTimelineBuilder] Could not extract block ID from activity: \(baseActivityKey)")
+        }
+        
+        // Look up metadata using the extracted block ID (cache is indexed by block ID, not full activity name)
+        let metadata = blockIdString != nil ? metadataCache[blockIdString!] : nil
         
         // Debug logging
         print("🔍 [BlockTimelineBuilder] Creating block for activity: \(activityKey)")
@@ -302,7 +319,7 @@ final class BlockTimelineBuilder {
         
         // Create Block
         return Block(
-            id: UUID(),
+            id: blockIdFromActivity ?? UUID(), // Use extracted ID or fallback to new UUID
             name: displayName,
             icon: metadata?.icon ?? "app.fill",
             iconColor: metadata?.iconColor ?? "#66C5A8",
@@ -317,7 +334,9 @@ final class BlockTimelineBuilder {
             ),
             strictMode: .medium,
             activityName: activityName,
-            appCount: metadata?.appCount
+            appCount: metadata?.appCount,
+            appListId: metadata?.appListId,
+            appListName: metadata?.appListName
         )
     }
     
@@ -341,19 +360,19 @@ final class BlockTimelineBuilder {
         
         // 1. Load from BlockManager's blocks array
         for block in blockManager.blocks {
-            if let activityName = block.activityName {
-                metadataCache[activityName.rawValue] = BlockMetadata(
-                    name: block.name,
-                    icon: block.icon,
-                    iconColor: block.iconColor,
-                    blockType: block.type,
-                    appCount: block.appCount,
-                    repeatDays: block.schedule.repeatDays
-                )
-                print("   ✅ Cached metadata for '\(block.name)' with key: \(activityName.rawValue)")
-            } else {
-                print("   ⚠️ Block '\(block.name)' has no activityName")
-            }
+            // Use block ID as the cache key so it matches what we extract from activity names
+            let cacheKey = block.id.uuidString
+            metadataCache[cacheKey] = BlockMetadata(
+                name: block.name,
+                icon: block.icon,
+                iconColor: block.iconColor,
+                blockType: block.type,
+                appCount: block.appCount,
+                repeatDays: block.schedule.repeatDays,
+                appListId: block.appListId,
+                appListName: block.appListName
+            )
+            print("   ✅ Cached metadata for '\(block.name)' with key: \(cacheKey)")
         }
         
         // 2. Also check UserDefaults directly for any metadata we might have missed
@@ -376,7 +395,9 @@ final class BlockTimelineBuilder {
                         iconColor: decoded.iconColor,
                         blockType: decoded.blockType,
                         appCount: decoded.appCount,
-                        repeatDays: decoded.repeatDays
+                        repeatDays: decoded.repeatDays,
+                        appListId: decoded.appListId,
+                        appListName: decoded.appListName
                     )
                     print("   ✅ Loaded metadata from UserDefaults for: '\(decoded.name)' (key: \(key))")
                 }
@@ -395,6 +416,8 @@ final class BlockTimelineBuilder {
         let blockType: Block.BlockType
         let appCount: Int?
         let repeatDays: Set<Int>?
+        let appListId: UUID?
+        let appListName: String?
     }
     
     // MARK: - Active Block Detection

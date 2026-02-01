@@ -222,15 +222,32 @@ final class BlockManager {
     
     /// Update an existing block (O(1) per-block update)
     func updateBlock(_ block: Block) throws {
+        print("🔵 [BlockManager.updateBlock] START - Updating block: \(block.name)")
+        defer {
+            print("🔵 [BlockManager.updateBlock] END")
+        }
+        
+        print("🔵 [BlockManager.updateBlock] Looking for block with id: \(block.id)")
         if let index = blocks.firstIndex(where: { $0.id == block.id }) {
+            print("🔵 [BlockManager.updateBlock] Found block at index: \(index)")
             blocks[index] = block
+            print("🔵 [BlockManager.updateBlock] Block updated in memory")
             
-            // Update individual block
-            let blockData = try JSONEncoder().encode(block)
-            userDefaults.set(blockData, forKey: blockKey(block.id))
-            userDefaults.synchronize()
+            // Save all blocks to UserDefaults and post Darwin notification
+            print("🔵 [BlockManager.updateBlock] About to call saveToUserDefaults()")
+            do {
+                saveToUserDefaults()
+                print("🔵 [BlockManager.updateBlock] ✅ saveToUserDefaults() completed successfully")
+            } catch {
+                print("🔵 [BlockManager.updateBlock] ❌ ERROR in saveToUserDefaults(): \(error)")
+                throw error
+            }
             
             notifyBlockUpdated(block)
+            print("🔵 [BlockManager.updateBlock] notifyBlockUpdated() called")
+        } else {
+            print("🔵 [BlockManager.updateBlock] ❌ Block not found with id: \(block.id)")
+            throw NSError(domain: "BlockManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Block not found"])
         }
     }
     
@@ -262,6 +279,7 @@ final class BlockManager {
     /// Activate a block (apply restrictions immediately or start schedule)
     func activateBlock(_ block: Block) async throws {
         var activeBlock = block
+        print("🟡 [BlockManager.activateBlock] Input block: name=\(block.name), appListId=\(block.appListId?.uuidString ?? "nil"), appListName=\(block.appListName ?? "nil")")
         activeBlock.isActive = true
         activeBlock.isPaused = false
         activeBlock.pausedUntil = nil
@@ -269,6 +287,7 @@ final class BlockManager {
         // Generate and save activityName for linking to DeviceActivityCenter
         let activityName = DeviceActivityName("com.gia.screendiet.\(block.id.uuidString)")
         activeBlock.activityName = activityName
+        print("🟡 [BlockManager.activateBlock] After modification: name=\(activeBlock.name), appListId=\(activeBlock.appListId?.uuidString ?? "nil"), appListName=\(activeBlock.appListName ?? "nil")")
         
         // Store original state for rollback on failure
         let originalActiveBlock = self.activeBlock
@@ -437,6 +456,7 @@ final class BlockManager {
         }
         
         // ✅ Save to UserDefaults only after successful monitor setup
+        print("🟡 [BlockManager.activateBlock] About to save: self.activeBlock.appListId=\(self.activeBlock?.appListId?.uuidString ?? "nil"), appListName=\(self.activeBlock?.appListName ?? "nil")")
         saveToUserDefaults()
         
         postNotification(title: "\(block.name) started", body: "Focus session is now active")
@@ -583,11 +603,14 @@ final class BlockManager {
     // MARK: - Persistence
     
     func saveToUserDefaults() {
+        print("💾 [BlockManager.saveToUserDefaults] START - Saving \(blocks.count) blocks")
         do {
             // Save all blocks with per-block keys (O(n) but only on explicit save)
             for block in blocks {
+                print("💾 [BlockManager] Saving block: id=\(block.id.uuidString), name=\(block.name), appListId=\(block.appListId?.uuidString ?? "nil"), appListName=\(block.appListName ?? "nil")")
                 let blockData = try JSONEncoder().encode(block)
                 userDefaults.set(blockData, forKey: blockKey(block.id))
+                print("💾 [BlockManager] Encoded block size: \(blockData.count) bytes")
             }
             
             // Save blockIds array (triggers Combine observer)
@@ -619,8 +642,10 @@ final class BlockManager {
             }
             
             userDefaults.synchronize()
+            print("💾 [BlockManager.saveToUserDefaults] UserDefaults synchronized")
             
             // Post notification to trigger timeline rebuild
+            print("💾 [BlockManager.saveToUserDefaults] Posting Darwin notification")
             CFNotificationCenterPostNotification(
                 CFNotificationCenterGetDarwinNotifyCenter(),
                 CFNotificationName("com.gia.screendiet.blocksChanged" as CFString),
@@ -647,8 +672,10 @@ final class BlockManager {
             guard let uuid = UUID(uuidString: idString),
                   let data = userDefaults.data(forKey: blockKey(uuid)),
                   let block = try? JSONDecoder().decode(Block.self, from: data) else {
+                print("⚠️ [BlockManager] Failed to load block: \(idString)")
                 return nil
             }
+            print("📖 [BlockManager] Loaded block: id=\(block.id.uuidString), name=\(block.name), appListId=\(block.appListId?.uuidString ?? "nil"), appListName=\(block.appListName ?? "nil")")
             return block
         }
         

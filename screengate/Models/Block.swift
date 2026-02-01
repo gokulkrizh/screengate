@@ -80,6 +80,11 @@ struct Block: Codable, Identifiable {
         self.isActiveAmongOverlaps = isActiveAmongOverlaps
         self.appListId = appListId
         self.appListName = appListName
+        
+        // Debug: Log app list metadata initialization
+        if appListId != nil || appListName != nil {
+            print("📦 [Block.init] Creating block '\(name)' with app list metadata: appListId=\(appListId?.uuidString ?? "nil"), appListName=\(appListName ?? "nil")")
+        }
     }
     
     // MARK: - Computed Properties

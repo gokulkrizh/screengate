@@ -142,8 +142,10 @@ struct CreateScheduledBlockView: View {
                                 .font(.system(size: 20, weight: .bold, design: .default))
                                 .foregroundColor(.white)
                             
-                            if activitySelection.applicationTokens.isEmpty && activitySelection.categoryTokens.isEmpty {
-                                // Show only "From App List" button when no apps or categories selected
+                            let shouldShowPlaceholder = (activitySelection.applicationTokens.isEmpty && activitySelection.categoryTokens.isEmpty) && selectedListName.isEmpty
+                            if shouldShowPlaceholder {
+                                // Show only "From App List" button when no apps or categories selected and no list name
+                                let _ = print("🔵 [CreateScheduledBlockView] UI: Showing 'From App List' placeholder - appSelection.isEmpty=\(activitySelection.applicationTokens.isEmpty && activitySelection.categoryTokens.isEmpty), selectedListName.isEmpty=\(selectedListName.isEmpty)")
                                 Button(action: { showAppListPicker = true }) {
                                     HStack(spacing: 12) {
                                         Image(systemName: "square.stack.3d.up.fill")
@@ -349,13 +351,16 @@ struct CreateScheduledBlockView: View {
             FamilyActivitySelectionView(selection: $activitySelection)
         }
         .sheet(isPresented: $showAppListPicker) {
-            AppListsView(isSelectionMode: true) { selectedList in
+            AppListsView(isSelectionMode: true, currentlySelectedListId: selectedAppListId) { selectedList in
+                print("✅ [CreateScheduledBlockView] App list selected: id=\(selectedList.id), name=\(selectedList.name)")
                 activitySelection = selectedList.selection
                 selectedAppListId = selectedList.id
                 selectedListName = selectedList.name
                 selectedListIcon = selectedList.icon
+                print("✅ [CreateScheduledBlockView] App list assigned to state: appSelection apps=\(selectedList.selection.applicationTokens.count), categories=\(selectedList.selection.categoryTokens.count)")
                 if blockName == "Schedule Focus Session" {
                     blockName = selectedList.name
+                    print("✅ [CreateScheduledBlockView] Block name auto-updated to: \(selectedList.name)")
                 }
             }
         }
@@ -366,50 +371,82 @@ struct CreateScheduledBlockView: View {
         }
         .onAppear {
             if let editingBlock = editingBlock {
+                print("\n🟢 [CreateScheduledBlockView] onAppear: Entering edit mode for block: \(editingBlock.name)")
                 blockName = editingBlock.name
                 startTime = editingBlock.schedule.startTime ?? Date()
                 endTime = editingBlock.schedule.endTime ?? Date()
                 selectedDays = editingBlock.schedule.repeatDays ?? []
                 strictMode = editingBlock.strictMode
                 activitySelection = editingBlock.appSelection
+                print("🟢 [CreateScheduledBlockView] Pre-filled activity selection: apps=\(editingBlock.appSelection.applicationTokens.count), categories=\(editingBlock.appSelection.categoryTokens.count)")
                 selectedBlockIcon = editingBlock.icon
                 selectedBlockIconColor = editingBlock.iconColor
                 
+                print("🟢 [CreateScheduledBlockView] App list metadata: appListId=\(editingBlock.appListId?.uuidString ?? "nil"), appListName=\(editingBlock.appListName ?? "nil")")
+                
                 if let appListId = editingBlock.appListId {
+                    print("🟢 [CreateScheduledBlockView] Attempting to pre-fill by UUID: \(appListId.uuidString)")
                     if let appList = appListManager.getList(id: appListId) {
                         selectedAppListId = appList.id
                         selectedListName = appList.name
                         selectedListIcon = appList.icon
-                        print("✅ Pre-filled app list by UUID: \(appList.name)")
+                        print("✅ [CreateScheduledBlockView] Pre-filled app list by UUID: \(appList.name) (icon: \(appList.icon))")
                     } else {
                         selectedListName = ""
-                        print("⚠️ App list with ID \(appListId) not found - was deleted")
+                        print("⚠️ [CreateScheduledBlockView] App list with ID \(appListId.uuidString) not found - was deleted")
                     }
                 } else if let appListName = editingBlock.appListName {
+                    print("🟢 [CreateScheduledBlockView] Attempting to pre-fill by name fallback: \(appListName)")
                     if let appList = appListManager.lists.first(where: { $0.name == appListName }) {
                         selectedAppListId = appList.id
                         selectedListName = appList.name
                         selectedListIcon = appList.icon
-                        print("✅ Pre-filled app list by name: \(appList.name)")
+                        print("✅ [CreateScheduledBlockView] Pre-filled app list by name: \(appList.name) (icon: \(appList.icon))")
                     } else {
                         selectedListName = ""
-                        print("⚠️ App list '\(appListName)' not found - was deleted")
+                        print("⚠️ [CreateScheduledBlockView] App list '\(appListName)' not found - was deleted")
                     }
                 } else {
-                    print("ℹ️ Block has no associated app list")
+                    print("ℹ️ [CreateScheduledBlockView] Block has no associated app list metadata")
                     selectedListName = ""
                 }
+                print("🟢 [CreateScheduledBlockView] onAppear complete - selectedListName=\(selectedListName.isEmpty ? "empty" : selectedListName)\n")
+            } else {
+                print("🟢 [CreateScheduledBlockView] onAppear: Entering create mode (new block)")
+                // ⭐ CRITICAL: Reset all state for new block creation
+                blockName = "Schedule Focus Session"
+                startTime = Date()
+                endTime = Date()
+                selectedDays = [2, 3, 4, 5, 6]  // Mon-Fri
+                strictMode = .medium
+                showStartTimePicker = false
+                showEndTimePicker = false
+                showActivityPicker = false
+                showAppListPicker = false
+                activitySelection = FamilyActivitySelection()
+                selectedListName = ""  // ⭐ CLEAR app list name
+                selectedListIcon = ""  // ⭐ CLEAR app list icon
+                selectedAppListId = nil  // ⭐ CLEAR app list ID
+                selectedBlockIcon = "app.fill"  // ⭐ Reset block icon
+                selectedBlockIconColor = "#66C5A8"  // ⭐ Reset block icon color
+                error = nil
+                isCreating = false
+                print("🟢 [CreateScheduledBlockView] Create mode state reset complete")
             }
         }
         .onChange(of: appListManager.lists) { oldLists, newLists in
             // If the selected list no longer exists, clear the selection
             if !selectedListName.isEmpty {
+                print("🔄 [CreateScheduledBlockView] App list manager changed - verifying selected list exists")
                 let selectedListExists = newLists.contains { $0.name == selectedListName && $0.icon == selectedListIcon }
                 if !selectedListExists {
+                    print("⚠️ [CreateScheduledBlockView] Selected app list '\(selectedListName)' no longer exists - clearing selection")
                     selectedListName = ""
                     selectedListIcon = ""
                     activitySelection = FamilyActivitySelection()
                     blockName = "Schedule Focus Session"
+                } else {
+                    print("✅ [CreateScheduledBlockView] Selected app list '\(selectedListName)' still exists")
                 }
             }
         }
@@ -423,13 +460,17 @@ struct CreateScheduledBlockView: View {
     
     @MainActor
     private func createScheduledBlock() async {
+        print("\n🟡 [CreateScheduledBlockView] createScheduledBlock() called - mode=\(isEditing ? "EDIT" : "CREATE")")
+        
         guard !blockName.isEmpty else {
             error = "Please enter a block name"
+            print("❌ [CreateScheduledBlockView] Validation failed: empty block name")
             return
         }
         
         guard !activitySelection.applicationTokens.isEmpty || !activitySelection.categoryTokens.isEmpty else {
             error = "Please select at least one app"
+            print("❌ [CreateScheduledBlockView] Validation failed: no apps selected")
             return
         }
         
@@ -456,13 +497,35 @@ struct CreateScheduledBlockView: View {
         )
         
         if let editingBlock = editingBlock {
-            let wasActive = editingBlock.isActive
+            print("🟡 [CreateScheduledBlockView] EDIT MODE")
             
             do {
-                if wasActive {
+                // Detect if enforcement-related data changed
+                let scheduleChanged = editingBlock.schedule.startTime != startTime || 
+                                     editingBlock.schedule.endTime != endTime
+                let daysChanged = editingBlock.schedule.repeatDays != selectedDays
+                let appsChanged = editingBlock.appSelection.applicationTokens != activitySelection.applicationTokens ||
+                                 editingBlock.appSelection.categoryTokens != activitySelection.categoryTokens
+                let appListChanged = editingBlock.appListId != selectedAppListId
+                
+                let enforcementChanged = scheduleChanged || daysChanged || appsChanged || appListChanged
+                
+                print("🔍 [CreateScheduledBlockView] Change detection:")
+                print("   scheduleChanged: \(scheduleChanged)")
+                print("   daysChanged: \(daysChanged)")
+                print("   appsChanged: \(appsChanged)")
+                print("   appListChanged: \(appListChanged)")
+                print("   → enforcementChanged: \(enforcementChanged)")
+                
+                // Stop monitors if enforcement data changed
+                if enforcementChanged {
+                    print("⏹️ [CreateScheduledBlockView] Stopping monitors (enforcement data changed)")
                     await blockManager.stopAllMonitorsForBlock(editingBlock)
+                } else {
+                    print("⏭️ [CreateScheduledBlockView] Skipping monitor stop (only metadata changed)")
                 }
                 
+                // Update block
                 var updatedBlock = editingBlock
                 updatedBlock.name = blockName
                 updatedBlock.icon = selectedBlockIcon
@@ -472,17 +535,32 @@ struct CreateScheduledBlockView: View {
                 updatedBlock.appSelection = activitySelection
                 updatedBlock.appListId = selectedAppListId
                 updatedBlock.appListName = selectedListName
-                try blockManager.updateBlock(updatedBlock)
                 
-                if wasActive {
+                print("🟡 [CreateScheduledBlockView] Updated block:")
+                print("   appListId: \(updatedBlock.appListId?.uuidString ?? "nil")")
+                print("   appListName: \(updatedBlock.appListName ?? "nil")")
+                print("   apps: \(updatedBlock.appSelection.applicationTokens.count) tokens, \(updatedBlock.appSelection.categoryTokens.count) categories")
+                
+                // Save to UserDefaults
+                try blockManager.updateBlock(updatedBlock)
+                print("✅ [CreateScheduledBlockView] Block metadata saved to UserDefaults")
+                
+                // Restart monitors if enforcement data changed
+                if enforcementChanged {
+                    print("▶️ [CreateScheduledBlockView] Starting new monitors with updated config")
                     try await blockManager.activateBlock(updatedBlock)
+                    print("✅ [CreateScheduledBlockView] Monitors restarted with new enforcement data")
+                } else {
+                    print("✅ [CreateScheduledBlockView] No monitor restart needed (metadata-only update)")
                 }
             } catch {
                 self.error = error.localizedDescription
+                print("❌ [CreateScheduledBlockView] Edit error: \(error.localizedDescription)")
                 isCreating = false
                 return
             }
         } else {
+            print("🟡 [CreateScheduledBlockView] CREATE MODE: Creating new block")
             do {
                 let block = Block(
                     name: blockName,
@@ -496,15 +574,25 @@ struct CreateScheduledBlockView: View {
                     appListId: selectedAppListId,
                     appListName: selectedListName
                 )
+                print("🟡 [CreateScheduledBlockView] New block: id=\(block.id.uuidString)")
+                print("   appListId: \(block.appListId?.uuidString ?? "nil")")
+                print("   appListName: \(block.appListName ?? "nil")")
+                print("   apps: \(block.appSelection.applicationTokens.count) tokens, \(block.appSelection.categoryTokens.count) categories")
+                
                 try blockManager.createBlock(block)
+                print("✅ [CreateScheduledBlockView] Block saved to UserDefaults")
+                
                 try await blockManager.activateBlock(block)
+                print("✅ [CreateScheduledBlockView] Monitors started for new block")
             } catch {
                 self.error = error.localizedDescription
+                print("❌ [CreateScheduledBlockView] Create error: \(error.localizedDescription)")
                 isCreating = false
                 return
             }
         }
         
+        print("✅ [CreateScheduledBlockView] \(isEditing ? "Edit" : "Create") completed successfully\n")
         dismiss()
         isCreating = false
     }
