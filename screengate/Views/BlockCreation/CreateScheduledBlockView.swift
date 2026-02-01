@@ -304,6 +304,7 @@ struct CreateScheduledBlockView: View {
                     }
                     .padding(.vertical, 20)
                 }
+                .scrollIndicators(.hidden)
                 
                 // Activate Button
                 Button(action: {
