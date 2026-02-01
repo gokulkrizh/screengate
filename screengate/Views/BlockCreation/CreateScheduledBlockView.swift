@@ -238,6 +238,27 @@ struct CreateScheduledBlockView: View {
                                 )
                                 .frame(maxWidth: .infinity)
                             }
+                            
+                            // Duration Indicator
+                            HStack(spacing: 8) {
+                                Image(systemName: isOvernight ? "moon.stars.fill" : "clock.fill")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(isOvernight ? Color.blue : appTheme.colors.primary)
+                                
+                                Text(isOvernight ? "Overnight • " : "")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(Color.white.opacity(0.7))
+                                
+                                Text(formattedDuration)
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(isOvernight ? Color.blue : appTheme.colors.primary)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill((isOvernight ? Color.blue : appTheme.colors.primary).opacity(0.15))
+                            )
                         }
                         .padding(.horizontal, 20)
                         
@@ -491,15 +512,14 @@ struct CreateScheduledBlockView: View {
             return
         }
         
-        let duration = endTime.timeIntervalSince(startTime)
+        let duration = calculatedDuration
         guard duration >= 15 * 60 else {
             error = "Duration must be at least 15 minutes"
             return
         }
         
-        guard startTime < endTime else {
-            error = "Start time must be before end time"
-            print("❌ [CreateScheduledBlockView] Validation failed: start time after end time")
+        guard duration <= 24 * 60 * 60 else {
+            error = "Duration cannot exceed 24 hours"
             return
         }
         
@@ -643,6 +663,31 @@ struct CreateScheduledBlockView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "hh:mm a"
         return formatter.string(from: date).uppercased()
+    }
+    
+    private var isOvernight: Bool {
+        endTime < startTime
+    }
+    
+    private var calculatedDuration: TimeInterval {
+        if isOvernight {
+            let nextDayEndTime = Calendar.current.date(byAdding: .day, value: 1, to: endTime) ?? endTime
+            return nextDayEndTime.timeIntervalSince(startTime)
+        } else {
+            return endTime.timeIntervalSince(startTime)
+        }
+    }
+    
+    private var formattedDuration: String {
+        let totalSeconds = Int(calculatedDuration)
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        
+        if hours > 0 {
+            return "\(hours)h \(minutes)m"
+        } else {
+            return "\(minutes)m"
+        }
     }
 }
 
