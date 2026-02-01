@@ -28,7 +28,7 @@ struct CreateBlockView: View {
     var body: some View {
         VStack(spacing: 0) {
                 // Navigation Bar
-                HStack {
+            HStack {
                 Button(action: { dismiss() }) {
                     Image(systemName: "xmark")
                         .font(.system(size: 18, weight: .medium))
@@ -52,7 +52,7 @@ struct CreateBlockView: View {
             }
             .padding(.horizontal, 16)
             .padding(.top, 20)
-            .padding(.bottom, 12)
+           // .padding(.bottom, 12)
             
             // Main Content
             VStack(alignment: .leading, spacing: 20) {
@@ -145,7 +145,7 @@ struct CreateBlockView: View {
                 .shadow(color: appTheme.colors.primary.opacity(0.3), radius: 8, x: 0, y: 4)
             }
             .padding(.horizontal, 16)
-            .padding(.bottom, 20)
+           // .padding(.bottom, 20)
         }
         .background(Color(red: 0.06, green: 0.13, blue: 0.09))
     }

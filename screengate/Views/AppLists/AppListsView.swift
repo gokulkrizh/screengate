@@ -110,7 +110,7 @@ struct AppListsView: View {
                         .cornerRadius(12)
                     }
                     .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
+                    //.padding(.bottom, 20)
                 }
             }
         }

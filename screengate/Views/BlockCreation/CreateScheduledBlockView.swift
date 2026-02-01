@@ -343,7 +343,7 @@ struct CreateScheduledBlockView: View {
                 .cornerRadius(12)
                 .disabled(isCreating || blockName.isEmpty || strictMode == nil || (activitySelection.applicationTokens.isEmpty && activitySelection.categoryTokens.isEmpty)) // Removed app selection check for simulator testing
                 .padding(.horizontal, 20)
-                .padding(.vertical, 16)
+               // .padding(.vertical, 20)
             }
         }
         .navigationBarHidden(true)
@@ -376,7 +376,8 @@ struct CreateScheduledBlockView: View {
         }
         .sheet(isPresented: $showStrictModePicker) {
             StrictModePickerSheet(selectedMode: $strictMode)
-                .presentationDetents([.height(500)])
+                .presentationDetents([.fraction(0.58)])
+                .presentationDragIndicator(.visible)
                 .presentationBackground(Color(red: 0.06, green: 0.13, blue: 0.09))
         }
         .alert("Error", isPresented: .constant(error != nil), presenting: error) { _ in

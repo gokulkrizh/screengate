@@ -7,19 +7,45 @@ struct StrictModePickerSheet: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Drag Indicator
-            RoundedRectangle(cornerRadius: 2.5)
-                .fill(Color.white.opacity(0.3))
-                .frame(width: 40, height: 5)
-                .padding(.top, 12)
-                .padding(.bottom, 20)
+            // // Drag Indicator
+            // RoundedRectangle(cornerRadius: 2.5)
+            //     .fill(Color.white.opacity(0.3))
+            //     .frame(width: 40, height: 5)
+            //     .padding(.top, 12)
+            //     .padding(.bottom, 20)
             
-            // Title
-            Text("Select Intensity")
-                .font(.system(size: 20, weight: .bold, design: .default))
-                .foregroundColor(.white)
-                .padding(.bottom, 32)
+            // // Title
+            // Text("Select Intensity")
+            //     .font(.system(size: 20, weight: .bold, design: .default))
+            //     .foregroundColor(.white)
+            //     .padding(.bottom, 32)
             
+            HStack {
+                Button(action: { dismiss() }) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.white)
+                        .frame(width: 40, height: 40)
+                        .background(Color.white.opacity(0.05))
+                        .cornerRadius(20)
+                }
+                
+                Spacer()
+                
+                Text("Select Intensity")
+                    .font(.system(size: 18, weight: .bold, design: .default))
+                    .foregroundColor(.white)
+                
+                Spacer()
+                
+                // Spacer for alignment
+                Color.clear
+                    .frame(width: 40, height: 40)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 20)
+            .padding(.bottom, 12)
+
             // Mode Selection
             VStack(spacing: 12) {
                 StrictModeCard(
@@ -77,7 +103,7 @@ struct StrictModePickerSheet: View {
                 .shadow(color: (selectedMode != nil ? appTheme.colors.primary : .clear).opacity(0.3), radius: 12, x: 0, y: 0)
             }
             .padding(.horizontal, 20)
-            .padding(.bottom, 20)
+            //.padding(.bottom, 20)
         }
         .background(Color(red: 0.06, green: 0.13, blue: 0.09))
     }
