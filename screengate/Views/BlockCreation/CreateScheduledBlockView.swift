@@ -16,6 +16,7 @@ struct CreateScheduledBlockView: View {
     @State private var endTime = Date()
     @State private var selectedDays: Set<Int> = [2, 3, 4, 5, 6] // Mon-Fri (Calendar weekday values)
     @State private var strictMode: StrictMode? = nil
+    @State private var showStrictModePicker = false
     @State private var showStartTimePicker = false
     @State private var showEndTimePicker = false
     @State private var showActivityPicker = false
@@ -268,35 +269,43 @@ struct CreateScheduledBlockView: View {
                                 .font(.system(size: 18, weight: .bold, design: .default))
                                 .foregroundColor(.white)
                             
-                            VStack(spacing: 12) {
-                                StrictModeCard(
-                                    mode: .easy,
-                                    icon: "cup.and.saucer.fill",
-                                    iconColor: appTheme.colors.primary,
-                                    title: "Easy",
-                                    description: "Allow short breaks after limit",
-                                    isSelected: strictMode == .easy,
-                                    action: { strictMode = .easy }
-                                )
-                                
-                                StrictModeCard(
-                                    mode: .medium,
-                                    icon: "timer",
-                                    iconColor: Color(red: 1.0, green: 0.8, blue: 0.0),
-                                    title: "Medium",
-                                    description: "15s breathing delay on open",
-                                    isSelected: strictMode == .medium,
-                                    action: { strictMode = .medium }
-                                )
-                                
-                                StrictModeCard(
-                                    mode: .hard,
-                                    icon: "lock.fill",
-                                    iconColor: Color(red: 1.0, green: 0.4, blue: 0.4),
-                                    title: "Hard",
-                                    description: "Strict cutoff. No entry after limit.",
-                                    isSelected: strictMode == .hard,
-                                    action: { strictMode = .hard }
+                            Button(action: { showStrictModePicker = true }) {
+                                HStack(spacing: 12) {
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color(red: 0.06, green: 0.13, blue: 0.09))
+                                            .frame(width: 40, height: 40)
+                                        
+                                        Image(systemName: strictModeIcon)
+                                            .font(.system(size: 18, weight: .semibold))
+                                            .foregroundColor(strictModeIconColor)
+                                    }
+                                    
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("INTENSITY")
+                                            .font(.system(size: 11, weight: .bold, design: .default))
+                                            .tracking(0.5)
+                                            .foregroundColor(.white.opacity(0.5))
+                                            .textCase(.uppercase)
+                                        
+                                        Text(strictMode?.displayName ?? "Not selected")
+                                            .font(.system(size: 16, weight: .bold, design: .default))
+                                            .foregroundColor(strictMode == nil ? .white.opacity(0.5) : .white)
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    Image(systemName: "chevron.down")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(.white.opacity(0.4))
+                                }
+                                .padding(16)
+                                .frame(maxWidth: .infinity)
+                                .background(Color(red: 0.09, green: 0.16, blue: 0.12))
+                                .cornerRadius(12)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
                                 )
                             }
                         }
@@ -365,6 +374,11 @@ struct CreateScheduledBlockView: View {
                 }
             }
         }
+        .sheet(isPresented: $showStrictModePicker) {
+            StrictModePickerSheet(selectedMode: $strictMode)
+                .presentationDetents([.height(500)])
+                .presentationBackground(Color(red: 0.06, green: 0.13, blue: 0.09))
+        }
         .alert("Error", isPresented: .constant(error != nil), presenting: error) { _ in
             Button("OK") { error = nil }
         } message: { errorMsg in
@@ -420,6 +434,7 @@ struct CreateScheduledBlockView: View {
                 endTime = Date()
                 selectedDays = [2, 3, 4, 5, 6]  // Mon-Fri
                 strictMode = nil
+                showStrictModePicker = false
                 showStartTimePicker = false
                 showEndTimePicker = false
                 showActivityPicker = false
@@ -603,6 +618,24 @@ struct CreateScheduledBlockView: View {
         print("✅ [CreateScheduledBlockView] \(isEditing ? "Edit" : "Create") completed successfully\n")
         dismiss()
         isCreating = false
+    }
+    
+    private var strictModeIcon: String {
+        switch strictMode {
+        case .easy: return "cup.and.saucer.fill"
+        case .medium: return "timer"
+        case .hard: return "lock.fill"
+        case .none: return "questionmark.circle"
+        }
+    }
+    
+    private var strictModeIconColor: Color {
+        switch strictMode {
+        case .easy: return appTheme.colors.primary
+        case .medium: return Color(red: 1.0, green: 0.8, blue: 0.0)
+        case .hard: return Color(red: 1.0, green: 0.4, blue: 0.4)
+        case .none: return .white.opacity(0.3)
+        }
     }
     
     private func formatTime(_ date: Date) -> String {
