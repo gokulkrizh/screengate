@@ -1,0 +1,25 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "autoupdate": true,
+  // === TUI ===
+  "tui": {
+    "scroll_acceleration": {
+      "enabled": true  // macOS-style momentum scrolling
+    }
+  },
+  "mcp": {
+    "XcodeBuildMCP": {
+        "type": "local",
+        "enabled": true,
+			//"command": "npx",
+  			"command": [
+                "npx",
+    			"-y",
+    			"xcodebuildmcp@latest"
+  			],
+			// "env": {
+    		// 	"INCREMENTAL_BUILDS_ENABLED": "true"
+			// }
+		}
+  }
+}
