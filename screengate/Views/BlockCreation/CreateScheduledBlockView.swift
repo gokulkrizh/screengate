@@ -76,70 +76,70 @@ struct CreateScheduledBlockView: View {
                         .padding(.top, 12)
                         
                         // Block Icon
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Icon")
-                                .font(.system(size: 16, weight: .semibold, design: .default))
-                                .foregroundColor(.white)
+                        // VStack(alignment: .leading, spacing: 12) {
+                        //     Text("Icon")
+                        //         .font(.system(size: 16, weight: .semibold, design: .default))
+                        //         .foregroundColor(.white)
                             
-                            Button(action: { showIconPicker.toggle() }) {
-                                HStack(spacing: 12) {
-                                    Circle()
-                                        .fill(appTheme.colors.primary.opacity(0.2))
-                                        .frame(width: 48, height: 48)
-                                        .overlay(
-                                            Image(systemName: selectedBlockIcon)
-                                                .font(.system(size: 20))
-                                                .foregroundColor(appTheme.colors.primary)
-                                        )
+                        //     Button(action: { showIconPicker.toggle() }) {
+                        //         HStack(spacing: 12) {
+                        //             Circle()
+                        //                 .fill(appTheme.colors.primary.opacity(0.2))
+                        //                 .frame(width: 48, height: 48)
+                        //                 .overlay(
+                        //                     Image(systemName: selectedBlockIcon)
+                        //                         .font(.system(size: 20))
+                        //                         .foregroundColor(appTheme.colors.primary)
+                        //                 )
                                     
-                                    Text("Choose Icon")
-                                        .font(.system(size: 16, weight: .medium))
-                                        .foregroundColor(.white)
+                        //             Text("Choose Icon")
+                        //                 .font(.system(size: 16, weight: .medium))
+                        //                 .foregroundColor(.white)
                                     
-                                    Spacer()
+                        //             Spacer()
                                     
-                                    Image(systemName: "chevron.right")
-                                        .font(.system(size: 14, weight: .semibold))
-                                        .foregroundColor(Color.white.opacity(0.3))
-                                }
-                                .padding(16)
-                                .background(Color.white.opacity(0.05))
-                                .cornerRadius(12)
-                            }
+                        //             Image(systemName: "chevron.right")
+                        //                 .font(.system(size: 14, weight: .semibold))
+                        //                 .foregroundColor(Color.white.opacity(0.3))
+                        //         }
+                        //         .padding(16)
+                        //         .background(Color.white.opacity(0.05))
+                        //         .cornerRadius(12)
+                        //     }
                             
-                            if showIconPicker {
-                                LazyVGrid(columns: [GridItem(.adaptive(minimum: 60))], spacing: 12) {
-                                    ForEach([
-                                        "app.fill", "flame.fill", "star.fill", "heart.fill",
-                                        "bolt.fill", "moon.fill", "sun.max.fill", "timer",
-                                        "calendar", "square.stack.3d.up.fill", "tray.fill", "folder.fill"
-                                    ], id: \.self) { icon in
-                                        Button(action: {
-                                            selectedBlockIcon = icon
-                                            showIconPicker = false
-                                        }) {
-                                            Circle()
-                                                .fill(selectedBlockIcon == icon ? appTheme.colors.primary.opacity(0.3) : Color.white.opacity(0.05))
-                                                .frame(width: 60, height: 60)
-                                                .overlay(
-                                                    Image(systemName: icon)
-                                                        .font(.system(size: 24))
-                                                        .foregroundColor(selectedBlockIcon == icon ? appTheme.colors.primary : .white)
-                                                )
-                                        }
-                                    }
-                                }
-                                .padding(16)
-                                .background(Color.white.opacity(0.03))
-                                .cornerRadius(12)
-                            }
-                        }
-                        .padding(.horizontal, 20)
+                        //     if showIconPicker {
+                        //         LazyVGrid(columns: [GridItem(.adaptive(minimum: 60))], spacing: 12) {
+                        //             ForEach([
+                        //                 "app.fill", "flame.fill", "star.fill", "heart.fill",
+                        //                 "bolt.fill", "moon.fill", "sun.max.fill", "timer",
+                        //                 "calendar", "square.stack.3d.up.fill", "tray.fill", "folder.fill"
+                        //             ], id: \.self) { icon in
+                        //                 Button(action: {
+                        //                     selectedBlockIcon = icon
+                        //                     showIconPicker = false
+                        //                 }) {
+                        //                     Circle()
+                        //                         .fill(selectedBlockIcon == icon ? appTheme.colors.primary.opacity(0.3) : Color.white.opacity(0.05))
+                        //                         .frame(width: 60, height: 60)
+                        //                         .overlay(
+                        //                             Image(systemName: icon)
+                        //                                 .font(.system(size: 24))
+                        //                                 .foregroundColor(selectedBlockIcon == icon ? appTheme.colors.primary : .white)
+                        //                         )
+                        //                 }
+                        //             }
+                        //         }
+                        //         .padding(16)
+                        //         .background(Color.white.opacity(0.03))
+                        //         .cornerRadius(12)
+                        //     }
+                        // }
+                        // .padding(.horizontal, 20)
                         
                         // Apps to Block
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Apps to Block")
-                                .font(.system(size: 20, weight: .bold, design: .default))
+                                .font(.system(size: 18, weight: .bold, design: .default))
                                 .foregroundColor(.white)
                             
                             let shouldShowPlaceholder = (activitySelection.applicationTokens.isEmpty && activitySelection.categoryTokens.isEmpty) && selectedListName.isEmpty
@@ -265,7 +265,7 @@ struct CreateScheduledBlockView: View {
                         // Select Intensity
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Select Intensity")
-                                .font(.system(size: 20, weight: .bold, design: .default))
+                                .font(.system(size: 18, weight: .bold, design: .default))
                                 .foregroundColor(.white)
                             
                             VStack(spacing: 12) {
@@ -302,7 +302,7 @@ struct CreateScheduledBlockView: View {
                         }
                         .padding(.horizontal, 20)
                     }
-                    .padding(.vertical, 20)
+                    .padding(.bottom, 20)
                 }
                 .scrollIndicators(.hidden)
                 
