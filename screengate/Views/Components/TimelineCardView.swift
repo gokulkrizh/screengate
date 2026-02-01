@@ -31,92 +31,92 @@ struct TimelineCardView: View {
     
     private var statusBadge: some View {
         Text("IN PROGRESS")
-            .font(.system(size: 11, weight: .bold, design: .default))
+            .font(.system(size: 10, weight: .bold, design: .default))
             .tracking(0.5)
             .foregroundColor(appTheme.colors.primary)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
             .background(appTheme.colors.primary.opacity(0.2))
-            .cornerRadius(8)
-            .padding(.leading, 20)
-            .padding(.top, 20)
+            .cornerRadius(6)
+            .padding(.leading, 16)
+            .padding(.top, 14)
     }
     
     private var mainContent: some View {
         let isActive = block.isActiveAmongOverlaps
         let selectedDays = block.schedule.repeatDays ?? []
         
-        return HStack(alignment: .top, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
+        return HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(block.name)
-                    .font(.system(size: 24, weight: .bold, design: .default))
+                    .font(.system(size: 22, weight: .bold, design: .default))
                     .foregroundColor(.white)
-                    .padding(.top, isActive ? 8 : 20)
+                    .padding(.top, isActive ? 6 : 14)
                 
-                HStack(spacing: 6) {
+                HStack(spacing: 4) {
                     Text(block.type.rawValue.capitalized)
-                        .font(.system(size: 15, weight: .medium, design: .default))
+                        .font(.system(size: 14, weight: .medium, design: .default))
                         .foregroundColor(.white.opacity(0.6))
                     
                     Text("•")
-                        .font(.system(size: 15, weight: .medium, design: .default))
+                        .font(.system(size: 14, weight: .medium, design: .default))
                         .foregroundColor(.white.opacity(0.4))
                     
                     if isActive && block.schedule.endTime != nil {
-                        HStack(spacing: 4) {
+                        HStack(spacing: 3) {
                             Text("Ending in")
-                                .font(.system(size: 13, weight: .semibold, design: .default))
+                                .font(.system(size: 12, weight: .semibold, design: .default))
                                 .foregroundColor(appTheme.colors.primary)
                             
                             if let endTime = block.schedule.endTime {
                                 Text(endTime, style: .timer)
-                                    .font(.system(size: 15, weight: .bold, design: .default))
+                                    .font(.system(size: 14, weight: .bold, design: .default))
                                     .foregroundColor(appTheme.colors.primary)
                                     .monospacedDigit()
                             }
                         }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
                         .background(appTheme.colors.primary.opacity(0.15))
-                        .cornerRadius(6)
+                        .cornerRadius(5)
                     } else if let startTime = block.schedule.startTime, isStartingWithin24Hours(startTime) {
-                        HStack(spacing: 4) {
+                        HStack(spacing: 3) {
                             Text("Starting in")
-                                .font(.system(size: 13, weight: .semibold, design: .default))
+                                .font(.system(size: 12, weight: .semibold, design: .default))
                                 .foregroundColor(appTheme.colors.primary)
                             
                             Text(startTime, style: .timer)
-                                .font(.system(size: 15, weight: .bold, design: .default))
+                                .font(.system(size: 14, weight: .bold, design: .default))
                                 .foregroundColor(appTheme.colors.primary)
                                 .monospacedDigit()
                         }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
                         .background(appTheme.colors.primary.opacity(0.15))
-                        .cornerRadius(6)
+                        .cornerRadius(5)
                     } else if let startTime = block.schedule.startTime {
                         // Show day of next occurrence + time range
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: 1) {
                             Text(getNextOccurrenceDayName(repeatDays: block.schedule.repeatDays ?? []))
-                                .font(.system(size: 15, weight: .medium, design: .default))
+                                .font(.system(size: 14, weight: .medium, design: .default))
                                 .foregroundColor(.white.opacity(0.6))
                             
                             Text("\(formatTime(startTime)) - \(formatTime(block.schedule.endTime ?? Date()))")
-                                .font(.system(size: 13, weight: .regular, design: .default))
+                                .font(.system(size: 12, weight: .regular, design: .default))
                                 .foregroundColor(.white.opacity(0.5))
                         }
                     }
                 }
-                .padding(.bottom, 20)
+                .padding(.bottom, 12)
                 
                 if !selectedDays.isEmpty {
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 8) {
                         Text("REPEATS")
-                            .font(.system(size: 11, weight: .bold, design: .default))
+                            .font(.system(size: 10, weight: .bold, design: .default))
                             .tracking(0.5)
                             .foregroundColor(.white.opacity(0.5))
                         
-                        HStack(spacing: 8) {
+                        HStack(spacing: 6) {
                             ForEach(1...7, id: \.self) { day in
                                 DayBadge(
                                     day: dayLabel(day),
@@ -125,21 +125,21 @@ struct TimelineCardView: View {
                             }
                         }
                     }
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 12)
                 }
             }
-            .padding(.leading, 20)
+            .padding(.leading, 16)
             Spacer()
             if !block.appSelection.applicationTokens.isEmpty || !block.appSelection.categoryTokens.isEmpty {
-                HStack(spacing: -8) {
+                HStack(spacing: -6) {
                     ForEach(Array(block.appSelection.applicationTokens.prefix(3)), id: \.self) { token in
                         Circle()
                             .fill(appTheme.colors.primary.opacity(0.3))
-                            .frame(width: 48, height: 48)
+                            .frame(width: 40, height: 40)
                     }
                 }
-                .padding(.trailing, 20)
-                .padding(.top, isActive ? 8 : 20)
+                .padding(.trailing, 16)
+                .padding(.top, isActive ? 6 : 14)
             }
         }
     }
@@ -219,10 +219,10 @@ struct DayBadge: View {
         ZStack {
             Circle()
                 .fill(isSelected ? appTheme.colors.primary : Color.white.opacity(0.1))
-                .frame(width: 36, height: 36)
+                .frame(width: 32, height: 32)
             
             Text(day)
-                .font(.system(size: 15, weight: .semibold, design: .default))
+                .font(.system(size: 13, weight: .semibold, design: .default))
                 .foregroundColor(isSelected ? Color(red: 0.06, green: 0.13, blue: 0.09) : .white.opacity(0.3))
         }
     }
