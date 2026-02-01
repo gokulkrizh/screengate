@@ -432,7 +432,7 @@ struct CreateScheduledBlockView: View {
                 // ⭐ CRITICAL: Reset all state for new block creation
                 blockName = "Schedule Focus Session"
                 startTime = Date()
-                endTime = Date()
+                endTime = Calendar.current.date(byAdding: .minute, value: 30, to: Date()) ?? Date()
                 selectedDays = [2, 3, 4, 5, 6]  // Mon-Fri
                 strictMode = nil
                 showStrictModePicker = false
