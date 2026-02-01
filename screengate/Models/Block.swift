@@ -40,6 +40,52 @@ struct Block: Codable, Identifiable {
         var threshold: TimeInterval?   // For appTimeLimit: daily usage limit in seconds
         var repeatDays: Set<Int>?      // 1=Mon, 2=Tue, ... 7=Sun; nil = one-time
         var isRepeating: Bool = false  // Daily repeat flag for scheduled blocks
+        
+        // ✅ Custom Codable: Set<Int> needs Array intermediary
+        enum CodingKeys: String, CodingKey {
+            case startTime, endTime, duration, threshold, repeatDaysArray, isRepeating
+        }
+        
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(startTime, forKey: .startTime)
+            try container.encode(endTime, forKey: .endTime)
+            try container.encode(duration, forKey: .duration)
+            try container.encode(threshold, forKey: .threshold)
+            try container.encode(isRepeating, forKey: .isRepeating)
+            
+            // Convert Set<Int> to Array for encoding
+            if let repeatDays = repeatDays {
+                try container.encode(Array(repeatDays).sorted(), forKey: .repeatDaysArray)
+            } else {
+                try container.encodeNil(forKey: .repeatDaysArray)
+            }
+        }
+        
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            startTime = try container.decodeIfPresent(Date.self, forKey: .startTime)
+            endTime = try container.decodeIfPresent(Date.self, forKey: .endTime)
+            duration = try container.decodeIfPresent(TimeInterval.self, forKey: .duration)
+            threshold = try container.decodeIfPresent(TimeInterval.self, forKey: .threshold)
+            isRepeating = try container.decodeIfPresent(Bool.self, forKey: .isRepeating) ?? false
+            
+            // Convert Array back to Set<Int>
+            if let repeatDaysArray = try container.decodeIfPresent([Int].self, forKey: .repeatDaysArray) {
+                repeatDays = Set(repeatDaysArray)
+            } else {
+                repeatDays = nil
+            }
+        }
+        
+        init(startTime: Date? = nil, endTime: Date? = nil, duration: TimeInterval? = nil, threshold: TimeInterval? = nil, repeatDays: Set<Int>? = nil, isRepeating: Bool = false) {
+            self.startTime = startTime
+            self.endTime = endTime
+            self.duration = duration
+            self.threshold = threshold
+            self.repeatDays = repeatDays
+            self.isRepeating = isRepeating
+        }
     }
     
     init(

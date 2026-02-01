@@ -193,21 +193,26 @@ final class BlockTimelineBuilder {
     private func shouldActivityRunOnDate(_ schedule: DeviceActivitySchedule, activityName: DeviceActivityName, date: Date) -> Bool {
         let weekday = calendar.component(.weekday, from: date)
         
-        // For multi-day repeating schedules, activity name contains .dayN where N is the weekday
         if schedule.repeats {
-            // Extract weekday from activity name (format: "UUID.dayN")
-            let components = activityName.rawValue.split(separator: ".")
-            if let dayComponent = components.last, dayComponent.hasPrefix("day"),
-               let dayNumber = Int(dayComponent.dropFirst(3)) {
-                return dayNumber == weekday
+            // Extract block ID from activity name (format: com.gia.screendiet.<BLOCK_ID>)
+            let blockIdString = activityName.rawValue.components(separatedBy: ".").dropFirst(3).first
+            
+            // Look up metadata to get saved repeatDays (source of truth)
+            if let blockIdString = blockIdString, let metadata = metadataCache[blockIdString] {
+                if let repeatDays = metadata.repeatDays {
+                    print("🔍 [BlockTimelineBuilder] Checking repeatDays for block \(blockIdString): \(repeatDays) against weekday \(weekday)")
+                    return repeatDays.contains(weekday)
+                }
             }
             
-            // If no day component in name, check schedule's weekday
+            // Fallback: check schedule's weekday (legacy support)
             if let scheduledWeekday = schedule.intervalStart.weekday {
+                print("⚠️ [BlockTimelineBuilder] Using schedule.intervalStart.weekday \(scheduledWeekday) for block (no metadata found)")
                 return scheduledWeekday == weekday
             }
             
-            // No weekday specified, runs every day
+            // Runs every day if no repeat days specified
+            print("ℹ️ [BlockTimelineBuilder] No repeatDays found, allowing block to run every day")
             return true
         } else {
             // One-time schedule: check if date matches
@@ -294,8 +299,9 @@ final class BlockTimelineBuilder {
         // Determine block type from events
         let blockType = determineBlockType(from: events)
         
-        // Extract repeatDays directly from DeviceActivityCenter (source of truth)
-        let repeatDays = extractRepeatDays(from: activityName, registeredActivities: registeredActivities)
+        // ✅ FIX: Get repeatDays from saved block metadata instead of DeviceActivity (consolidated single monitor)
+        // Old approach looked for .dayN activities which don't exist anymore after consolidation
+        let repeatDays = metadata?.repeatDays
         
         // Use proper fallback names
         let displayName: String

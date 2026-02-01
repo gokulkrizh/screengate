@@ -338,8 +338,11 @@ struct CreateScheduledBlockView: View {
                 
                 // Activate Button
                 Button(action: {
+                    print("🔘 [CreateScheduledBlockView] CTA Button TAPPED - isCreating=\(isCreating), isEditing=\(isEditing)")
                     Task {
+                        print("📤 [CreateScheduledBlockView] Task created, calling createScheduledBlock()")
                         await createScheduledBlock()
+                        print("📥 [CreateScheduledBlockView] createScheduledBlock() returned")
                     }
                 }) {
                     if isCreating {
@@ -362,7 +365,18 @@ struct CreateScheduledBlockView: View {
                 .frame(height: 52)
                 .background(appTheme.colors.primary)
                 .cornerRadius(12)
-                .disabled(isCreating || blockName.isEmpty || strictMode == nil || (activitySelection.applicationTokens.isEmpty && activitySelection.categoryTokens.isEmpty)) // Removed app selection check for simulator testing
+                .disabled({
+                    let isDisabled = isCreating || blockName.isEmpty || strictMode == nil || (activitySelection.applicationTokens.isEmpty && activitySelection.categoryTokens.isEmpty)
+                    if isDisabled {
+                        print("🔴 [CreateScheduledBlockView] CTA BUTTON IS DISABLED:")
+                        print("   - isCreating: \(isCreating)")
+                        print("   - blockName.isEmpty: \(blockName.isEmpty) (blockName='\(blockName)')")
+                        print("   - strictMode == nil: \(strictMode == nil) (strictMode=\(strictMode?.rawValue ?? "nil"))")
+                        let appsEmpty = activitySelection.applicationTokens.isEmpty && activitySelection.categoryTokens.isEmpty
+                        print("   - apps/categories empty: \(appsEmpty) (apps=\(activitySelection.applicationTokens.count), categories=\(activitySelection.categoryTokens.count))")
+                    }
+                    return isDisabled
+                }())
                 .padding(.horizontal, 20)
                // .padding(.vertical, 20)
             }
@@ -413,9 +427,11 @@ struct CreateScheduledBlockView: View {
                 startTime = editingBlock.schedule.startTime ?? Date()
                 endTime = editingBlock.schedule.endTime ?? Date()
                 selectedDays = editingBlock.schedule.repeatDays ?? []
+                print("🟢 [CreateScheduledBlockView] Pre-filled selectedDays: \(selectedDays) from block.schedule.repeatDays: \(editingBlock.schedule.repeatDays ?? [])")
                 strictMode = editingBlock.strictMode
                 activitySelection = editingBlock.appSelection
                 print("🟢 [CreateScheduledBlockView] Pre-filled activity selection: apps=\(editingBlock.appSelection.applicationTokens.count), categories=\(editingBlock.appSelection.categoryTokens.count)")
+                print("🟡 [CreateScheduledBlockView] ⚠️ NOTE: appSelection will be updated from app list if available")
                 selectedBlockIcon = editingBlock.icon
                 selectedBlockIconColor = editingBlock.iconColor
                 
@@ -427,7 +443,10 @@ struct CreateScheduledBlockView: View {
                         selectedAppListId = appList.id
                         selectedListName = appList.name
                         selectedListIcon = appList.icon
+                        // ⭐ IMPORTANT: Reload activitySelection from the app list (which is the source of truth)
+                        activitySelection = appList.selection
                         print("✅ [CreateScheduledBlockView] Pre-filled app list by UUID: \(appList.name) (icon: \(appList.icon))")
+                        print("   └─ Activity selection updated: apps=\(appList.selection.applicationTokens.count), categories=\(appList.selection.categoryTokens.count)")
                     } else {
                         selectedListName = ""
                         print("⚠️ [CreateScheduledBlockView] App list with ID \(appListId.uuidString) not found - was deleted")
@@ -438,7 +457,10 @@ struct CreateScheduledBlockView: View {
                         selectedAppListId = appList.id
                         selectedListName = appList.name
                         selectedListIcon = appList.icon
+                        // ⭐ IMPORTANT: Reload activitySelection from the app list (which is the source of truth)
+                        activitySelection = appList.selection
                         print("✅ [CreateScheduledBlockView] Pre-filled app list by name: \(appList.name) (icon: \(appList.icon))")
+                        print("   └─ Activity selection updated: apps=\(appList.selection.applicationTokens.count), categories=\(appList.selection.categoryTokens.count)")
                     } else {
                         selectedListName = ""
                         print("⚠️ [CreateScheduledBlockView] App list '\(appListName)' not found - was deleted")
@@ -499,6 +521,7 @@ struct CreateScheduledBlockView: View {
     @MainActor
     private func createScheduledBlock() async {
         print("\n🟡 [CreateScheduledBlockView] createScheduledBlock() called - mode=\(isEditing ? "EDIT" : "CREATE")")
+        print("🟡 [CreateScheduledBlockView] Initial state: isCreating=\(isCreating), blockName=\(blockName)")
         
         guard !blockName.isEmpty else {
             error = "Please enter a block name"
@@ -515,11 +538,13 @@ struct CreateScheduledBlockView: View {
         let duration = calculatedDuration
         guard duration >= 15 * 60 else {
             error = "Duration must be at least 15 minutes"
+            print("❌ [CreateScheduledBlockView] Validation failed: duration \(duration)s < 15min")
             return
         }
         
         guard duration <= 24 * 60 * 60 else {
             error = "Duration cannot exceed 24 hours"
+            print("❌ [CreateScheduledBlockView] Validation failed: duration \(duration)s > 24h")
             return
         }
         
@@ -529,6 +554,8 @@ struct CreateScheduledBlockView: View {
             return
         }
         
+        print("✅ [CreateScheduledBlockView] All validations passed")
+        print("🟡 [CreateScheduledBlockView] Setting isCreating=true")
         isCreating = true
         
         let schedule = Block.BlockSchedule(
@@ -539,6 +566,11 @@ struct CreateScheduledBlockView: View {
             repeatDays: selectedDays.isEmpty ? nil : selectedDays,
             isRepeating: !selectedDays.isEmpty
         )
+        
+        print("🟡 [CreateScheduledBlockView] Schedule created:")
+        print("   selectedDays: \(selectedDays)")
+        print("   repeatDays in schedule: \(schedule.repeatDays ?? [])")
+        print("   isRepeating: \(schedule.isRepeating)")
         
         if let editingBlock = editingBlock {
             print("🟡 [CreateScheduledBlockView] EDIT MODE")
@@ -586,7 +618,9 @@ struct CreateScheduledBlockView: View {
                 print("   apps: \(updatedBlock.appSelection.applicationTokens.count) tokens, \(updatedBlock.appSelection.categoryTokens.count) categories")
                 
                 // Save to UserDefaults
+                print("💾 [CreateScheduledBlockView] Calling blockManager.updateBlock()")
                 try blockManager.updateBlock(updatedBlock)
+                print("✅ [CreateScheduledBlockView] blockManager.updateBlock() returned successfully")
                 print("✅ [CreateScheduledBlockView] Block metadata saved to UserDefaults")
                 
                 // Restart monitors if enforcement data changed
@@ -622,6 +656,8 @@ struct CreateScheduledBlockView: View {
                 print("   appListId: \(block.appListId?.uuidString ?? "nil")")
                 print("   appListName: \(block.appListName ?? "nil")")
                 print("   apps: \(block.appSelection.applicationTokens.count) tokens, \(block.appSelection.categoryTokens.count) categories")
+                print("   repeatDays in block: \(block.schedule.repeatDays ?? [])")
+                print("   isRepeating: \(block.schedule.isRepeating)")
                 
                 try blockManager.createBlock(block)
                 print("✅ [CreateScheduledBlockView] Block saved to UserDefaults")
@@ -636,9 +672,15 @@ struct CreateScheduledBlockView: View {
             }
         }
         
-        print("✅ [CreateScheduledBlockView] \(isEditing ? "Edit" : "Create") completed successfully\n")
-        dismiss()
+        print("✅ [CreateScheduledBlockView] \(isEditing ? "Edit" : "Create") completed successfully")
+        print("🟡 [CreateScheduledBlockView] Setting isCreating=false")
         isCreating = false
+        print("🟡 [CreateScheduledBlockView] Scheduling dismiss after 0.3s delay")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            print("🟡 [CreateScheduledBlockView] Calling dismiss()")
+            dismiss()
+            print("✅ [CreateScheduledBlockView] dismiss() called, view should close\n")
+        }
     }
     
     private var strictModeIcon: String {

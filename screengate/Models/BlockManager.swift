@@ -365,62 +365,61 @@ final class BlockManager {
             }
             
         case .scheduled:
-            // Start monitor for scheduled time range
+            // Start single monitor for scheduled time range with repeats: true
             if let startTime = block.schedule.startTime,
                let endTime = block.schedule.endTime {
                 let isRepeating = block.schedule.isRepeating
-                let dayMonitors = block.schedule.repeatDays ?? Set([Calendar.current.component(.weekday, from: Date())])
                 
                 // Calculate duration to determine if short block strategy needed
                 let duration = endTime.timeIntervalSince(startTime)
                 let isShortBlock = duration < 15 * 60
                 
-                // Create monitors for each day
-                for day in dayMonitors {
-                    let activityName = dayMonitors.count > 1 ? "\(block.id.uuidString).day\(day)" : block.id.uuidString
+                // ✅ CONSOLIDATED: Single monitor with repeats: true instead of per-day loop
+                let activityName = block.id.uuidString
+                
+                if isShortBlock {
+                    // Short scheduled block (< 15 min): Use warningTime strategy
+                    // - Schedule: Always 15 min from start (DeviceActivity minimum)
+                    // - Warning: Fires at ACTUAL end time
+                    //   Formula: warningTime = 15min - duration
+                    //   Example: 8:00-8:10 (10 min) → schedule 8:00-8:15, warning at 5 min before = 8:10 ✅
+                    // - Cleanup: Handle in intervalWillEndWarning callback
+                    // - Event name: "scheduled-short" for extension routing
+                    // - repeatDays: Stored in Block model & persisted to UserDefaults for extension
                     
-                    if isShortBlock {
-                        // Short scheduled block (< 15 min): Use warningTime strategy
-                        // - Schedule: Always 15 min from start (DeviceActivity minimum)
-                        // - Warning: Fires at ACTUAL end time
-                        //   Formula: warningTime = 15min - duration
-                        //   Example: 8:00-8:10 (10 min) → schedule 8:00-8:15, warning at 5 min before = 8:10 ✅
-                        // - Cleanup: Handle in intervalWillEndWarning callback
-                        // - Event name: "scheduled-short" for extension routing
-                        
-                        let calendar = Calendar.current
-                        let extendedEnd = calendar.date(byAdding: .minute, value: 15, to: startTime) ?? endTime
-                        let warningOffset = (15 * 60) - duration
-                        let warningMinutes = Int(warningOffset / 60)
-                        
-                        try deviceActivityManager.startMonitor(
-                            activitySelection: block.appSelection,
-                            shieldThreshold: .hms(0, 0, 0),
-                            start: startTime,
-                            end: extendedEnd,                      // Start + 15 min
-                            repeatDaily: isRepeating,
-                            activityName: activityName,
-                            eventName: "scheduled-short",          // Descriptive event name
-                            warningTimeMinutes: warningMinutes     // Custom warning offset
-                        )
-                    } else {
-                        // Long scheduled block (≥ 15 min): Use normal strategy
-                        // - Schedule: Actual duration
-                        // - Warning: 10 min before end (standard)
-                        // - Cleanup: Handle in intervalDidEnd callback
-                        // - Event name: "scheduled-long" for extension routing
-                        
-                        try deviceActivityManager.startMonitor(
-                            activitySelection: block.appSelection,
-                            shieldThreshold: .hms(0, 0, 0),
-                            start: startTime,
-                            end: endTime,                          // Actual end time
-                            repeatDaily: isRepeating,
-                            activityName: activityName,
-                            eventName: "scheduled-long",           // Descriptive event name
-                            warningTimeMinutes: 10                 // Standard 10 min warning
-                        )
-                    }
+                    let calendar = Calendar.current
+                    let extendedEnd = calendar.date(byAdding: .minute, value: 15, to: startTime) ?? endTime
+                    let warningOffset = (15 * 60) - duration
+                    let warningMinutes = Int(warningOffset / 60)
+                    
+                    try deviceActivityManager.startMonitor(
+                        activitySelection: block.appSelection,
+                        shieldThreshold: .hms(0, 0, 0),
+                        start: startTime,
+                        end: extendedEnd,                      // Start + 15 min
+                        repeatDaily: isRepeating,              // ✅ Single repeating monitor
+                        activityName: activityName,            // ✅ Single activity name
+                        eventName: "scheduled-short",          // Descriptive event name
+                        warningTimeMinutes: warningMinutes     // Custom warning offset
+                    )
+                } else {
+                    // Long scheduled block (≥ 15 min): Use normal strategy
+                    // - Schedule: Actual duration
+                    // - Warning: 10 min before end (standard)
+                    // - Cleanup: Handle in intervalDidEnd callback
+                    // - Event name: "scheduled-long" for extension routing
+                    // - repeatDays: Stored in Block model & persisted to UserDefaults for extension
+                    
+                    try deviceActivityManager.startMonitor(
+                        activitySelection: block.appSelection,
+                        shieldThreshold: .hms(0, 0, 0),
+                        start: startTime,
+                        end: endTime,                          // Actual end time
+                        repeatDaily: isRepeating,              // ✅ Single repeating monitor
+                        activityName: activityName,            // ✅ Single activity name
+                        eventName: "scheduled-long",           // Descriptive event name
+                        warningTimeMinutes: 10                 // Standard 10 min warning
+                    )
                 }
             }
             
@@ -710,21 +709,12 @@ final class BlockManager {
     func stopAllMonitorsForBlock(_ block: Block) async {
         print("🔴 [BlockManager] stopAllMonitorsForBlock called for: \(block.name)")
         
-        if block.schedule.repeatDays == nil || block.schedule.repeatDays!.count == 1 {
-            // Single monitor
-            print("🔴 [BlockManager] Stopping single monitor: \(block.id.uuidString)")
-            deviceActivityManager.stopMonitor(activityName: block.id.uuidString)
-        } else {
-            // Multiple day-based monitors
-            let dayMonitors = block.schedule.repeatDays ?? Set()
-            print("🔴 [BlockManager] Stopping \(dayMonitors.count) day-based monitors")
-            for day in dayMonitors {
-                let activityName = "\(block.id.uuidString).day\(day)"
-                print("🔴 [BlockManager] Stopping monitor for day \(day): \(activityName)")
-                deviceActivityManager.stopMonitor(activityName: activityName)
-            }
-        }
-        print("✅ [BlockManager] All monitors stopped")
+        // ✅ CONSOLIDATED: Single monitor per block (no more per-day loop)
+        let activityName = block.id.uuidString
+        print("🔴 [BlockManager] Stopping monitor: \(activityName)")
+        deviceActivityManager.stopMonitor(activityName: activityName)
+        
+        print("✅ [BlockManager] Monitor stopped")
     }
     
     private func startPauseTimer() {

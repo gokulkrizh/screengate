@@ -7,7 +7,6 @@ struct TimelineCardView: View {
     let onTap: () -> Void
     
     private let appTheme = AppTheme.shared
-    @State private var remainingTime: TimeInterval = 0
     
     var body: some View {
         cardContent
@@ -19,12 +18,6 @@ struct TimelineCardView: View {
             )
             .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
             .onTapGesture { onTap() }
-            .onAppear {
-                updateRemainingTime()
-            }
-            .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
-                updateRemainingTime()
-            }
     }
     
     private var cardContent: some View {
@@ -69,24 +62,49 @@ struct TimelineCardView: View {
                         .font(.system(size: 15, weight: .medium, design: .default))
                         .foregroundColor(.white.opacity(0.4))
                     
-                    if isActive && remainingTime > 0 {
+                    if isActive && block.schedule.endTime != nil {
                         HStack(spacing: 4) {
                             Text("Ending in")
                                 .font(.system(size: 13, weight: .semibold, design: .default))
                                 .foregroundColor(appTheme.colors.primary)
                             
-                            Text(formatCountdown(remainingTime))
-                                .font(.system(size: 15, weight: .bold, design: .default))
-                                .foregroundColor(appTheme.colors.primary)
+                            if let endTime = block.schedule.endTime {
+                                Text(endTime, style: .timer)
+                                    .font(.system(size: 15, weight: .bold, design: .default))
+                                    .foregroundColor(appTheme.colors.primary)
+                                    .monospacedDigit()
+                            }
                         }
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(appTheme.colors.primary.opacity(0.15))
                         .cornerRadius(6)
-                    } else {
-                        Text("\(formatTime(block.schedule.startTime ?? Date())) - \(formatTime(block.schedule.endTime ?? Date()))")
-                            .font(.system(size: 15, weight: .medium, design: .default))
-                            .foregroundColor(.white.opacity(0.6))
+                    } else if let startTime = block.schedule.startTime, isStartingWithin24Hours(startTime) {
+                        HStack(spacing: 4) {
+                            Text("Starting in")
+                                .font(.system(size: 13, weight: .semibold, design: .default))
+                                .foregroundColor(appTheme.colors.primary)
+                            
+                            Text(startTime, style: .timer)
+                                .font(.system(size: 15, weight: .bold, design: .default))
+                                .foregroundColor(appTheme.colors.primary)
+                                .monospacedDigit()
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(appTheme.colors.primary.opacity(0.15))
+                        .cornerRadius(6)
+                    } else if let startTime = block.schedule.startTime {
+                        // Show day of next occurrence + time range
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(getNextOccurrenceDayName(repeatDays: block.schedule.repeatDays ?? []))
+                                .font(.system(size: 15, weight: .medium, design: .default))
+                                .foregroundColor(.white.opacity(0.6))
+                            
+                            Text("\(formatTime(startTime)) - \(formatTime(block.schedule.endTime ?? Date()))")
+                                .font(.system(size: 13, weight: .regular, design: .default))
+                                .foregroundColor(.white.opacity(0.5))
+                        }
                     }
                 }
                 .padding(.bottom, 20)
@@ -140,6 +158,43 @@ struct TimelineCardView: View {
         return formatter.string(from: date)
     }
     
+    private func getNextOccurrenceDayName(repeatDays: Set<Int>) -> String {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        // If no repeat days set, show today
+        guard !repeatDays.isEmpty else {
+            return formatDayName(now)
+        }
+        
+        // Start from tomorrow (since we're looking for next occurrence)
+        var checkDate = calendar.date(byAdding: .day, value: 1, to: now) ?? now
+        
+        // Check up to 7 days ahead
+        for _ in 0..<7 {
+            let weekday = calendar.component(.weekday, from: checkDate)
+            if repeatDays.contains(weekday) {
+                return formatDayName(checkDate)
+            }
+            checkDate = calendar.date(byAdding: .day, value: 1, to: checkDate) ?? checkDate
+        }
+        
+        // Fallback: return today's day
+        return formatDayName(now)
+    }
+    
+    private func isStartingWithin24Hours(_ startTime: Date) -> Bool {
+        let now = Date()
+        let timeInterval = startTime.timeIntervalSince(now)
+        return timeInterval > 0 && timeInterval < 86400 // 86400 seconds = 24 hours
+    }
+    
+    private func formatDayName(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE"
+        return formatter.string(from: date)
+    }
+    
     private func dayLabel(_ day: Int) -> String {
         switch day {
         case 1: return "S"
@@ -150,68 +205,6 @@ struct TimelineCardView: View {
         case 6: return "F"
         case 7: return "S"
         default: return ""
-        }
-    }
-    
-    private func updateRemainingTime() {
-        guard block.isActiveAmongOverlaps,
-              let startTime = block.schedule.startTime,
-              let endTime = block.schedule.endTime else {
-            remainingTime = 0
-            return
-        }
-        
-        let calendar = Calendar.current
-        let now = Date()
-        
-        // Extract time components from start and end times
-        let startComponents = calendar.dateComponents([.hour, .minute], from: startTime)
-        let endComponents = calendar.dateComponents([.hour, .minute], from: endTime)
-        
-        // Get current time components
-        let nowComponents = calendar.dateComponents([.hour, .minute], from: now)
-        
-        // Calculate today's end time
-        var todayEndComponents = calendar.dateComponents([.year, .month, .day], from: now)
-        todayEndComponents.hour = endComponents.hour
-        todayEndComponents.minute = endComponents.minute
-        todayEndComponents.second = 0
-        
-        guard let todayEndTime = calendar.date(from: todayEndComponents) else {
-            remainingTime = 0
-            return
-        }
-        
-        // If end time is earlier than start time, it's overnight
-        // Add 24 hours to end time
-        let finalEndTime = todayEndTime < now ? 
-            calendar.date(byAdding: .day, value: 1, to: todayEndTime) ?? todayEndTime :
-            todayEndTime
-        
-        remainingTime = finalEndTime.timeIntervalSince(now)
-        
-        // If negative, block has ended
-        if remainingTime < 0 {
-            remainingTime = 0
-        }
-    }
-    
-    private func formatCountdown(_ interval: TimeInterval) -> String {
-        let totalSeconds = Int(max(0, interval))
-        let hours = totalSeconds / 3600
-        let minutes = (totalSeconds % 3600) / 60
-        let seconds = totalSeconds % 60
-        
-        if hours > 0 {
-            if minutes > 0 {
-                return "\(hours)h \(minutes)m"
-            } else {
-                return "\(hours)h"
-            }
-        } else if minutes > 0 {
-            return "\(minutes)m \(seconds)s"
-        } else {
-            return "\(seconds)s"
         }
     }
 }

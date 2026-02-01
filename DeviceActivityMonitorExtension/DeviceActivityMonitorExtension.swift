@@ -364,6 +364,41 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         super.intervalDidStart(for: activity)
         logger.info("[intervalDidStart] intervalDidStart called for activity: \(activity.rawValue)")
         
+        // Extract block ID from activity name
+        guard let blockId = extractBlockId(from: activity) else {
+            logger.error("[intervalDidStart] Failed to extract block ID from activity")
+            return
+        }
+        
+        // ✅ NEW: Check if block should run today based on repeatDays
+        if let userDefaults = userDefaults,
+           let blockData = userDefaults.data(forKey: "block_\(blockId)") {
+            // Decode block JSON to check repeatDays
+            do {
+                if let blockJson = try JSONSerialization.jsonObject(with: blockData) as? [String: Any],
+                   let schedule = blockJson["schedule"] as? [String: Any],
+                   let repeatDaysArray = schedule["repeatDays"] as? [Int] {
+                    
+                    let repeatDays = Set(repeatDaysArray)
+                    let calendar = Calendar.current
+                    let todayWeekday = calendar.component(.weekday, from: Date())
+                    
+                    guard repeatDays.contains(todayWeekday) else {
+                        let blockName = blockJson["name"] as? String ?? blockId
+                        logger.info("[intervalDidStart] Block '\(blockName)' does not apply today (weekday: \(todayWeekday), repeatDays: \(repeatDays))")
+                        return
+                    }
+                    
+                    let blockName = blockJson["name"] as? String ?? blockId
+                    logger.info("[intervalDidStart] Block '\(blockName)' applies today (weekday: \(todayWeekday))")
+                }
+            } catch {
+                logger.warning("[intervalDidStart] Could not parse block JSON for repeat days validation: \(error)")
+            }
+        } else {
+            logger.warning("[intervalDidStart] Could not load block for repeat days validation: \(blockId)")
+        }
+        
         // Check if paused - if so, don't apply restrictions
         if isCurrentlyPaused() {
             logger.warning("[intervalDidStart] Block is paused, skipping restrictions")
