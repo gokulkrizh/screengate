@@ -7,18 +7,21 @@ struct TimeCard: View {
     let label: String
     let time: String
     let action: () -> Void
+    let showIcon: Bool
     
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                ZStack {
-                    Circle()
-                        .fill(Color(red: 0.06, green: 0.13, blue: 0.09))
-                        .frame(width: 40, height: 40)
-                    
-                    Image(systemName: icon)
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(iconColor)
+                if showIcon {
+                    ZStack {
+                        Circle()
+                            .fill(Color(red: 0.06, green: 0.13, blue: 0.09))
+                            .frame(width: 40, height: 40)
+                        
+                        Image(systemName: icon)
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(iconColor)
+                    }
                 }
                 
                 VStack(alignment: .leading, spacing: 4) {
@@ -39,6 +42,7 @@ struct TimeCard: View {
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.white.opacity(0.4))
             }
+            .frame(maxWidth: .infinity)
             .padding(16)
             .background(Color(red: 0.09, green: 0.16, blue: 0.12))
             .cornerRadius(12)
@@ -52,23 +56,26 @@ struct TimeCard: View {
 }
 
 #Preview {
-    VStack(spacing: 12) {
+    HStack(spacing: 12) {
         TimeCard(
             icon: "sunrise.fill",
             iconColor: .orange,
-            label: "Start Time",
+            label: "From",
             time: "09:00 AM",
-            action: {}
+            action: {},
+            showIcon: false
         )
         
         TimeCard(
             icon: "sunset.fill",
             iconColor: .purple,
-            label: "End Time",
+            label: "To",
             time: "05:00 PM",
-            action: {}
+            action: {},
+            showIcon: false
         )
     }
+    .frame(maxWidth: .infinity)
     .padding()
     .background(Color(red: 0.06, green: 0.13, blue: 0.09))
     .preferredColorScheme(.dark)

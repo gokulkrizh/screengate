@@ -214,29 +214,29 @@ struct CreateScheduledBlockView: View {
                                 .font(.system(size: 18, weight: .bold, design: .default))
                                 .foregroundColor(.white)
                             
-                            // Start Time
-                            TimeCard(
-                                icon: "sun.max.fill",
-                                iconColor: appTheme.colors.primary,
-                                label: "START TIME",
-                                time: formatTime(startTime),
-                                action: { showStartTimePicker = true }
-                            )
-                            
-                            // Connector line
-                            Rectangle()
-                                .fill(Color.white.opacity(0.1))
-                                .frame(width: 2, height: 16)
+                            HStack(spacing: 12) {
+                                // Start Time
+                                TimeCard(
+                                    icon: "sun.max.fill",
+                                    iconColor: appTheme.colors.primary,
+                                    label: "FROM",
+                                    time: formatTime(startTime),
+                                    action: { showStartTimePicker = true },
+                                    showIcon: false
+                                )
                                 .frame(maxWidth: .infinity)
-                            
-                            // End Time
-                            TimeCard(
-                                icon: "moon.fill",
-                                iconColor: Color.blue,
-                                label: "END TIME",
-                                time: formatTime(endTime),
-                                action: { showEndTimePicker = true }
-                            )
+                                
+                                // End Time
+                                TimeCard(
+                                    icon: "moon.fill",
+                                    iconColor: Color.blue,
+                                    label: "TO",
+                                    time: formatTime(endTime),
+                                    action: { showEndTimePicker = true },
+                                    showIcon: false
+                                )
+                                .frame(maxWidth: .infinity)
+                            }
                         }
                         .padding(.horizontal, 20)
                         
