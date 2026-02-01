@@ -211,7 +211,7 @@ struct UpcomingBlocksView: View {
                     
                     let hasAnyBlocks = timelineBuilder?.hasAnyBlocks(forDays: 7) ?? false
                     
-                    VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: 16) {
                         // Now Section
                         if !nowBlocks.isEmpty {
                             sectionHeader(title: "Now", date: formatDate(today))
@@ -223,8 +223,8 @@ struct UpcomingBlocksView: View {
                                     block: block,
                                     onTap: { blockToEdit = block }
                                 )
-                                .padding(.horizontal, 20)
-                                .padding(.bottom, 16)
+                                .padding(.horizontal, 16)
+                                .padding(.bottom, 12)
                             }
                         }
                         
@@ -237,8 +237,8 @@ struct UpcomingBlocksView: View {
                                 block: block,
                                 onTap: { blockToEdit = block }
                             )
-                                .padding(.horizontal, 20)
-                                .padding(.bottom, 16)
+                                .padding(.horizontal, 16)
+                                .padding(.bottom, 12)
                             }
                         }
                         
@@ -249,7 +249,7 @@ struct UpcomingBlocksView: View {
                                     Circle()
                                         .fill(appTheme.colors.primary.opacity(0.2))
                                         .frame(width: 48, height: 48)
-                                    
+                                     
                                     Image(systemName: "calendar.badge.plus")
                                         .font(.system(size: 24, weight: .semibold))
                                         .foregroundColor(appTheme.colors.primary)
@@ -266,8 +266,8 @@ struct UpcomingBlocksView: View {
                                 }
                             }
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 32)
-                            .padding(.horizontal, 20)
+                            .padding(.vertical, 24)
+                            .padding(.horizontal, 16)
                             .background(Color.white.opacity(0.03))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 16)
@@ -275,13 +275,13 @@ struct UpcomingBlocksView: View {
                                     .foregroundColor(Color.white.opacity(0.1))
                             )
                             .cornerRadius(16)
-                            .padding(.horizontal, 20)
-                            .padding(.top, 16)
+                            .padding(.horizontal, 16)
+                            .padding(.top, 12)
                         }
                     }
-                    .padding(.bottom, 32)
+                    .padding(.bottom, 20)
                 }
-                .padding(.horizontal, 12)
+                .padding(.horizontal, 8)
             }
         }
         .navigationBarHidden(true)
@@ -364,9 +364,9 @@ struct UpcomingBlocksView: View {
                     .foregroundColor(.white.opacity(0.5))
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 16)
-        .padding(.bottom, 8)
+        .padding(.horizontal, 16)
+        .padding(.top, 12)
+        .padding(.bottom, 6)
     }
 }
 
