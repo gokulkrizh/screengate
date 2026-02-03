@@ -79,13 +79,13 @@ struct TimelineCardView: View {
                         .padding(.vertical, 3)
                         .background(appTheme.colors.primary.opacity(0.15))
                         .cornerRadius(5)
-                    } else if let startTime = block.schedule.startTime, isStartingWithin24Hours(startTime) {
+                    } else if let nextOccurrenceDate = getNextOccurrenceDateWithin24Hours(repeatDays: block.schedule.repeatDays ?? [], startTime: block.schedule.startTime) {
                         HStack(spacing: 3) {
                             Text("Starting in")
                                 .font(.system(size: 12, weight: .semibold, design: .default))
                                 .foregroundColor(appTheme.colors.primary)
                             
-                            Text(startTime, style: .timer)
+                            Text(nextOccurrenceDate, style: .timer)
                                 .font(.system(size: 14, weight: .bold, design: .default))
                                 .foregroundColor(appTheme.colors.primary)
                                 .monospacedDigit()
@@ -94,27 +94,46 @@ struct TimelineCardView: View {
                         .padding(.vertical, 3)
                         .background(appTheme.colors.primary.opacity(0.15))
                         .cornerRadius(5)
-                    } else if let startTime = block.schedule.startTime {
-                        // Show day of next occurrence + time range
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(getNextOccurrenceDayName(repeatDays: block.schedule.repeatDays ?? []))
-                                .font(.system(size: 14, weight: .medium, design: .default))
-                                .foregroundColor(.white.opacity(0.6))
+                    } else if let startTime = block.schedule.startTime, (block.schedule.repeatDays?.isEmpty ?? true) == false {
+                        // Show day name for upcoming blocks > 24 hours away
+                        HStack(spacing: 3) {
+                            Text("Starts in")
+                                .font(.system(size: 12, weight: .semibold, design: .default))
+                                .foregroundColor(appTheme.colors.primary)
                             
-                            Text("\(formatTime(startTime)) - \(formatTime(block.schedule.endTime ?? Date()))")
-                                .font(.system(size: 12, weight: .regular, design: .default))
-                                .foregroundColor(.white.opacity(0.5))
+                            Text(getNextOccurrenceDayName(repeatDays: block.schedule.repeatDays ?? []))
+                                .font(.system(size: 12, weight: .semibold, design: .default))
+                                .foregroundColor(appTheme.colors.primary)
                         }
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
+                        .background(appTheme.colors.primary.opacity(0.15))
+                        .cornerRadius(5)
                     }
                 }
-                .padding(.bottom, 12)
+                .padding(.bottom, 8)
                 
                 if !selectedDays.isEmpty {
+                    let startTime = block.schedule.startTime
+                    let endTime = block.schedule.endTime
+                    
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("REPEATS")
-                            .font(.system(size: 10, weight: .bold, design: .default))
-                            .tracking(0.5)
-                            .foregroundColor(.white.opacity(0.5))
+                        HStack(spacing: 4) {
+                            Text("REPEATS")
+                                .font(.system(size: 10, weight: .bold, design: .default))
+                                .tracking(0.5)
+                                .foregroundColor(.white.opacity(0.5))
+                            
+                            Text("•")
+                                .font(.system(size: 10, weight: .medium, design: .default))
+                                .foregroundColor(.white.opacity(0.3))
+                            
+                            if let startTime = startTime, let endTime = endTime {
+                                Text("\(formatTime(startTime)) - \(formatTime(endTime))")
+                                    .font(.system(size: 10, weight: .semibold, design: .default))
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+                        }
                         
                         HStack(spacing: 6) {
                             ForEach(1...7, id: \.self) { day in
@@ -158,6 +177,62 @@ struct TimelineCardView: View {
         return formatter.string(from: date)
     }
     
+    private func getNextOccurrenceDateWithin24Hours(repeatDays: Set<Int>, startTime: Date?) -> Date? {
+        let calendar = Calendar.current
+        let now = Date()
+        
+        guard let startTime = startTime, !repeatDays.isEmpty else {
+            return nil
+        }
+        
+        // Extract time components from startTime
+        let startComponents = calendar.dateComponents([.hour, .minute], from: startTime)
+        guard let hour = startComponents.hour, let minute = startComponents.minute else {
+            return nil
+        }
+        
+        // Start from today and check if the time has passed
+        var checkDate = calendar.startOfDay(for: now)
+        
+        // If today's time hasn't passed yet, check today
+        let weekday = calendar.component(.weekday, from: checkDate)
+        if repeatDays.contains(weekday) {
+            var occurrenceComponents = calendar.dateComponents([.year, .month, .day], from: checkDate)
+            occurrenceComponents.hour = hour
+            occurrenceComponents.minute = minute
+            occurrenceComponents.second = 0
+            
+            if let occurrenceDate = calendar.date(from: occurrenceComponents), occurrenceDate > now {
+                let timeInterval = occurrenceDate.timeIntervalSince(now)
+                if timeInterval <= 86400 { // Within 24 hours
+                    return occurrenceDate
+                }
+            }
+        }
+        
+        // Check tomorrow and next 6 days
+        for _ in 0..<7 {
+            checkDate = calendar.date(byAdding: .day, value: 1, to: checkDate) ?? checkDate
+            let weekday = calendar.component(.weekday, from: checkDate)
+            
+            if repeatDays.contains(weekday) {
+                var occurrenceComponents = calendar.dateComponents([.year, .month, .day], from: checkDate)
+                occurrenceComponents.hour = hour
+                occurrenceComponents.minute = minute
+                occurrenceComponents.second = 0
+                
+                if let occurrenceDate = calendar.date(from: occurrenceComponents) {
+                    let timeInterval = occurrenceDate.timeIntervalSince(now)
+                    if timeInterval <= 86400 { // Within 24 hours
+                        return occurrenceDate
+                    }
+                }
+            }
+        }
+        
+        return nil
+    }
+    
     private func getNextOccurrenceDayName(repeatDays: Set<Int>) -> String {
         let calendar = Calendar.current
         let now = Date()
@@ -167,10 +242,10 @@ struct TimelineCardView: View {
             return formatDayName(now)
         }
         
-        // Start from tomorrow (since we're looking for next occurrence)
-        var checkDate = calendar.date(byAdding: .day, value: 1, to: now) ?? now
+        // Start from today (check if today qualifies)
+        var checkDate = calendar.startOfDay(for: now)
         
-        // Check up to 7 days ahead
+        // Check up to 7 days
         for _ in 0..<7 {
             let weekday = calendar.component(.weekday, from: checkDate)
             if repeatDays.contains(weekday) {
@@ -181,12 +256,6 @@ struct TimelineCardView: View {
         
         // Fallback: return today's day
         return formatDayName(now)
-    }
-    
-    private func isStartingWithin24Hours(_ startTime: Date) -> Bool {
-        let now = Date()
-        let timeInterval = startTime.timeIntervalSince(now)
-        return timeInterval > 0 && timeInterval < 86400 // 86400 seconds = 24 hours
     }
     
     private func formatDayName(_ date: Date) -> String {

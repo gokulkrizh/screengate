@@ -211,7 +211,7 @@ struct UpcomingBlocksView: View {
                     
                     let hasAnyBlocks = timelineBuilder?.hasAnyBlocks(forDays: 7) ?? false
                     
-                    VStack(alignment: .leading, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 8) {
                         // Now Section
                         if !nowBlocks.isEmpty {
                             sectionHeader(title: "Now", date: formatDate(today))
@@ -223,6 +223,7 @@ struct UpcomingBlocksView: View {
                                     block: block,
                                     onTap: { blockToEdit = block }
                                 )
+                                .frame(maxWidth: .infinity)
                                 .padding(.horizontal, 16)
                                 .padding(.bottom, 12)
                             }
@@ -237,8 +238,9 @@ struct UpcomingBlocksView: View {
                                 block: block,
                                 onTap: { blockToEdit = block }
                             )
-                                .padding(.horizontal, 16)
-                                .padding(.bottom, 12)
+                            .frame(maxWidth: .infinity)
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 12)
                             }
                         }
                         
@@ -365,7 +367,7 @@ struct UpcomingBlocksView: View {
             }
         }
         .padding(.horizontal, 16)
-        .padding(.top, 12)
+        .padding(.top, 6)
         .padding(.bottom, 6)
     }
 }
