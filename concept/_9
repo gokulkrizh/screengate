@@ -1,0 +1,112 @@
+I'll strip away all complexity and give you the clear, simple version.
+
+---
+
+## **ScreenDiet: The Core Concept**
+
+**One-sentence idea:** A screen time app that treats your phone like food—some apps are healthy (protein), some are junk food (carbs), and you need a balanced diet.
+
+---
+
+## **The Problem**
+
+People track every calorie they eat but consume 8+ hours of digital junk daily with zero awareness. Current screen time apps just count minutes or block apps—they don't teach *what* you're consuming or help build sustainable habits.
+
+---
+
+## **The Solution: Three Simple Features**
+
+### **1. Nutrition Labels (Automatic)**
+
+Every app shows a "nutrition facts" label when you open it:
+
+```
+Instagram:
+🍩 Carbs (junk food)
+⚡ Quick energy, crash later
+🍽️ Recommended: 20 minutes
+```
+
+No setup. We classify the top 500 apps automatically. You just see the label.
+
+---
+
+### **2. Eating Windows (Scheduled)**
+
+Like intermittent fasting for food:
+
+- **Morning (6am-12pm):** Create only (Notes, Camera)
+- **Afternoon (12pm-6pm):** Social/entertainment allowed
+- **Evening (6pm-8am):** Phone locked except emergencies
+
+Set it once. Runs automatically.
+
+---
+
+### **3. Weekly Check-Up (Report)**
+
+Every Sunday, you get a simple report:
+
+```
+This week:
+🍩 Junk food: 65% (too high)
+🥩 Healthy: 15% (too low)
+😴 Sleep: Improved
+📊 Score: C+
+
+Next week's plan:
+- Shrink junk window by 1 hour
+- Add morning creation time
+[Accept] [Adjust]
+```
+
+One tap updates your schedule.
+
+---
+
+## **What Makes It Different**
+
+| **Other Apps** | **ScreenDiet** |
+|----------------|----------------|
+| "You've used Instagram 2 hours" | "You've eaten 2 hours of junk food" |
+| Block/punish | Educate/schedule |
+| Static limits | Adaptive weekly plans |
+| Shame-based | Health-based |
+
+---
+
+## **User Journey (Simple)**
+
+**Day 1:** Download → grant permission → pick 3 apps you want to limit → choose eating window (example: 12pm-6pm for social apps) → done.
+
+**Daily:** Open Instagram outside window → see "Kitchen closed until 12pm" → wait or do something else.
+
+**Sunday:** See weekly report → tap "Accept next week's plan" → schedule auto-updates.
+
+---
+
+## **Technical Reality (What We Actually Build)**
+
+| **Feature** | **Real API Used** | **What It Does** |
+|-------------|-------------------|------------------|
+| Nutrition labels | `ShieldConfiguration` | Shows app category when opened |
+| Eating windows | `DeviceActivitySchedule` | Blocks/allows apps by time |
+| Weekly report | `DeviceActivityReport` | Shows usage summary |
+| Auto-adjust | Update `DeviceActivitySchedule` | Changes windows based on data |
+
+No magic. No behavior tracking. Just scheduled blocking with a food metaphor.
+
+---
+
+## **The Hook**
+
+People understand diets. They know:
+- You can't eat pizza all day
+- Fasting has health benefits
+- Weekly meal prep works
+
+ScreenDiet applies the same logic to your phone. Nothing new to learn—just a familiar metaphor for a digital problem.
+
+---
+
+Is this the clarity you need? Should I focus on **one specific flow** (like the Sunday report-to-adjustment) in more detail?
