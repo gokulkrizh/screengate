@@ -35,6 +35,7 @@ extension Notification.Name {
 
 @main
 struct DeviceActivityMonitorDemoApp: App {
+    @Environment(\.scenePhase) private var scenePhase
     @State private var showRestrictionLifted = false
     @State private var hasCompletedOnboarding = OnboardingData.hasCompletedOnboarding()
     @State private var dietManager = DietManager()
@@ -56,6 +57,15 @@ struct DeviceActivityMonitorDemoApp: App {
                     })
                 }
                 .environment(dietManager)
+            }
+        }
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            if newPhase == .active {
+                #if DEBUG
+                print("[App] Scene became active - reloading UserDefaults")
+                #endif
+                dietManager.loadFromUserDefaults()
+                dietManager.applyRestrictionsForCurrentState()
             }
         }
     }

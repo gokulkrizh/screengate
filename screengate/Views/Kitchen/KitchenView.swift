@@ -39,6 +39,14 @@ struct KitchenView: View {
         .background(appTheme.colors.background.ignoresSafeArea())
         .onReceive(Self.minuteTimer) { _ in
             currentTime = Date()
+            #if DEBUG
+            print("[KitchenView] Timer tick - carbs: \(dietManager.todayLog.carbsMinutes), state: \(dietManager.currentDietState)")
+            #endif
+        }
+        .onAppear {
+            #if DEBUG
+            print("[KitchenView] onAppear - carbs: \(dietManager.todayLog.carbsMinutes), protein: \(dietManager.todayLog.proteinMinutes), fats: \(dietManager.todayLog.fatsMinutes), fiber: \(dietManager.todayLog.fiberMinutes), state: \(dietManager.currentDietState)")
+            #endif
         }
     }
 

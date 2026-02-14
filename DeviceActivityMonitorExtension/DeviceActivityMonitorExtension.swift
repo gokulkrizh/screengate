@@ -51,24 +51,15 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         logger.info("[updateShieldType] Set shield type to: \(type)")
     }
 
-    /// Increment carb usage counter in UserDefaults
-    private func incrementCarbsUsed(minutes: Int) {
+    /// Set carb usage counter in UserDefaults
+    /// NOTE: Only writes the integer key. Does NOT re-encode todayLog because
+    /// NutritionLogLight is missing the `date` field, which would corrupt the
+    /// main app's NutritionLog decode. The main app syncs carbsUsedToday into
+    /// todayLog.carbsMinutes when it loads from UserDefaults.
+    private func setCarbsUsed(minutes: Int) {
         guard let userDefaults = userDefaults else { return }
-        let current = userDefaults.integer(forKey: "carbsUsedToday")
-        let updated = current + minutes
-        userDefaults.set(updated, forKey: "carbsUsedToday")
-
-        // Also update the todayLog
-        if let logData = userDefaults.data(forKey: "todayLog"),
-           var log = try? jsonDecoder.decode(NutritionLogLight.self, from: logData) {
-            log.carbsMinutes = updated
-            if let updatedData = try? JSONEncoder().encode(log) {
-                userDefaults.set(updatedData, forKey: "todayLog")
-            }
-        }
-
-        userDefaults.synchronize()
-        logger.info("[incrementCarbsUsed] Carbs used: \(current) -> \(updated)")
+        userDefaults.set(minutes, forKey: "carbsUsedToday")
+        logger.info("[setCarbsUsed] Carbs used set to: \(minutes)")
     }
 
     /// Get daily carb limit from profile
@@ -84,6 +75,15 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
     /// Get current carbs used today
     private func getCarbsUsedToday() -> Int {
         return userDefaults?.integer(forKey: "carbsUsedToday") ?? 0
+    }
+
+    /// Parse usage minutes from an incremental event name like "usage-5", "usage-10", etc.
+    private func parseUsageMinutes(from eventName: String) -> Int? {
+        guard eventName.hasPrefix("usage-"),
+              let minutes = Int(eventName.dropFirst("usage-".count)) else {
+            return nil
+        }
+        return minutes
     }
 
     /// Send notification
@@ -132,9 +132,10 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         switch activityType {
         case "diet.carbs.window":
-            // Carb eating window just opened - remove carb restrictions
+            // Carb eating window just opened - remove carb restrictions and reset daily counter
             logger.info("[intervalDidStart] Carb window opened - removing carb restrictions")
             manager.removeRestrictions()
+            setCarbsUsed(minutes: 0)  // Reset daily counter at window open
             updateShieldType("portionTimer")
             sendNotification(title: "Kitchen Open", body: "Your carb window is now open. Enjoy responsibly!")
             postDietChangedNotification()
@@ -216,28 +217,51 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         switch activityType {
         case "diet.carbs.window":
-            // Daily carb limit reached - apply carb restrictions within window
-            logger.info("[eventDidReachThreshold] Daily carb limit reached!")
+            // Parse usage minutes from event name (e.g., "usage-5", "usage-10", ...)
+            if let usageMinutes = parseUsageMinutes(from: event.rawValue) {
+                let limit = getDailyCarbLimit()
+                setCarbsUsed(minutes: usageMinutes)
 
-            let limit = getDailyCarbLimit()
-            incrementCarbsUsed(minutes: limit) // Set to limit since threshold was reached
-
-            // Apply restrictions for carb apps
-            let events = manager.getEvents(activityName: activity, details: true)
-            for (_, eventDetail) in events {
-                manager.applyImmediateRestrictions(
-                    applicationTokens: eventDetail.applications,
-                    categoryTokens: eventDetail.categories,
-                    webDomainTokens: eventDetail.webDomains
+                if usageMinutes >= limit {
+                    // Daily carb limit reached - apply restrictions
+                    logger.info("[eventDidReachThreshold] Daily carb limit reached at \(usageMinutes)/\(limit) min")
+                    let events = manager.getEvents(activityName: activity, details: true)
+                    for (_, eventDetail) in events {
+                        manager.applyImmediateRestrictions(
+                            applicationTokens: eventDetail.applications,
+                            categoryTokens: eventDetail.categories,
+                            webDomainTokens: eventDetail.webDomains
+                        )
+                    }
+                    updateShieldType("dailyLimitReached")
+                    sendNotification(
+                        title: "Daily Carb Limit Reached",
+                        body: "\(limit)/\(limit) minutes consumed. Try protein or fiber apps."
+                    )
+                } else {
+                    // Incremental update - just sync the usage to the main app
+                    logger.info("[eventDidReachThreshold] Carb usage: \(usageMinutes)/\(limit) min")
+                }
+                postDietChangedNotification()
+            } else if event.rawValue == "carb-limit" {
+                // Legacy single-threshold event
+                let limit = getDailyCarbLimit()
+                setCarbsUsed(minutes: limit)
+                let events = manager.getEvents(activityName: activity, details: true)
+                for (_, eventDetail) in events {
+                    manager.applyImmediateRestrictions(
+                        applicationTokens: eventDetail.applications,
+                        categoryTokens: eventDetail.categories,
+                        webDomainTokens: eventDetail.webDomains
+                    )
+                }
+                updateShieldType("dailyLimitReached")
+                sendNotification(
+                    title: "Daily Carb Limit Reached",
+                    body: "\(limit)/\(limit) minutes consumed. Try protein or fiber apps."
                 )
+                postDietChangedNotification()
             }
-
-            updateShieldType("dailyLimitReached")
-            sendNotification(
-                title: "Daily Carb Limit Reached",
-                body: "\(limit)/\(limit) minutes consumed. Try protein or fiber apps."
-            )
-            postDietChangedNotification()
 
         case "diet.fats.window":
             // Fats limit reached

@@ -301,16 +301,28 @@ final class DietManager {
         ) ?? Date()
 
         if let carbSelection = foodGroupSelections[.carbs], carbSelection.applicationTokens.count > 0 || carbSelection.categoryTokens.count > 0 {
-            // Carb window monitor: threshold = daily limit
-            let carbLimitSeconds = TimeInterval(profile.eatingWindow.dailyCarbLimitMinutes * 60)
-            try deviceActivityManager.startMonitor(
+            // Create incremental thresholds every 5 minutes up to daily limit
+            // This allows the extension to report usage back to the app at each interval
+            let limitMinutes = profile.eatingWindow.dailyCarbLimitMinutes
+            let interval = 5
+            var thresholds: [Int] = []
+            var t = interval
+            while t <= limitMinutes {
+                thresholds.append(t)
+                t += interval
+            }
+            // Ensure the exact limit is included
+            if thresholds.last != limitMinutes && limitMinutes > 0 {
+                thresholds.append(limitMinutes)
+            }
+
+            try deviceActivityManager.startMonitorWithIncrementalThresholds(
                 activitySelection: carbSelection,
-                shieldThreshold: carbLimitSeconds,
+                thresholdMinutes: thresholds,
                 start: windowStart,
                 end: windowEnd,
                 repeatDaily: true,
                 activityName: "diet.carbs.window",
-                eventName: "carb-limit",
                 warningTimeMinutes: 5
             )
         }
@@ -500,6 +512,9 @@ final class DietManager {
                 guard !manager.isSavingToUserDefaults else { return }
 
                 DispatchQueue.main.async {
+                    #if DEBUG
+                    print("[DietManager] Darwin notification received from extension - reloading")
+                    #endif
                     manager.loadFromUserDefaults()
                     manager.applyRestrictionsForCurrentState()
                 }
@@ -574,6 +589,16 @@ final class DietManager {
             self.todayLog = log
         }
 
+        // Sync carbsUsedToday from the extension into todayLog
+        // The extension writes only this integer key (not the full todayLog)
+        let extensionCarbs = userDefaults.integer(forKey: carbsUsedTodayKey)
+        if extensionCarbs > todayLog.carbsMinutes {
+            todayLog.carbsMinutes = extensionCarbs
+            #if DEBUG
+            print("[DietManager] Synced carbsUsedToday from extension: \(extensionCarbs)")
+            #endif
+        }
+
         // Load weekly logs
         if let data = userDefaults.data(forKey: weeklyLogsKey),
            let logs = try? JSONDecoder().decode([NutritionLog].self, from: data) {
@@ -590,6 +615,10 @@ final class DietManager {
                 endCheatMeal()
             }
         }
+
+        #if DEBUG
+        print("[DietManager] Loaded from UserDefaults - carbsMinutes: \(todayLog.carbsMinutes), carbsUsedToday key: \(extensionCarbs), state: \(currentDietState)")
+        #endif
     }
 
     /// Check if diet has been set up (onboarding completed)

@@ -102,6 +102,53 @@ class DeviceActivityManager {
 
         self.monitoringActivities.append(activityName)
     }
+
+    /// Start a monitor with multiple threshold events for incremental usage tracking.
+    /// Each threshold fires `eventDidReachThreshold` in the extension, enabling granular tracking.
+    func startMonitorWithIncrementalThresholds(
+        activitySelection: FamilyActivitySelection,
+        thresholdMinutes: [Int],
+        start: Date,
+        end: Date,
+        repeatDaily: Bool,
+        activityName: String,
+        warningTimeMinutes: Int = 5
+    ) throws {
+        let (start, end) = repeatDaily ? createRepeatDailySchedule(start: start, end: end) : createOneTimeSchedule(start: start, end: end)
+
+        let deviceActivityName = makeActivityName(activityName)
+
+        let schedule = DeviceActivitySchedule(
+            intervalStart: start,
+            intervalEnd: end,
+            repeats: repeatDaily,
+            warningTime: DateComponents(minute: warningTimeMinutes)
+        )
+
+        var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
+
+        for minutes in thresholdMinutes {
+            let eventName = DeviceActivityEvent.Name("usage-\(minutes)")
+            try self.saveSelection(activitySelection, activityName: deviceActivityName, eventName: eventName)
+
+            let event = DeviceActivityEvent(
+                applications: activitySelection.applicationTokens,
+                categories: activitySelection.categoryTokens,
+                webDomains: activitySelection.webDomainTokens,
+                threshold: DateComponents(minute: minutes),
+                includesPastActivity: true
+            )
+            events[eventName] = event
+        }
+
+        try self.deviceActivityCenter.startMonitoring(
+            deviceActivityName,
+            during: schedule,
+            events: events
+        )
+
+        self.monitoringActivities.append(activityName)
+    }
     
     func stopMonitor(activityName: String) {
         self.stopMonitor(activityName: makeActivityName(activityName))
