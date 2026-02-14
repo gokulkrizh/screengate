@@ -9,83 +9,88 @@ import ManagedSettings
 import UserNotifications
 import Foundation
 
-// Override the functions below to customize the shield actions used in various situations.
-// The system provides a default response for any functions that your subclass doesn't override.
-// Make sure that your class name matches the NSExtensionPrincipalClass in your Info.plist.
 class ShieldActionExtension: ShieldActionDelegate {
     private var manager = DeviceActivityManager()
     private let userDefaults = UserDefaults(suiteName: "group.com.gia.screendiet")
     private let jsonDecoder = JSONDecoder()
 
     // MARK: - Helpers
-    
-    /// Get active block's strict mode from UserDefaults
-    private func getStrictMode() -> String {
-        guard let userDefaults = userDefaults,
-              let activeBlockData = userDefaults.data(forKey: "activeBlock") else {
-            return "medium" // Default to medium
-        }
-        
-        do {
-            let decoded = try jsonDecoder.decode([String: AnyCodable].self, from: activeBlockData)
-            let strictMode = (decoded["strictMode"] as? String) ?? "medium"
-            return strictMode
-        } catch {
-            print("Error decoding strict mode: \(error)")
-            return "medium"
-        }
+
+    private func getCurrentShieldType() -> String {
+        return userDefaults?.string(forKey: "currentShieldType") ?? "kitchenClosed"
     }
-    
-    /// Check if block is currently paused
-    private func isCurrentlyPaused() -> Bool {
-        guard let userDefaults = userDefaults,
-              let activeBlockData = userDefaults.data(forKey: "activeBlock") else {
-            return false
+
+    private func isCheatMealActive() -> Bool {
+        guard let userDefaults = userDefaults else { return false }
+        let active = userDefaults.bool(forKey: "cheatMealActive")
+        if active, let expires = userDefaults.object(forKey: "cheatMealExpires") as? Date {
+            return expires > Date()
         }
-        
-        do {
-            let decoded = try jsonDecoder.decode([String: AnyCodable].self, from: activeBlockData)
-            let pausedUntil = decoded["pausedUntil"] as? Date
-            
-            if let pausedUntil = pausedUntil {
-                return pausedUntil > Date()
-            }
-            return false
-        } catch {
-            print("Error checking pause state: \(error)")
-            return false
-        }
+        return false
     }
-    
-    /// Send notification for shield action
-    private func sendNotification(title: String, body: String, withAction: Bool = false) {
+
+    private func getCheatsRemaining() -> Int {
+        guard let userDefaults = userDefaults,
+              let data = userDefaults.data(forKey: "dietProfile"),
+              let profile = try? jsonDecoder.decode(DietProfileLight.self, from: data) else {
+            return 0
+        }
+        return max(0, profile.weeklyCheatMeals - profile.cheatsUsedThisWeek)
+    }
+
+    /// Activate a cheat meal from the extension (30 min bypass)
+    private func activateCheatMeal() -> Bool {
+        guard let userDefaults = userDefaults else { return false }
+
+        // Read profile
+        guard let data = userDefaults.data(forKey: "dietProfile"),
+              var profile = try? jsonDecoder.decode(DietProfileLight.self, from: data) else {
+            return false
+        }
+
+        // Check remaining
+        guard profile.weeklyCheatMeals - profile.cheatsUsedThisWeek > 0 else {
+            return false
+        }
+
+        // Update cheat count
+        profile.cheatsUsedThisWeek += 1
+        if let updatedData = try? JSONEncoder().encode(profile) {
+            userDefaults.set(updatedData, forKey: "dietProfile")
+        }
+
+        // Set cheat meal state
+        let expiresAt = Date().addingTimeInterval(30 * 60) // 30 minutes
+        userDefaults.set(true, forKey: "cheatMealActive")
+        userDefaults.set(expiresAt, forKey: "cheatMealExpires")
+
+        // Remove restrictions temporarily
+        manager.removeRestrictions()
+
+        userDefaults.synchronize()
+
+        // Notify main app via Darwin notification
+        CFNotificationCenterPostNotification(
+            CFNotificationCenterGetDarwinNotifyCenter(),
+            CFNotificationName("com.gia.screendiet.dietChanged" as CFString),
+            nil, nil, true
+        )
+
+        return true
+    }
+
+    private func sendNotification(title: String, body: String) {
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
         content.sound = .default
-        
-        if withAction {
-            let action = UNNotificationAction(
-                identifier: "DISMISS_ACTION",
-                title: "Dismiss",
-                options: [.foreground]
-            )
-            let category = UNNotificationCategory(
-                identifier: "SHIELD_ACTION_CATEGORY",
-                actions: [action],
-                intentIdentifiers: [],
-                options: []
-            )
-            UNUserNotificationCenter.current().setNotificationCategories([category])
-            content.categoryIdentifier = "SHIELD_ACTION_CATEGORY"
-        }
-        
+
         let request = UNNotificationRequest(
             identifier: UUID().uuidString,
             content: content,
             trigger: nil
         )
-        
+
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print("Error sending shield notification: \(error)")
@@ -93,151 +98,120 @@ class ShieldActionExtension: ShieldActionDelegate {
         }
     }
 
+    // MARK: - Action Handlers
+
     override func handle(action: ShieldAction, for application: ApplicationToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
         handleAction(action: action, completionHandler: completionHandler)
     }
-    
+
     override func handle(action: ShieldAction, for webDomain: WebDomainToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
-        // Handle the action as needed.
         handleAction(action: action, completionHandler: completionHandler)
     }
-    
+
     override func handle(action: ShieldAction, for category: ActivityCategoryToken, completionHandler: @escaping (ShieldActionResponse) -> Void) {
-        // Handle the action as needed.
         handleAction(action: action, completionHandler: completionHandler)
     }
-    
-    
+
     private func handleAction(action: ShieldAction, completionHandler: @escaping (ShieldActionResponse) -> Void) {
-        let strictMode = getStrictMode()
-        let isPaused = isCurrentlyPaused()
-        
-        // If paused, allow access
-        if isPaused {
+        // If cheat meal is active, allow access
+        if isCheatMealActive() {
             completionHandler(.close)
-            sendNotification(title: "Pause Active", body: "Restrictions temporarily lifted during pause period")
             return
         }
-        
+
+        let shieldType = getCurrentShieldType()
+
         switch action {
         case .primaryButtonPressed:
-            handlePrimaryButtonPress(with: strictMode, completionHandler: completionHandler)
-            
+            handlePrimaryButton(shieldType: shieldType, completionHandler: completionHandler)
         case .secondaryButtonPressed:
-            handleSecondaryButtonPress(with: strictMode, completionHandler: completionHandler)
-            
+            handleSecondaryButton(shieldType: shieldType, completionHandler: completionHandler)
         @unknown default:
-            fatalError()
+            completionHandler(.none)
         }
     }
-    
-    private func handlePrimaryButtonPress(with strictMode: String, completionHandler: @escaping (ShieldActionResponse) -> Void) {
-        switch strictMode {
-        case "easy":
-            // Easy mode: dismiss immediately with acknowledgment
-            sendNotification(title: "Acknowledged", body: "Shield dismissed. Get back to focus!")
+
+    private func handlePrimaryButton(shieldType: String, completionHandler: @escaping (ShieldActionResponse) -> Void) {
+        switch shieldType {
+        case "portionTimer":
+            // Kitchen open - allow the app
             completionHandler(.close)
-            
-        case "medium":
-            // Medium mode: require confirmation - already confirmed if got here
-            sendNotification(title: "Confirmed", body: "Shield will close after you verify your choice")
+
+        case "proteinApp":
+            // Protein apps always allowed
             completionHandler(.close)
-            
-        case "hard":
-            // Hard mode: cannot dismiss - keep shield open
-            sendNotification(
-                title: "Cannot Dismiss",
-                body: "Hard mode active. You cannot dismiss this shield. Wait for the block to end or contact support.",
-                withAction: true
-            )
+
+        case "kitchenClosed", "carbCurfew", "dailyLimitReached", "nightLock":
+            // Close button - dismiss shield, keep restriction
             completionHandler(.none)
-            
+
         default:
-            // Default to medium behavior
-            completionHandler(.close)
+            completionHandler(.none)
         }
     }
-    
-    private func handleSecondaryButtonPress(with strictMode: String, completionHandler: @escaping (ShieldActionResponse) -> Void) {
-        switch strictMode {
-        case "easy":
-            // Easy mode: can close without consequence
-            sendNotification(title: "Shield Removed", body: "You chose to end your focus session")
+
+    private func handleSecondaryButton(shieldType: String, completionHandler: @escaping (ShieldActionResponse) -> Void) {
+        switch shieldType {
+        case "kitchenClosed", "carbCurfew", "dailyLimitReached":
+            // Secondary button = cheat meal
+            if getCheatsRemaining() > 0 {
+                if activateCheatMeal() {
+                    sendNotification(
+                        title: "Cheat Meal Activated",
+                        body: "Restrictions lifted for 30 minutes. Enjoy!"
+                    )
+                    completionHandler(.close)
+                } else {
+                    completionHandler(.none)
+                }
+            } else {
+                sendNotification(
+                    title: "No Cheat Meals Left",
+                    body: "You've used all your cheat meals this week."
+                )
+                completionHandler(.none)
+            }
+
+        case "portionTimer", "proteinApp":
+            // Close button
+            completionHandler(.none)
+
+        case "nightLock":
+            // Emergency access - allow temporarily
+            manager.removeRestrictions()
+            sendNotification(
+                title: "Emergency Access Granted",
+                body: "Restrictions temporarily removed. They will re-apply at next interval."
+            )
             completionHandler(.close)
-            
-        case "medium":
-            // Medium mode: send notification to ask for confirmation
-            sendNotification(
-                title: "Remove Restrictions?",
-                body: "Tap to confirm removal of restrictions",
-                withAction: true
-            )
-            completionHandler(.none)
-            
-        case "hard":
-            // Hard mode: cannot remove - must wait or type forfeit
-            sendNotification(
-                title: "Hard Mode Active",
-                body: "You cannot remove restrictions in hard mode. Wait for the session to end.",
-                withAction: true
-            )
-            completionHandler(.none)
-            
+
         default:
             completionHandler(.none)
         }
     }
 }
 
-// Helper to decode AnyCodable values
-struct AnyCodable: Codable {
-    let value: Any
-    
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        
-        if let intVal = try? container.decode(Int.self) {
-            value = intVal
-        } else if let boolVal = try? container.decode(Bool.self) {
-            value = boolVal
-        } else if let stringVal = try? container.decode(String.self) {
-            value = stringVal
-        } else if let doubleVal = try? container.decode(Double.self) {
-            value = doubleVal
-        } else if let dateVal = try? container.decode(Date.self) {
-            value = dateVal
-        } else if let dictVal = try? container.decode([String: AnyCodable].self) {
-            value = dictVal
-        } else if let arrayVal = try? container.decode([AnyCodable].self) {
-            value = arrayVal
-        } else {
-            value = NSNull()
-        }
-    }
-    
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        
-        switch value {
-        case let intVal as Int:
-            try container.encode(intVal)
-        case let boolVal as Bool:
-            try container.encode(boolVal)
-        case let stringVal as String:
-            try container.encode(stringVal)
-        case let doubleVal as Double:
-            try container.encode(doubleVal)
-        case let dateVal as Date:
-            try container.encode(dateVal)
-        case let dictVal as [String: AnyCodable]:
-            try container.encode(dictVal)
-        case let arrayVal as [AnyCodable]:
-            try container.encode(arrayVal)
-        default:
-            try container.encodeNil()
-        }
-    }
-    
+// MARK: - Lightweight Codable for Extension
 
+private struct DietProfileLight: Codable {
+    var dietType: String
+    var eatingWindow: EatingWindowLight
+    var nightLockHour: Int
+    var nightLockMinute: Int
+    var weeklyCheatMeals: Int
+    var cheatsUsedThisWeek: Int
+    var isActive: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case dietType, eatingWindow, nightLockHour, nightLockMinute
+        case weeklyCheatMeals, cheatsUsedThisWeek, isActive
+    }
 }
 
+private struct EatingWindowLight: Codable {
+    var startHour: Int
+    var startMinute: Int
+    var endHour: Int
+    var endMinute: Int
+    var dailyCarbLimitMinutes: Int
+}

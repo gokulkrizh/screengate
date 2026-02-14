@@ -651,7 +651,37 @@ Kitchen → My Pantry
 
 ---
 
-## 6. Notification Flows
+## 6. Technical Implementation Notes
+
+### Time Tracking Architecture
+
+ScreenDiet uses iOS DeviceActivityMonitor with threshold-based tracking:
+
+| Category | Monitors | Threshold | Coverage | Accuracy |
+|----------|----------|-----------|----------|----------|
+| 🍩 CARBS | 8 monitors | 3 minutes | 9.6 hours (12pm-10pm peak) | ±3 minutes |
+| 🥑 FATS | 6 monitors | 5 minutes | 12 hours (8am-10pm) | ±5 minutes |
+| 🥩 PROTEIN | 4 monitors | 5 minutes | 8 hours (9am-5pm) | ±5 minutes |
+| 🥦 FIBER | 2 monitors | 5 minutes | 4 hours (8pm-midnight) | ±5 minutes |
+| **TOTAL** | **20 monitors** | - | **40 hours tracked** | - |
+
+**Key Points:**
+- 20 monitors = iOS maximum limit
+- Each threshold event = +3-5 minutes to category total
+- Very short usage (<3 min for carbs) may not be counted
+- Tracking resets daily at midnight
+- No individual app breakdown (privacy-protected by iOS)
+
+### Limitations
+
+1. **Privacy**: iOS DeviceActivityReport runs in sandboxed extension - cannot extract per-app data
+2. **Accuracy**: ±3-5 minute estimation, not exact seconds
+3. **Coverage**: 9.6-12 hours per category (covers peak usage, not 24/7)
+4. **Threshold minimum**: Cannot detect usage shorter than threshold interval
+
+---
+
+## 7. Notification Flows
 
 | Trigger | Notification | Action |
 |---------|--------------|--------|
@@ -672,7 +702,7 @@ Kitchen → My Pantry
 | Onboarding | Setup diet | `FamilyActivityPicker`, `DeviceActivitySchedule` | Macro selection, window setup |
 | Open allowed app | Use protein app | `ShieldConfiguration` (allowed) | Nutrition label, encouragement |
 | Open blocked app | Access outside window | `ShieldConfiguration` (blocked), `ManagedSettings` | Kitchen closed, alternatives |
-| Within window | Use carbs | `DeviceActivityEvent` (timer), `ShieldConfiguration` | Portion timer, daily limit |
+| Within window | Use carbs | `DeviceActivityEvent` (threshold), `ShieldConfiguration` | Portion timer, daily limit (±3 min) |
 | Hit limit | Continue using | `ShieldConfiguration` (limit reached) | Daily max, cheat meal option |
 | Window ends | Finish session | `DeviceActivitySchedule` cutoff | Curfew warning, save for later |
 | Cheat meal | Emergency access | Temporary `DeviceActivitySchedule` | Approval, consequence display |
@@ -680,6 +710,8 @@ Kitchen → My Pantry
 | Relapse | Resume after pause | Re-authorization, `AuthorizationCenter` | Impact analysis, resume options |
 | Weekly report | Review progress | `DeviceActivityReport` extension | Metabolic score, prescription |
 | Accept prescription | Update schedule | Update `DeviceActivitySchedule` | Confirmation, new windows |
+
+**Note**: Time tracking uses threshold-based estimation (±3-5 min accuracy) via DeviceActivityMonitor extension running independently of main app. Individual app usage breakdown not available due to iOS privacy sandbox.
 
 ---
 

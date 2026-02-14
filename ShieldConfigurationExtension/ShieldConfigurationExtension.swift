@@ -10,187 +10,229 @@ import ManagedSettingsUI
 import UIKit
 import Foundation
 
-// Override the functions below to customize the shields used in various situations.
-// The system provides a default appearance for any methods that your subclass doesn't override.
-// Make sure that your class name matches the NSExtensionPrincipalClass in your Info.plist.
 class ShieldConfigurationExtension: ShieldConfigurationDataSource {
-    
+
     private let userDefaults = UserDefaults(suiteName: "group.com.gia.screendiet")
     private let jsonDecoder = JSONDecoder()
-    
+
+    // MARK: - Theme Colors
+
+    private let backgroundColor = UIColor(red: 0.06, green: 0.06, blue: 0.08, alpha: 1.0) // #0F1014
+    private let primaryGreen = UIColor(red: 0.0, green: 1.0, blue: 0.39, alpha: 1.0)       // #00FF63
+    private let warningYellow = UIColor(red: 1.0, green: 0.8, blue: 0.0, alpha: 1.0)
+    private let errorRed = UIColor.systemRed
+    private let textWhite = UIColor.white
+    private let textSecondary = UIColor.white.withAlphaComponent(0.6)
+
     // MARK: - Helpers
-    
-    /// Get active block name from UserDefaults
-    private func getActiveBlockName() -> String {
-        guard let userDefaults = userDefaults,
-              let activeBlockData = userDefaults.data(forKey: "activeBlock") else {
-            return "Focus Session"
-        }
-        
-        do {
-            let decoded = try jsonDecoder.decode([String: AnyCodable].self, from: activeBlockData)
-            let name = (decoded["name"] as? String) ?? "Focus Session"
-            return name
-        } catch {
-            print("Error decoding block name: \(error)")
-            return "Focus Session"
-        }
+
+    private func getCurrentShieldType() -> String {
+        return userDefaults?.string(forKey: "currentShieldType") ?? "kitchenClosed"
     }
-    
-    /// Get strict mode from active block
-    private func getStrictMode() -> String {
-        guard let userDefaults = userDefaults,
-              let activeBlockData = userDefaults.data(forKey: "activeBlock") else {
-            return "medium"
-        }
-        
-        do {
-            let decoded = try jsonDecoder.decode([String: AnyCodable].self, from: activeBlockData)
-            let strictMode = (decoded["strictMode"] as? String) ?? "medium"
-            return strictMode
-        } catch {
-            print("Error decoding strict mode: \(error)")
-            return "medium"
-        }
+
+    private func getCarbsUsedToday() -> Int {
+        return userDefaults?.integer(forKey: "carbsUsedToday") ?? 0
     }
-    
-    /// Create appropriate shield configuration based on strict mode
-    private func createShieldConfiguration(for strictMode: String, blockName: String) -> ShieldConfiguration {
-        let blockTitle = "Focus: \(blockName)"
-        
-        switch strictMode {
-        case "easy":
-            // Easy mode: user-friendly, can dismiss easily
-            return ShieldConfiguration(
-                backgroundBlurStyle: .systemMaterialDark,
-                backgroundColor: UIColor(red: 0.1, green: 0.12, blue: 0.15, alpha: 0.95),
-                icon: UIImage(systemName: "focus")?.withTintColor(UIColor(red: 0.4, green: 0.8, blue: 1.0, alpha: 1.0), renderingMode: .alwaysTemplate),
-                title: .init(text: blockTitle, color: UIColor(red: 0.4, green: 0.8, blue: 1.0, alpha: 1.0)),
-                subtitle: .init(text: "You're in focus mode. Tap to dismiss.", color: UIColor.white.withAlphaComponent(0.7)),
-                primaryButtonLabel: .init(text: "Got it", color: .white),
-                primaryButtonBackgroundColor: UIColor(red: 0.4, green: 0.8, blue: 1.0, alpha: 1.0),
-                secondaryButtonLabel: .init(text: "End Session", color: UIColor(red: 0.4, green: 0.8, blue: 1.0, alpha: 1.0))
-            )
-            
-        case "medium":
-            // Medium mode: requires confirmation
-            return ShieldConfiguration(
-                backgroundBlurStyle: .systemMaterialDark,
-                backgroundColor: UIColor(red: 0.15, green: 0.12, blue: 0.1, alpha: 0.95),
-                icon: UIImage(systemName: "exclamationmark.circle.fill")?.withTintColor(UIColor(red: 1.0, green: 0.8, blue: 0.2, alpha: 1.0), renderingMode: .alwaysTemplate),
-                title: .init(text: blockTitle, color: UIColor(red: 1.0, green: 0.8, blue: 0.2, alpha: 1.0)),
-                subtitle: .init(text: "Confirm before dismissing this shield.", color: UIColor.white.withAlphaComponent(0.7)),
-                primaryButtonLabel: .init(text: "Confirm Dismiss", color: .white),
-                primaryButtonBackgroundColor: UIColor(red: 1.0, green: 0.8, blue: 0.2, alpha: 1.0),
-                secondaryButtonLabel: .init(text: "Ask to Remove", color: UIColor(red: 1.0, green: 0.8, blue: 0.2, alpha: 1.0))
-            )
-            
-        case "hard":
-            // Hard mode: cannot dismiss easily
-            return ShieldConfiguration(
-                backgroundBlurStyle: .systemMaterialDark,
-                backgroundColor: UIColor(red: 0.2, green: 0.08, blue: 0.08, alpha: 0.95),
-                icon: UIImage(systemName: "lock.fill")?.withTintColor(UIColor.systemRed, renderingMode: .alwaysTemplate),
-                title: .init(text: blockTitle, color: UIColor.systemRed),
-                subtitle: .init(text: "Hard mode: You cannot dismiss this shield. Stay focused!", color: UIColor.white.withAlphaComponent(0.7)),
-                primaryButtonLabel: .init(text: "Acknowledge", color: .white),
-                primaryButtonBackgroundColor: UIColor.systemRed,
-                secondaryButtonLabel: .init(text: "Contact Support", color: UIColor.systemRed)
-            )
-            
+
+    private func getDailyCarbLimit() -> Int {
+        guard let userDefaults = userDefaults,
+              let data = userDefaults.data(forKey: "dietProfile"),
+              let profile = try? jsonDecoder.decode(DietProfileLight.self, from: data) else {
+            return 60
+        }
+        return profile.eatingWindow.dailyCarbLimitMinutes
+    }
+
+    private func getWindowEndHour() -> Int {
+        guard let userDefaults = userDefaults,
+              let data = userDefaults.data(forKey: "dietProfile"),
+              let profile = try? jsonDecoder.decode(DietProfileLight.self, from: data) else {
+            return 18
+        }
+        return profile.eatingWindow.endHour
+    }
+
+    private func isCheatMealActive() -> Bool {
+        guard let userDefaults = userDefaults else { return false }
+        let active = userDefaults.bool(forKey: "cheatMealActive")
+        if active, let expires = userDefaults.object(forKey: "cheatMealExpires") as? Date {
+            return expires > Date()
+        }
+        return false
+    }
+
+    private func getCheatsRemaining() -> Int {
+        guard let userDefaults = userDefaults,
+              let data = userDefaults.data(forKey: "dietProfile"),
+              let profile = try? jsonDecoder.decode(DietProfileLight.self, from: data) else {
+            return 0
+        }
+        return max(0, profile.weeklyCheatMeals - profile.cheatsUsedThisWeek)
+    }
+
+    private func formatHour(_ hour: Int) -> String {
+        let period = hour >= 12 ? "PM" : "AM"
+        let displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour)
+        return "\(displayHour):00 \(period)"
+    }
+
+    // MARK: - Shield Configuration
+
+    private func createShieldConfiguration(for shieldType: String) -> ShieldConfiguration {
+        switch shieldType {
+        case "kitchenClosed":
+            return kitchenClosedShield()
+        case "portionTimer":
+            return portionTimerShield()
+        case "dailyLimitReached":
+            return dailyLimitReachedShield()
+        case "proteinApp":
+            return proteinAppShield()
+        case "carbCurfew":
+            return carbCurfewShield()
+        case "nightLock":
+            return nightLockShield()
         default:
-            // Default to medium
-            return ShieldConfiguration(
-                backgroundBlurStyle: .systemMaterialDark,
-                backgroundColor: UIColor(red: 0.15, green: 0.12, blue: 0.1, alpha: 0.95),
-                icon: UIImage(systemName: "focus")?.withTintColor(UIColor(red: 0.4, green: 0.8, blue: 1.0, alpha: 1.0), renderingMode: .alwaysTemplate),
-                title: .init(text: blockTitle, color: UIColor(red: 0.4, green: 0.8, blue: 1.0, alpha: 1.0)),
-                subtitle: .init(text: "You're in focus mode.", color: UIColor.white.withAlphaComponent(0.7)),
-                primaryButtonLabel: .init(text: "Dismiss", color: .white),
-                primaryButtonBackgroundColor: UIColor(red: 0.4, green: 0.8, blue: 1.0, alpha: 1.0),
-                secondaryButtonLabel: .init(text: "More Options", color: UIColor(red: 0.4, green: 0.8, blue: 1.0, alpha: 1.0))
-            )
+            return kitchenClosedShield()
         }
     }
-    
+
+    private func kitchenClosedShield() -> ShieldConfiguration {
+        return ShieldConfiguration(
+            backgroundBlurStyle: .systemMaterialDark,
+            backgroundColor: backgroundColor,
+            icon: UIImage(systemName: "moon.fill")?.withTintColor(warningYellow, renderingMode: .alwaysOriginal),
+            title: .init(text: "KITCHEN CLOSED", color: warningYellow),
+            subtitle: .init(text: "You're fasting. Protein apps are always available.", color: textSecondary),
+            primaryButtonLabel: .init(text: "Close", color: backgroundColor),
+            primaryButtonBackgroundColor: primaryGreen,
+            secondaryButtonLabel: getCheatsRemaining() > 0
+                ? .init(text: "Cheat Meal (\(getCheatsRemaining()) left)", color: warningYellow)
+                : .init(text: "No Cheats Left", color: textSecondary)
+        )
+    }
+
+    private func portionTimerShield() -> ShieldConfiguration {
+        let used = getCarbsUsedToday()
+        let limit = getDailyCarbLimit()
+        let remaining = max(0, limit - used)
+
+        return ShieldConfiguration(
+            backgroundBlurStyle: .systemMaterialDark,
+            backgroundColor: backgroundColor,
+            icon: UIImage(systemName: "checkmark.circle.fill")?.withTintColor(primaryGreen, renderingMode: .alwaysOriginal),
+            title: .init(text: "KITCHEN OPEN", color: primaryGreen),
+            subtitle: .init(text: "\(remaining) min remaining today (\(used)/\(limit) used)", color: textSecondary),
+            primaryButtonLabel: .init(text: "Open App", color: backgroundColor),
+            primaryButtonBackgroundColor: primaryGreen,
+            secondaryButtonLabel: .init(text: "Close", color: primaryGreen)
+        )
+    }
+
+    private func dailyLimitReachedShield() -> ShieldConfiguration {
+        let limit = getDailyCarbLimit()
+        let windowEnd = formatHour(getWindowEndHour())
+
+        return ShieldConfiguration(
+            backgroundBlurStyle: .systemMaterialDark,
+            backgroundColor: backgroundColor,
+            icon: UIImage(systemName: "exclamationmark.octagon.fill")?.withTintColor(errorRed, renderingMode: .alwaysOriginal),
+            title: .init(text: "DAILY LIMIT REACHED", color: errorRed),
+            subtitle: .init(text: "\(limit)/\(limit) min consumed. Try protein or fiber apps instead.", color: textSecondary),
+            primaryButtonLabel: .init(text: "Close", color: backgroundColor),
+            primaryButtonBackgroundColor: errorRed,
+            secondaryButtonLabel: getCheatsRemaining() > 0
+                ? .init(text: "Cheat Meal (\(getCheatsRemaining()) left)", color: warningYellow)
+                : .init(text: "No Cheats Left", color: textSecondary)
+        )
+    }
+
+    private func proteinAppShield() -> ShieldConfiguration {
+        return ShieldConfiguration(
+            backgroundBlurStyle: .systemMaterialDark,
+            backgroundColor: backgroundColor,
+            icon: UIImage(systemName: "star.fill")?.withTintColor(primaryGreen, renderingMode: .alwaysOriginal),
+            title: .init(text: "ALWAYS AVAILABLE", color: primaryGreen),
+            subtitle: .init(text: "Protein apps are unlimited. Create something!", color: textSecondary),
+            primaryButtonLabel: .init(text: "Open App", color: backgroundColor),
+            primaryButtonBackgroundColor: primaryGreen,
+            secondaryButtonLabel: .init(text: "Close", color: primaryGreen)
+        )
+    }
+
+    private func carbCurfewShield() -> ShieldConfiguration {
+        return ShieldConfiguration(
+            backgroundBlurStyle: .systemMaterialDark,
+            backgroundColor: backgroundColor,
+            icon: UIImage(systemName: "clock.badge.exclamationmark.fill")?.withTintColor(errorRed, renderingMode: .alwaysOriginal),
+            title: .init(text: "CARB CURFEW", color: errorRed),
+            subtitle: .init(text: "The eating window has closed. Save this for tomorrow.", color: textSecondary),
+            primaryButtonLabel: .init(text: "Close", color: backgroundColor),
+            primaryButtonBackgroundColor: errorRed,
+            secondaryButtonLabel: getCheatsRemaining() > 0
+                ? .init(text: "Cheat Meal (\(getCheatsRemaining()) left)", color: warningYellow)
+                : .init(text: "No Cheats Left", color: textSecondary)
+        )
+    }
+
+    private func nightLockShield() -> ShieldConfiguration {
+        return ShieldConfiguration(
+            backgroundBlurStyle: .systemMaterialDark,
+            backgroundColor: backgroundColor,
+            icon: UIImage(systemName: "moon.zzz.fill")?.withTintColor(UIColor.systemPurple, renderingMode: .alwaysOriginal),
+            title: .init(text: "NIGHT LOCK ACTIVE", color: UIColor.systemPurple),
+            subtitle: .init(text: "Only protein apps are available during night lock. Rest well.", color: textSecondary),
+            primaryButtonLabel: .init(text: "Close", color: textWhite),
+            primaryButtonBackgroundColor: UIColor.systemPurple,
+            secondaryButtonLabel: .init(text: "Emergency Access", color: UIColor.systemPurple)
+        )
+    }
+
+    // MARK: - ShieldConfigurationDataSource
+
     override func configuration(shielding application: Application) -> ShieldConfiguration {
-        // Customize the shield as needed for applications.
-        let blockName = getActiveBlockName()
-        let strictMode = getStrictMode()
-        return createShieldConfiguration(for: strictMode, blockName: blockName)
+        let shieldType = getCurrentShieldType()
+        return createShieldConfiguration(for: shieldType)
     }
-    
+
     override func configuration(shielding application: Application, in category: ActivityCategory) -> ShieldConfiguration {
-        // Customize the shield as needed for applications shielded because of their category.
-        let blockName = getActiveBlockName()
-        let strictMode = getStrictMode()
-        return createShieldConfiguration(for: strictMode, blockName: blockName)
+        let shieldType = getCurrentShieldType()
+        return createShieldConfiguration(for: shieldType)
     }
-    
+
     override func configuration(shielding webDomain: WebDomain) -> ShieldConfiguration {
-        // Customize the shield as needed for web domains.
-        let blockName = getActiveBlockName()
-        let strictMode = getStrictMode()
-        return createShieldConfiguration(for: strictMode, blockName: blockName)
+        let shieldType = getCurrentShieldType()
+        return createShieldConfiguration(for: shieldType)
     }
-    
+
     override func configuration(shielding webDomain: WebDomain, in category: ActivityCategory) -> ShieldConfiguration {
-        // Customize the shield as needed for web domains shielded because of their category.
-        let blockName = getActiveBlockName()
-        let strictMode = getStrictMode()
-        return createShieldConfiguration(for: strictMode, blockName: blockName)
+        let shieldType = getCurrentShieldType()
+        return createShieldConfiguration(for: shieldType)
     }
 }
 
-// Helper to decode AnyCodable values
-struct AnyCodable: Codable {
-    let value: Any
-    
-    init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        
-        if let intVal = try? container.decode(Int.self) {
-            value = intVal
-        } else if let boolVal = try? container.decode(Bool.self) {
-            value = boolVal
-        } else if let stringVal = try? container.decode(String.self) {
-            value = stringVal
-        } else if let doubleVal = try? container.decode(Double.self) {
-            value = doubleVal
-        } else if let dateVal = try? container.decode(Date.self) {
-            value = dateVal
-        } else if let dictVal = try? container.decode([String: AnyCodable].self) {
-            value = dictVal
-        } else if let arrayVal = try? container.decode([AnyCodable].self) {
-            value = arrayVal
-        } else {
-            value = NSNull()
-        }
-    }
-    
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        
-        switch value {
-        case let intVal as Int:
-            try container.encode(intVal)
-        case let boolVal as Bool:
-            try container.encode(boolVal)
-        case let stringVal as String:
-            try container.encode(stringVal)
-        case let doubleVal as Double:
-            try container.encode(doubleVal)
-        case let dateVal as Date:
-            try container.encode(dateVal)
-        case let dictVal as [String: AnyCodable]:
-            try container.encode(dictVal)
-        case let arrayVal as [AnyCodable]:
-            try container.encode(arrayVal)
-        default:
-            try container.encodeNil()
-        }
-    }
-    
+// MARK: - Lightweight Codable for Extension
 
+/// Lightweight struct to decode diet profile in extensions (avoids importing full model)
+private struct DietProfileLight: Codable {
+    var dietType: String
+    var eatingWindow: EatingWindowLight
+    var nightLockHour: Int
+    var nightLockMinute: Int
+    var weeklyCheatMeals: Int
+    var cheatsUsedThisWeek: Int
+    var isActive: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case dietType, eatingWindow, nightLockHour, nightLockMinute
+        case weeklyCheatMeals, cheatsUsedThisWeek, isActive
+    }
 }
 
+private struct EatingWindowLight: Codable {
+    var startHour: Int
+    var startMinute: Int
+    var endHour: Int
+    var endMinute: Int
+    var dailyCarbLimitMinutes: Int
+}
