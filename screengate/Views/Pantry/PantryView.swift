@@ -138,7 +138,8 @@ struct PantryView: View {
     private func statusColor(for group: FoodGroup) -> Color {
         switch dietManager.currentDietState {
         case .fasting:
-            return group == .protein ? appTheme.colors.primary : appTheme.colors.error
+            // Only carbs are blocked during fasting; protein, fats, fiber remain available
+            return group == .carbs ? appTheme.colors.error : appTheme.colors.primary
         case .windowOpen:
             return appTheme.colors.primary
         case .limitReached:
@@ -153,7 +154,8 @@ struct PantryView: View {
     private func statusText(for group: FoodGroup) -> String {
         switch dietManager.currentDietState {
         case .fasting:
-            return group == .protein ? "Available" : "Blocked (fasting)"
+            // Only carbs are blocked during fasting; protein, fats, fiber remain available
+            return group == .carbs ? "Blocked (fasting)" : "Available"
         case .windowOpen:
             if group == .carbs {
                 return "Open (\(dietManager.carbsRemainingMinutes)m remaining)"

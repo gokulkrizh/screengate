@@ -159,8 +159,8 @@ class ShieldActionExtension: ShieldActionDelegate {
             completionHandler(.close)
 
         case "kitchenClosed", "carbCurfew", "dailyLimitReached", "nightLock":
-            // Close button - dismiss shield, keep restriction
-            completionHandler(.none)
+            // Close button - close the shielded app, keep restriction active
+            completionHandler(.close)
 
         default:
             completionHandler(.none)
