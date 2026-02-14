@@ -44,6 +44,10 @@ final class DietManager {
     private let currentShieldTypeKey = "currentShieldType"
     @ObservationIgnored
     private let carbsUsedTodayKey = "carbsUsedToday"
+    @ObservationIgnored
+    private let cheatsUsedThisWeekKey = "cheatsUsedThisWeek"
+    @ObservationIgnored
+    private let cheatsUsedTodayKey = "cheatsUsedToday"
 
     // MARK: - Computed Properties
 
@@ -155,6 +159,15 @@ final class DietManager {
         activeProfile.weekStartDate = Date()
         activeProfile.weekNumber = 1
         self.dietProfile = activeProfile
+
+        // Reset daily counters to avoid stale data from previous installs
+        // (App group UserDefaults persist across app reinstalls)
+        todayLog = NutritionLog.today()
+        userDefaults.set(0, forKey: carbsUsedTodayKey)
+        userDefaults.set(0, forKey: cheatsUsedThisWeekKey)
+        userDefaults.set(0, forKey: cheatsUsedTodayKey)
+        userDefaults.set(false, forKey: cheatMealActiveKey)
+        userDefaults.removeObject(forKey: cheatMealExpiresKey)
 
         // Apply initial restrictions based on current state
         applyRestrictionsForCurrentState()
@@ -547,6 +560,12 @@ final class DietManager {
 
             userDefaults.set(todayLog.carbsMinutes, forKey: carbsUsedTodayKey)
 
+            // Write cheat counts as dedicated keys for extensions
+            if let profile = dietProfile {
+                userDefaults.set(profile.cheatsUsedThisWeek, forKey: cheatsUsedThisWeekKey)
+            }
+            userDefaults.set(todayLog.cheatsUsed, forKey: cheatsUsedTodayKey)
+
             // Post Darwin notification for extensions (not for self)
             CFNotificationCenterPostNotification(
                 CFNotificationCenterGetDarwinNotifyCenter(),
@@ -597,6 +616,35 @@ final class DietManager {
             #if DEBUG
             print("[DietManager] Synced carbsUsedToday from extension: \(extensionCarbs)")
             #endif
+        }
+
+        // Sync cheatsUsedThisWeek from the extension's dedicated key
+        let extensionCheats = userDefaults.integer(forKey: cheatsUsedThisWeekKey)
+        if var profile = dietProfile, extensionCheats > profile.cheatsUsedThisWeek {
+            profile.cheatsUsedThisWeek = extensionCheats
+            self.dietProfile = profile
+            #if DEBUG
+            print("[DietManager] Synced cheatsUsedThisWeek from extension: \(extensionCheats)")
+            #endif
+        }
+
+        // Sync cheatsUsedToday from extension's dedicated key
+        let extensionCheatsToday = userDefaults.integer(forKey: cheatsUsedTodayKey)
+        if extensionCheatsToday > todayLog.cheatsUsed {
+            todayLog.cheatsUsed = extensionCheatsToday
+        }
+
+        // Persist the merged values back to UserDefaults JSON so they
+        // survive the next loadFromUserDefaults() call without data loss.
+        // (Don't post Darwin notification — just update the JSON keys quietly.)
+        let needsPersist = extensionCarbs > 0 || extensionCheats > 0 || extensionCheatsToday > 0
+        if needsPersist {
+            if let logData = try? JSONEncoder().encode(todayLog) {
+                userDefaults.set(logData, forKey: todayLogKey)
+            }
+            if let profile = dietProfile, let profileData = try? JSONEncoder().encode(profile) {
+                userDefaults.set(profileData, forKey: dietProfileKey)
+            }
         }
 
         // Load weekly logs

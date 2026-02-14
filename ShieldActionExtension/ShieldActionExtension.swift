@@ -30,44 +30,61 @@ class ShieldActionExtension: ShieldActionDelegate {
     }
 
     private func getCheatsRemaining() -> Int {
-        guard let userDefaults = userDefaults,
-              let data = userDefaults.data(forKey: "dietProfile"),
+        guard let userDefaults = userDefaults else { return 0 }
+
+        // First check the dedicated key (written by both extension and main app)
+        let cheatsUsed = userDefaults.integer(forKey: "cheatsUsedThisWeek")
+
+        // Read weekly allowance from profile
+        guard let data = userDefaults.data(forKey: "dietProfile"),
               let profile = try? jsonDecoder.decode(DietProfileLight.self, from: data) else {
             return 0
         }
-        return max(0, profile.weeklyCheatMeals - profile.cheatsUsedThisWeek)
+
+        // Use the max of the dedicated key and the profile value
+        let actualUsed = max(cheatsUsed, profile.cheatsUsedThisWeek)
+        return max(0, profile.weeklyCheatMeals - actualUsed)
     }
 
     /// Activate a cheat meal from the extension (30 min bypass)
+    /// NOTE: Does NOT re-encode dietProfile because DietProfileLight is missing
+    /// fields (macroRatios, activatedAt, weekStartDate, etc.) which would corrupt
+    /// the main app's DietProfile decode. Instead writes to a dedicated key.
     private func activateCheatMeal() -> Bool {
         guard let userDefaults = userDefaults else { return false }
 
-        // Read profile
+        // Read profile to check allowance
         guard let data = userDefaults.data(forKey: "dietProfile"),
-              var profile = try? jsonDecoder.decode(DietProfileLight.self, from: data) else {
+              let profile = try? jsonDecoder.decode(DietProfileLight.self, from: data) else {
             return false
         }
+
+        // Get current usage from dedicated key (may be higher than profile value)
+        let currentUsed = max(
+            userDefaults.integer(forKey: "cheatsUsedThisWeek"),
+            profile.cheatsUsedThisWeek
+        )
 
         // Check remaining
-        guard profile.weeklyCheatMeals - profile.cheatsUsedThisWeek > 0 else {
+        guard profile.weeklyCheatMeals - currentUsed > 0 else {
             return false
         }
 
-        // Update cheat count
-        profile.cheatsUsedThisWeek += 1
-        if let updatedData = try? JSONEncoder().encode(profile) {
-            userDefaults.set(updatedData, forKey: "dietProfile")
-        }
+        // Write updated cheat count to dedicated key only (don't corrupt the profile)
+        let newUsed = currentUsed + 1
+        userDefaults.set(newUsed, forKey: "cheatsUsedThisWeek")
 
         // Set cheat meal state
         let expiresAt = Date().addingTimeInterval(30 * 60) // 30 minutes
         userDefaults.set(true, forKey: "cheatMealActive")
         userDefaults.set(expiresAt, forKey: "cheatMealExpires")
 
+        // Increment today's cheat count
+        let todayCheats = userDefaults.integer(forKey: "cheatsUsedToday")
+        userDefaults.set(todayCheats + 1, forKey: "cheatsUsedToday")
+
         // Remove restrictions temporarily
         manager.removeRestrictions()
-
-        userDefaults.synchronize()
 
         // Notify main app via Darwin notification
         CFNotificationCenterPostNotification(

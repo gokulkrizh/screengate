@@ -67,7 +67,10 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
               let profile = try? jsonDecoder.decode(DietProfileLight.self, from: data) else {
             return 0
         }
-        return max(0, profile.weeklyCheatMeals - profile.cheatsUsedThisWeek)
+        // Use the max of the dedicated key and the profile value
+        let cheatsUsedKey = userDefaults.integer(forKey: "cheatsUsedThisWeek")
+        let actualUsed = max(cheatsUsedKey, profile.cheatsUsedThisWeek)
+        return max(0, profile.weeklyCheatMeals - actualUsed)
     }
 
     private func formatHour(_ hour: Int) -> String {

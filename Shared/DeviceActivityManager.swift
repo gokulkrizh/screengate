@@ -69,7 +69,7 @@ class DeviceActivityManager {
     
     
     // If the specified applications, categories, and webDomains have been in use longer than the event’s `threshold` within the activity’s scheduled interval (start - end), we will shield those applications.
-    func startMonitor(activitySelection: FamilyActivitySelection, shieldThreshold: TimeInterval, start: Date, end: Date, repeatDaily: Bool, activityName: String, eventName: String = "threshold", warningTimeMinutes: Int = 10) throws {
+    func startMonitor(activitySelection: FamilyActivitySelection, shieldThreshold: TimeInterval, start: Date, end: Date, repeatDaily: Bool, activityName: String, eventName: String = "threshold", warningTimeMinutes: Int = 10, includesPastActivity: Bool = false) throws {
         let (start, end) = repeatDaily ? createRepeatDailySchedule(start: start, end: end) : createOneTimeSchedule(start: start, end: end)
 
         let deviceActivityName = makeActivityName(activityName)
@@ -89,7 +89,7 @@ class DeviceActivityManager {
             categories: activitySelection.categoryTokens,
             webDomains: activitySelection.webDomainTokens,
             threshold: createThreshold(shieldThreshold),
-            includesPastActivity: true,
+            includesPastActivity: includesPastActivity,
         )
 
         try self.deviceActivityCenter.startMonitoring(
@@ -112,7 +112,8 @@ class DeviceActivityManager {
         end: Date,
         repeatDaily: Bool,
         activityName: String,
-        warningTimeMinutes: Int = 5
+        warningTimeMinutes: Int = 5,
+        includesPastActivity: Bool = false
     ) throws {
         let (start, end) = repeatDaily ? createRepeatDailySchedule(start: start, end: end) : createOneTimeSchedule(start: start, end: end)
 
@@ -136,7 +137,7 @@ class DeviceActivityManager {
                 categories: activitySelection.categoryTokens,
                 webDomains: activitySelection.webDomainTokens,
                 threshold: DateComponents(minute: minutes),
-                includesPastActivity: true
+                includesPastActivity: includesPastActivity
             )
             events[eventName] = event
         }
