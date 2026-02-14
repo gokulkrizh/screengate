@@ -5,7 +5,9 @@ struct KitchenView: View {
     @Environment(DietManager.self) private var dietManager
     @State private var currentTime = Date()
     private let appTheme = AppTheme.shared
-    private let timer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
+
+    // Use a static timer to avoid recreation on each view struct instantiation
+    private static let minuteTimer = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
 
     var body: some View {
         ScrollView {
@@ -35,7 +37,7 @@ struct KitchenView: View {
             .padding(.horizontal, appTheme.spacing.large)
         }
         .background(appTheme.colors.background.ignoresSafeArea())
-        .onReceive(timer) { _ in
+        .onReceive(Self.minuteTimer) { _ in
             currentTime = Date()
         }
     }

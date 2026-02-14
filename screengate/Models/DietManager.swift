@@ -2,6 +2,7 @@ import Foundation
 import FamilyControls
 import UserNotifications
 import DeviceActivity
+import Observation
 
 @Observable
 final class DietManager {
@@ -16,19 +17,32 @@ final class DietManager {
 
     // MARK: - Private Dependencies
 
+    @ObservationIgnored
     private let deviceActivityManager = DeviceActivityManager()
+    @ObservationIgnored
     private let userDefaults: UserDefaults
+    @ObservationIgnored
     private var cheatTimer: Timer?
+    @ObservationIgnored
+    private var isSavingToUserDefaults = false  // Prevent Darwin notification self-loop
 
     // MARK: - UserDefaults Keys
 
+    @ObservationIgnored
     private let dietProfileKey = "dietProfile"
+    @ObservationIgnored
     private let foodGroupSelectionsPrefix = "foodGroup_"
+    @ObservationIgnored
     private let todayLogKey = "todayLog"
+    @ObservationIgnored
     private let weeklyLogsKey = "weeklyLogs"
+    @ObservationIgnored
     private let cheatMealActiveKey = "cheatMealActive"
+    @ObservationIgnored
     private let cheatMealExpiresKey = "cheatMealExpires"
+    @ObservationIgnored
     private let currentShieldTypeKey = "currentShieldType"
+    @ObservationIgnored
     private let carbsUsedTodayKey = "carbsUsedToday"
 
     // MARK: - Computed Properties
@@ -153,7 +167,9 @@ final class DietManager {
 
         saveToUserDefaults()
 
-        print("✅ [DietManager] Diet activated: \(profile.dietType.displayName)")
+        #if DEBUG
+        print("[DietManager] Diet activated: \(profile.dietType.displayName)")
+        #endif
     }
 
     /// Deactivate the diet and remove all restrictions
@@ -165,7 +181,6 @@ final class DietManager {
         updateShieldType()
         saveToUserDefaults()
 
-        print("✅ [DietManager] Diet deactivated")
     }
 
     /// Update diet profile (e.g., change window times, limits)
@@ -206,8 +221,6 @@ final class DietManager {
 
         saveToUserDefaults()
         startCheatTimer()
-
-        print("✅ [DietManager] Cheat meal activated, \(profile.cheatsRemaining) remaining")
     }
 
     /// End cheat meal early
@@ -223,8 +236,6 @@ final class DietManager {
         // Re-apply restrictions
         applyRestrictionsForCurrentState()
         saveToUserDefaults()
-
-        print("✅ [DietManager] Cheat meal ended")
     }
 
     // MARK: - Nutrition Tracking
@@ -344,8 +355,6 @@ final class DietManager {
                 )
             }
         }
-
-        print("✅ [DietManager] Diet monitoring started with \(deviceActivityManager.monitoringActivities.count) monitors")
     }
 
     // MARK: - Restriction Application
@@ -378,19 +387,16 @@ final class DietManager {
     private func applyCarbRestrictions() {
         guard let carbSelection = foodGroupSelections[.carbs] else { return }
         deviceActivityManager.applyImmediateRestrictions(activitySelection: carbSelection)
-        print("✅ [DietManager] Carb restrictions applied (fasting/curfew)")
     }
 
     private func applyCarbLimitRestrictions() {
         guard let carbSelection = foodGroupSelections[.carbs] else { return }
         deviceActivityManager.applyImmediateRestrictions(activitySelection: carbSelection)
-        print("✅ [DietManager] Carb limit restrictions applied")
     }
 
     private func applyNightLockRestrictions() {
         let nightLockSelection = mergeSelections(excluding: .protein)
         deviceActivityManager.applyImmediateRestrictions(activitySelection: nightLockSelection)
-        print("✅ [DietManager] Night lock restrictions applied (everything except protein)")
     }
 
     /// Remove all restrictions
@@ -404,7 +410,6 @@ final class DietManager {
     func updateShieldType() {
         let shieldType = currentShieldType
         userDefaults.set(shieldType.rawValue, forKey: currentShieldTypeKey)
-        userDefaults.synchronize()
     }
 
     // MARK: - Helpers
@@ -491,10 +496,12 @@ final class DietManager {
                 guard let observer = observer else { return }
                 let manager = Unmanaged<DietManager>.fromOpaque(observer).takeUnretainedValue()
 
+                // Skip notifications we posted ourselves
+                guard !manager.isSavingToUserDefaults else { return }
+
                 DispatchQueue.main.async {
                     manager.loadFromUserDefaults()
                     manager.applyRestrictionsForCurrentState()
-                    print("✅ [DietManager] Received Darwin notification, reloaded state")
                 }
             },
             "com.gia.screendiet.dietChanged" as CFString,
@@ -506,34 +513,33 @@ final class DietManager {
     // MARK: - Persistence
 
     func saveToUserDefaults() {
+        isSavingToUserDefaults = true
+        defer { isSavingToUserDefaults = false }
+
         do {
-            // Save diet profile
+            let encoder = JSONEncoder()
+
             if let profile = dietProfile {
-                let data = try JSONEncoder().encode(profile)
+                let data = try encoder.encode(profile)
                 userDefaults.set(data, forKey: dietProfileKey)
             }
 
-            // Save today's log
-            let logData = try JSONEncoder().encode(todayLog)
+            let logData = try encoder.encode(todayLog)
             userDefaults.set(logData, forKey: todayLogKey)
 
-            // Save weekly logs
-            let weeklyData = try JSONEncoder().encode(weeklyLogs)
+            let weeklyData = try encoder.encode(weeklyLogs)
             userDefaults.set(weeklyData, forKey: weeklyLogsKey)
 
-            // Save carbs used today (for extension access)
             userDefaults.set(todayLog.carbsMinutes, forKey: carbsUsedTodayKey)
 
-            userDefaults.synchronize()
-
-            // Post Darwin notification
+            // Post Darwin notification for extensions (not for self)
             CFNotificationCenterPostNotification(
                 CFNotificationCenterGetDarwinNotifyCenter(),
                 CFNotificationName("com.gia.screendiet.dietChanged" as CFString),
                 nil, nil, true
             )
         } catch {
-            print("❌ [DietManager] Error saving to UserDefaults: \(error)")
+            print("[DietManager] Error saving to UserDefaults: \(error)")
         }
     }
 
@@ -544,7 +550,6 @@ final class DietManager {
                 userDefaults.set(data, forKey: key)
             }
         }
-        userDefaults.synchronize()
     }
 
     func loadFromUserDefaults() {

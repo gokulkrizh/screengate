@@ -13,6 +13,12 @@ struct NutritionLog: Codable, Identifiable {
     var fiberMinutes: Int
     var cheatsUsed: Int
 
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+
     /// Total tracked screen time in minutes
     var totalMinutes: Int {
         proteinMinutes + carbsMinutes + fatsMinutes + fiberMinutes
@@ -59,10 +65,8 @@ struct NutritionLog: Codable, Identifiable {
 
     static func today() -> NutritionLog {
         let now = Date()
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
         return NutritionLog(
-            dateKey: formatter.string(from: now),
+            dateKey: dateFormatter.string(from: now),
             date: now,
             proteinMinutes: 0,
             carbsMinutes: 0,
@@ -73,9 +77,7 @@ struct NutritionLog: Codable, Identifiable {
     }
 
     static func dateKey(from date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: date)
+        dateFormatter.string(from: date)
     }
 }
 

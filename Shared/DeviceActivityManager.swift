@@ -10,9 +10,8 @@ import FamilyControls
 import ManagedSettings
 import DeviceActivity
 
-@Observable
 class DeviceActivityManager {
-    
+
     var monitoringActivities: [String] = []
     
     private static let nameIdentifier = "com.gia.screendiet"
@@ -42,59 +41,40 @@ class DeviceActivityManager {
     }
     
     func applyImmediateRestrictions(applicationTokens: Set<ApplicationToken>, categoryTokens: Set<ActivityCategoryToken>, webDomainTokens: Set<WebDomainToken>) {
-        print(#function)
-        print("📱 [applyImmediateRestrictions] Apps: \(applicationTokens.count), Categories: \(categoryTokens.count), WebDomains: \(webDomainTokens.count)")
-        
-        // Apply all restrictions
         if !applicationTokens.isEmpty {
-            print("📱 [applyImmediateRestrictions] Setting \(applicationTokens.count) application restrictions")
             managedSettingsStore.shield.applications = applicationTokens
         } else {
-            print("📱 [applyImmediateRestrictions] Clearing application restrictions")
             managedSettingsStore.shield.applications = nil
         }
-        
+
         if !categoryTokens.isEmpty {
-            print("📱 [applyImmediateRestrictions] Setting \(categoryTokens.count) category restrictions")
             managedSettingsStore.shield.applicationCategories = .specific(categoryTokens)
         } else {
-            print("📱 [applyImmediateRestrictions] Clearing category restrictions")
             managedSettingsStore.shield.applicationCategories = nil
         }
-        
+
         if !webDomainTokens.isEmpty {
-            print("📱 [applyImmediateRestrictions] Setting \(webDomainTokens.count) web domain restrictions")
             managedSettingsStore.shield.webDomains = webDomainTokens
         } else {
-            print("📱 [applyImmediateRestrictions] Clearing web domain restrictions")
             managedSettingsStore.shield.webDomains = nil
         }
-        
-        print("✅ [applyImmediateRestrictions] All restrictions applied")
     }
     
     
     func removeRestrictions() {
-        print("🔴 [DeviceActivityManager] removeRestrictions called")
-        print("🔴 [DeviceActivityManager] Clearing shield.applications...")
         managedSettingsStore.shield.applications = nil
-        print("🔴 [DeviceActivityManager] Clearing shield.applicationCategories...")
         managedSettingsStore.shield.applicationCategories = nil
-        print("🔴 [DeviceActivityManager] Clearing shield.webDomains...")
         managedSettingsStore.shield.webDomains = nil
-        print("✅ [DeviceActivityManager] All restrictions cleared")
     }
     
     
     // If the specified applications, categories, and webDomains have been in use longer than the event’s `threshold` within the activity’s scheduled interval (start - end), we will shield those applications.
     func startMonitor(activitySelection: FamilyActivitySelection, shieldThreshold: TimeInterval, start: Date, end: Date, repeatDaily: Bool, activityName: String, eventName: String = "threshold", warningTimeMinutes: Int = 10) throws {
-        print(#function)
         let (start, end) = repeatDaily ? createRepeatDailySchedule(start: start, end: end) : createOneTimeSchedule(start: start, end: end)
 
-        // The unique name of an activity.
         let deviceActivityName = makeActivityName(activityName)
         let deviceEventName = DeviceActivityEvent.Name(eventName)
-        
+
         try self.saveSelection(activitySelection, activityName: deviceActivityName, eventName: deviceEventName)
 
         let schedule = DeviceActivitySchedule(
@@ -103,87 +83,51 @@ class DeviceActivityManager {
             repeats: repeatDaily,
             warningTime: DateComponents(minute: warningTimeMinutes)
         )
-        
-        // If our app didn’t specify any applications, categories, or webDomains,
-        // the event includes all applications, categories, and web domains.
-        //
-        // BUG?: On Simulator, Threshold other than 0 not triggering DeviceActivityMonitor.eventDidReachThreshold
+
         let event = DeviceActivityEvent(
             applications: activitySelection.applicationTokens,
             categories: activitySelection.categoryTokens,
             webDomains: activitySelection.webDomainTokens,
             threshold: createThreshold(shieldThreshold),
-            // For example, if your app calls startMonitoring(_:during:events:) at 1:30pm with a schedule of 1:00pm to 2:00pm,
-            // then this boolean determines whether any activity between 1:00pm and 1:30pm will contribute to its threshold.
             includesPastActivity: true,
         )
-        
-        // If the app already monitored the activity, this method overwrites the previous schedule and events.
-        // Attempting to monitor too many activities or activities that are too tightly scheduled can cause this method to throw an error.
+
         try self.deviceActivityCenter.startMonitoring(
             deviceActivityName,
             during: schedule,
-            // If this parameter is empty,
-            // the application extension only receives callbacks for the start and end times of the schedule’s interval.
             events: [
                 deviceEventName : event,
             ]
         )
-        
+
         self.monitoringActivities.append(activityName)
     }
     
     func stopMonitor(activityName: String) {
-        print(#function)
-        return self.stopMonitor(activityName: makeActivityName(activityName))
+        self.stopMonitor(activityName: makeActivityName(activityName))
     }
-    
+
     func stopMonitor(activityName: DeviceActivityName) {
-        print("🔴 [DeviceActivityManager] stopMonitor called for: \(activityName)")
-        
-        // Check if monitor exists by checking for schedule
         let schedule = self.deviceActivityCenter.schedule(for: activityName)
-        guard schedule != nil else {
-            print("⚠️ [DeviceActivityManager] No monitor found for \(activityName.rawValue), skipping stopMonitoring")
-            return
-        }
-        
-        print("✅ [DeviceActivityManager] Monitor found, proceeding to stop")
+        guard schedule != nil else { return }
+
         let events = self.getEvents(activityName: activityName, details: false)
-        print("🔴 [DeviceActivityManager] Found \(events.count) events to remove")
-        
         events.keys.forEach({
             let key = makeUserDefaultsKey(activityName: activityName, eventName: $0)
-            print("🔴 [DeviceActivityManager] Removing saved selection for key: \(key)")
             self.removeSavedSelection(key: key)
         })
 
-        // If the array for the activity name is empty, ie: no activities are explicitly specified,
-        // this method stops monitoring all activities.
-        // Also, by calling this method, any shields (restrictions) applied for the activities (within the DeviceActivityMonitor extension) will be removed automatically
-        print("🔴 [DeviceActivityManager] Calling deviceActivityCenter.stopMonitoring...")
         self.deviceActivityCenter.stopMonitoring([activityName])
         self.monitoringActivities.removeAll(where: {$0 == parseActivityName(activityName)})
-        print("✅ [DeviceActivityManager] Monitor stopped successfully")
     }
     
     func stopAllMonitors() {
-        print("🔴 [DeviceActivityManager] stopAllMonitors called")
-        print("🔴 [DeviceActivityManager] Current activities: \(deviceActivityCenter.activities.map { $0.rawValue })")
-        
         let allActivities = Array(deviceActivityCenter.activities)
-        print("🔴 [DeviceActivityManager] Stopping \(allActivities.count) monitors")
-        
-        // Stop each monitor individually to ensure proper cleanup
         for activityName in allActivities {
             stopMonitor(activityName: activityName)
         }
-        
-        // Also call stopMonitoring with empty array to ensure all are stopped
         self.deviceActivityCenter.stopMonitoring([])
         self.monitoringActivities.removeAll()
-        
-        print("✅ [DeviceActivityManager] All monitors stopped")
     }
     
     
@@ -192,10 +136,7 @@ class DeviceActivityManager {
     }
     
     func getEvents(activityName: DeviceActivityName, details: Bool) -> [DeviceActivityEvent.Name : DeviceActivityEvent] {
-        // IMPORTANT:
-        // the token-related fields for events returned with events(for:) will always be empty
         var events = self.deviceActivityCenter.events(for: activityName)
-        print(events)
         if !details {
             return events
         }
@@ -203,16 +144,15 @@ class DeviceActivityManager {
         for (key, value) in events {
             let userDefaultsKey = self.makeUserDefaultsKey(activityName: activityName, eventName: key)
             let tokens = self.getSavedSelection(key: userDefaultsKey)
-            print("📱 [getEvents] Reconstructing event \(key.rawValue): Apps: \(tokens.applicationTokens.count), Categories: \(tokens.categoryTokens.count)")
             events[key] = DeviceActivityEvent(
                 applications: tokens.applicationTokens,
                 categories: tokens.categoryTokens,
                 webDomains: tokens.webDomainTokens,
-                threshold: value.threshold, 
+                threshold: value.threshold,
                 includesPastActivity: value.includesPastActivity
             )
         }
-        
+
         return events
     }
     
@@ -250,19 +190,15 @@ extension DeviceActivityManager {
 extension DeviceActivityManager {
     private func getSavedSelection(key: String) -> FamilyActivitySelection {
         guard let data = userDefaults.data(forKey: key), let selection = try? self.jsonDecoder.decode(FamilyActivitySelection.self, from: data) else {
-            print("📱 [getSavedSelection] No saved selection for key: \(key)")
             return FamilyActivitySelection()
         }
-        print("📱 [getSavedSelection] Loaded selection for key: \(key) - Apps: \(selection.applicationTokens.count), Categories: \(selection.categoryTokens.count)")
         return selection
     }
-    
+
     private func saveSelection(_ selection: FamilyActivitySelection, activityName: DeviceActivityName, eventName: DeviceActivityEvent.Name) throws {
         let key = self.makeUserDefaultsKey(activityName: activityName, eventName: eventName)
-        print("📱 [saveSelection] Saving selection for key: \(key) - Apps: \(selection.applicationTokens.count), Categories: \(selection.categoryTokens.count)")
         let data = try self.jsonEncoder.encode(selection)
         userDefaults.set(data, forKey: key)
-        print("✅ [saveSelection] Selection saved successfully")
     }
     
     
@@ -276,33 +212,24 @@ extension DeviceActivityManager {
     
     /// Clear all UserDefaults data except onboarding-related keys (for development/debugging)
     func clearAllData() {
-        print("🔴 [DeviceActivityManager] clearAllData called")
-        
         let suiteDomain = userDefaults.dictionaryRepresentation()
-        
+
         let onboardingKeys = suiteDomain.keys.filter { $0.lowercased().contains("onboarding") }
-        print("🔴 [DeviceActivityManager] Found \(onboardingKeys.count) onboarding keys to preserve")
-        
-        // Store onboarding values temporarily
+
         var onboardingData: [String: Any] = [:]
         for key in onboardingKeys {
             if let value = suiteDomain[key] {
                 onboardingData[key] = value
             }
         }
-        
-        // Remove all keys
+
         for key in suiteDomain.keys {
             userDefaults.removeObject(forKey: key)
         }
-        
-        // Restore onboarding data
+
         for (key, value) in onboardingData {
             userDefaults.set(value, forKey: key)
         }
-        
-        userDefaults.synchronize()
-        print("✅ [DeviceActivityManager] All data cleared except \(onboardingData.count) onboarding keys")
     }
 }
 
