@@ -328,6 +328,7 @@ final class DietManager {
             // This allows the extension to report usage back to the app at each interval
             let limitMinutes = profile.eatingWindow.dailyCarbLimitMinutes
             let interval = 5
+            let maxEvents = 20  // iOS DeviceActivity max events per activity
             var thresholds: [Int] = []
             var t = interval
             while t <= limitMinutes {
@@ -337,6 +338,15 @@ final class DietManager {
             // Ensure the exact limit is included
             if thresholds.last != limitMinutes && limitMinutes > 0 {
                 thresholds.append(limitMinutes)
+            }
+            // Add post-limit thresholds to track usage during cheat meals.
+            // Without these, no threshold events fire beyond the daily limit,
+            // so carb usage during cheat meals would go untracked.
+            let lastThreshold = thresholds.last ?? limitMinutes
+            t = lastThreshold + interval
+            while thresholds.count < maxEvents {
+                thresholds.append(t)
+                t += interval
             }
 
             try deviceActivityManager.startMonitorWithIncrementalThresholds(

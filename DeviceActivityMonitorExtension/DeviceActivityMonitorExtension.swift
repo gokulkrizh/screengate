@@ -143,6 +143,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         case "diet.nightlock":
             // Night lock started - apply all restrictions except protein
             logger.info("[intervalDidStart] Night lock started - applying night restrictions")
+            updateShieldType("nightLock")
             let events = manager.getEvents(activityName: activity, details: true)
             for (_, event) in events {
                 manager.applyImmediateRestrictions(
@@ -151,7 +152,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                     webDomainTokens: event.webDomains
                 )
             }
-            updateShieldType("nightLock")
             sendNotification(title: "Night Lock Active", body: "Only protein apps are available. Rest well.")
             postDietChangedNotification()
 
@@ -174,6 +174,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         case "diet.carbs.window":
             // Carb eating window closed - apply carb restrictions (fasting resumes)
             logger.info("[intervalDidEnd] Carb window closed - applying carb restrictions")
+            updateShieldType("kitchenClosed")
             let events = manager.getEvents(activityName: activity, details: true)
             for (_, event) in events {
                 manager.applyImmediateRestrictions(
@@ -182,7 +183,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                     webDomainTokens: event.webDomains
                 )
             }
-            updateShieldType("kitchenClosed")
             sendNotification(title: "Kitchen Closed", body: "Carb window has ended. Fasting period begins.")
             postDietChangedNotification()
 
@@ -224,6 +224,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                 } else if usageMinutes >= limit {
                     // Daily carb limit reached - apply restrictions
                     logger.info("[eventDidReachThreshold] Daily carb limit reached at \(usageMinutes)/\(limit) min")
+                    updateShieldType("dailyLimitReached")
                     let events = manager.getEvents(activityName: activity, details: true)
                     for (_, eventDetail) in events {
                         manager.applyImmediateRestrictions(
@@ -232,7 +233,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                             webDomainTokens: eventDetail.webDomains
                         )
                     }
-                    updateShieldType("dailyLimitReached")
                     sendNotification(
                         title: "Daily Carb Limit Reached",
                         body: "\(limit)/\(limit) minutes consumed. Try protein or fiber apps."
@@ -247,6 +247,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                 let limit = getDailyCarbLimit()
                 setCarbsUsed(minutes: limit)
                 if !cheatActive {
+                    updateShieldType("dailyLimitReached")
                     let events = manager.getEvents(activityName: activity, details: true)
                     for (_, eventDetail) in events {
                         manager.applyImmediateRestrictions(
@@ -255,7 +256,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                             webDomainTokens: eventDetail.webDomains
                         )
                     }
-                    updateShieldType("dailyLimitReached")
                     sendNotification(
                         title: "Daily Carb Limit Reached",
                         body: "\(limit)/\(limit) minutes consumed. Try protein or fiber apps."
