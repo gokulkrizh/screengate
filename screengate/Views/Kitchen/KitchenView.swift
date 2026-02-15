@@ -186,7 +186,8 @@ struct KitchenView: View {
 
                 // Carb usage progress
                 if let profile = dietManager.dietProfile {
-                    let used = dietManager.todayLog.carbsMinutes
+                    let used = dietManager.regularCarbMinutes
+                    let cheat = dietManager.cheatCarbMinutes
                     let limit = profile.eatingWindow.dailyCarbLimitMinutes
                     let progress = limit > 0 ? min(1.0, Double(used) / Double(limit)) : 0
 
@@ -196,9 +197,18 @@ struct KitchenView: View {
                                 .font(appTheme.fonts.labelMedium)
                                 .foregroundColor(appTheme.colors.textSecondary)
                             Spacer()
-                            Text("\(used)/\(limit) min")
-                                .font(appTheme.fonts.titleSmall)
-                                .foregroundColor(progress > 0.8 ? appTheme.colors.warning : appTheme.colors.text)
+                            if cheat > 0 {
+                                Text("\(used)/\(limit) min")
+                                    .font(appTheme.fonts.titleSmall)
+                                    .foregroundColor(progress > 0.8 ? appTheme.colors.warning : appTheme.colors.text)
+                                + Text(" + \(cheat)m cheat")
+                                    .font(appTheme.fonts.labelSmall)
+                                    .foregroundColor(appTheme.colors.warning)
+                            } else {
+                                Text("\(used)/\(limit) min")
+                                    .font(appTheme.fonts.titleSmall)
+                                    .foregroundColor(progress > 0.8 ? appTheme.colors.warning : appTheme.colors.text)
+                            }
                         }
 
                         ProgressView(value: progress)
@@ -235,9 +245,19 @@ struct KitchenView: View {
                     .foregroundColor(appTheme.colors.text)
 
                 if let profile = dietManager.dietProfile {
-                    Text("\(profile.eatingWindow.dailyCarbLimitMinutes)/\(profile.eatingWindow.dailyCarbLimitMinutes) minutes consumed")
-                        .font(appTheme.fonts.bodyMedium)
-                        .foregroundColor(appTheme.colors.textSecondary)
+                    let limit = profile.eatingWindow.dailyCarbLimitMinutes
+                    let cheat = dietManager.cheatCarbMinutes
+                    if cheat > 0 {
+                        (Text("\(limit)/\(limit) min consumed")
+                            .foregroundColor(appTheme.colors.textSecondary)
+                        + Text(" + \(cheat)m cheat")
+                            .foregroundColor(appTheme.colors.warning))
+                            .font(appTheme.fonts.bodyMedium)
+                    } else {
+                        Text("\(limit)/\(limit) minutes consumed")
+                            .font(appTheme.fonts.bodyMedium)
+                            .foregroundColor(appTheme.colors.textSecondary)
+                    }
                 }
 
                 // Cheat meal button
@@ -412,25 +432,82 @@ struct KitchenView: View {
             ForEach(FoodGroup.allCases) { group in
                 let minutes = dietManager.todayLog.minutes(for: group)
                 let percentage = dietManager.todayLog.percentage(for: group)
+                let cheat = group == .carbs ? dietManager.cheatCarbMinutes : 0
+                let regular = group == .carbs ? dietManager.regularCarbMinutes : minutes
+                let usageColor = nutritionColor(for: group)
 
-                HStack {
-                    Text(group.emoji)
-                    Text(group.displayName)
-                        .font(appTheme.fonts.labelMedium)
-                        .foregroundColor(appTheme.colors.textSecondary)
-                    Spacer()
-                    Text("\(minutes)m")
-                        .font(appTheme.fonts.titleSmall)
-                        .foregroundColor(appTheme.colors.text)
-                    Text("(\(Int(percentage))%)")
-                        .font(appTheme.fonts.labelSmall)
-                        .foregroundColor(appTheme.colors.textSecondary)
-                        .frame(width: 40, alignment: .trailing)
+                VStack(spacing: 4) {
+                    HStack {
+                        Text(group.emoji)
+                        Text(group.displayName)
+                            .font(appTheme.fonts.labelMedium)
+                            .foregroundColor(appTheme.colors.textSecondary)
+                        Spacer()
+                        if cheat > 0 {
+                            Text("\(regular)m")
+                                .font(appTheme.fonts.titleSmall)
+                                .foregroundColor(usageColor)
+                            + Text(" + \(cheat)m cheat")
+                                .font(appTheme.fonts.labelSmall)
+                                .foregroundColor(appTheme.colors.warning)
+                        } else {
+                            Text("\(minutes)m")
+                                .font(appTheme.fonts.titleSmall)
+                                .foregroundColor(usageColor)
+                        }
+                        Text("(\(Int(percentage))%)")
+                            .font(appTheme.fonts.labelSmall)
+                            .foregroundColor(appTheme.colors.textSecondary)
+                            .frame(width: 40, alignment: .trailing)
+                    }
+
+                    // Usage bar
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(appTheme.colors.surfaceVariant)
+                                .frame(height: 4)
+
+                            let barWidth = percentage > 0 ? max(4, geo.size.width * CGFloat(percentage) / 100) : 0
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(usageColor)
+                                .frame(width: barWidth, height: 4)
+                        }
+                    }
+                    .frame(height: 4)
                 }
             }
         }
         .padding(appTheme.spacing.medium)
         .background(appTheme.colors.surface)
         .cornerRadius(appTheme.spacing.cornerRadiusMedium)
+    }
+
+    /// Color based on usage level for a food group
+    private func nutritionColor(for group: FoodGroup) -> Color {
+        switch group {
+        case .protein:
+            // Protein is always good - more is better
+            return appTheme.colors.primary
+        case .carbs:
+            // Color based on how much of the daily limit is used
+            guard let profile = dietManager.dietProfile else { return appTheme.colors.text }
+            let limit = profile.eatingWindow.dailyCarbLimitMinutes
+            guard limit > 0 else { return appTheme.colors.text }
+            let used = dietManager.todayLog.carbsMinutes
+            let ratio = Double(used) / Double(limit)
+            if ratio > 1.0 { return appTheme.colors.error }       // Over limit (cheat territory)
+            if ratio >= 0.8 { return appTheme.colors.warning }    // Nearing limit
+            if ratio >= 0.5 { return Color.orange }               // Moderate
+            return appTheme.colors.primary                         // Low usage
+        case .fats:
+            let minutes = dietManager.todayLog.fatsMinutes
+            if minutes > 60 { return appTheme.colors.error }
+            if minutes > 30 { return appTheme.colors.warning }
+            return appTheme.colors.primary
+        case .fiber:
+            // Fiber (learning) is good - more is better
+            return appTheme.colors.primary
+        }
     }
 }

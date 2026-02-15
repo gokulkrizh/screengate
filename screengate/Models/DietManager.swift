@@ -95,6 +95,18 @@ final class DietManager {
         return max(0, profile.eatingWindow.dailyCarbLimitMinutes - todayLog.carbsMinutes)
     }
 
+    /// Carb minutes within the daily limit (regular usage)
+    var regularCarbMinutes: Int {
+        guard let profile = dietProfile else { return todayLog.carbsMinutes }
+        return min(todayLog.carbsMinutes, profile.eatingWindow.dailyCarbLimitMinutes)
+    }
+
+    /// Carb minutes beyond the daily limit (cheat meal usage)
+    var cheatCarbMinutes: Int {
+        guard let profile = dietProfile else { return 0 }
+        return max(0, todayLog.carbsMinutes - profile.eatingWindow.dailyCarbLimitMinutes)
+    }
+
     /// Fasting progress as a percentage (0-100)
     var fastingProgress: Double {
         guard let profile = dietProfile else { return 0 }
