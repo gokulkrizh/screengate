@@ -221,7 +221,7 @@ final class DietManager {
         profile.cheatsUsedThisWeek += 1
         self.dietProfile = profile
         self.isCheatMealActive = true
-        self.cheatMealExpiresAt = Date().addingTimeInterval(30 * 60)  // 30 min
+        self.cheatMealExpiresAt = Date().addingTimeInterval(6 * 60)  // 6 min (testing; change back to 30 * 60 for production)
 
         // Remove carb restrictions temporarily
         deviceActivityManager.removeRestrictions()
@@ -238,6 +238,10 @@ final class DietManager {
 
     /// End cheat meal early
     func endCheatMeal() {
+        #if DEBUG
+        print("[DietManager] Cheat meal ended - carb usage tracked via threshold events (current: \(todayLog.carbsMinutes)m)")
+        #endif
+
         isCheatMealActive = false
         cheatMealExpiresAt = nil
         cheatTimer?.invalidate()
@@ -245,6 +249,12 @@ final class DietManager {
 
         userDefaults.set(false, forKey: cheatMealActiveKey)
         userDefaults.removeObject(forKey: cheatMealExpiresKey)
+
+        // Sync latest carb usage from extension before re-applying restrictions
+        let extensionCarbs = userDefaults.integer(forKey: carbsUsedTodayKey)
+        if extensionCarbs > todayLog.carbsMinutes {
+            todayLog.carbsMinutes = extensionCarbs
+        }
 
         // Re-apply restrictions
         applyRestrictionsForCurrentState()

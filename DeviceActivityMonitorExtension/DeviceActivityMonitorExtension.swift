@@ -209,20 +209,19 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         guard let activityType = extractActivityType(from: activity) else { return }
 
-        // Skip if cheat meal is active
-        if isCheatMealActive() {
-            logger.info("[eventDidReachThreshold] Cheat meal active, skipping threshold action")
-            return
-        }
+        let cheatActive = isCheatMealActive()
 
         switch activityType {
         case "diet.carbs.window":
-            // Parse usage minutes from event name (e.g., "usage-5", "usage-10", ...)
+            // Always track carb usage (even during cheat meals) so actual usage is recorded.
+            // Only apply restrictions when cheat meal is NOT active.
             if let usageMinutes = parseUsageMinutes(from: event.rawValue) {
                 let limit = getDailyCarbLimit()
                 setCarbsUsed(minutes: usageMinutes)
 
-                if usageMinutes >= limit {
+                if cheatActive {
+                    logger.info("[eventDidReachThreshold] Cheat meal active - tracked carb usage \(usageMinutes)/\(limit) min (no restrictions)")
+                } else if usageMinutes >= limit {
                     // Daily carb limit reached - apply restrictions
                     logger.info("[eventDidReachThreshold] Daily carb limit reached at \(usageMinutes)/\(limit) min")
                     let events = manager.getEvents(activityName: activity, details: true)
@@ -247,6 +246,30 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                 // Legacy single-threshold event
                 let limit = getDailyCarbLimit()
                 setCarbsUsed(minutes: limit)
+                if !cheatActive {
+                    let events = manager.getEvents(activityName: activity, details: true)
+                    for (_, eventDetail) in events {
+                        manager.applyImmediateRestrictions(
+                            applicationTokens: eventDetail.applications,
+                            categoryTokens: eventDetail.categories,
+                            webDomainTokens: eventDetail.webDomains
+                        )
+                    }
+                    updateShieldType("dailyLimitReached")
+                    sendNotification(
+                        title: "Daily Carb Limit Reached",
+                        body: "\(limit)/\(limit) minutes consumed. Try protein or fiber apps."
+                    )
+                }
+                postDietChangedNotification()
+            }
+
+        case "diet.fats.window":
+            // Fats limit reached - skip if cheat meal active
+            if cheatActive {
+                logger.info("[eventDidReachThreshold] Cheat meal active - skipping fats restriction")
+            } else {
+                logger.info("[eventDidReachThreshold] Fats limit reached")
                 let events = manager.getEvents(activityName: activity, details: true)
                 for (_, eventDetail) in events {
                     manager.applyImmediateRestrictions(
@@ -255,26 +278,8 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
                         webDomainTokens: eventDetail.webDomains
                     )
                 }
-                updateShieldType("dailyLimitReached")
-                sendNotification(
-                    title: "Daily Carb Limit Reached",
-                    body: "\(limit)/\(limit) minutes consumed. Try protein or fiber apps."
-                )
                 postDietChangedNotification()
             }
-
-        case "diet.fats.window":
-            // Fats limit reached
-            logger.info("[eventDidReachThreshold] Fats limit reached")
-            let events = manager.getEvents(activityName: activity, details: true)
-            for (_, eventDetail) in events {
-                manager.applyImmediateRestrictions(
-                    applicationTokens: eventDetail.applications,
-                    categoryTokens: eventDetail.categories,
-                    webDomainTokens: eventDetail.webDomains
-                )
-            }
-            postDietChangedNotification()
 
         default:
             logger.info("[eventDidReachThreshold] No threshold action for: \(activityType)")
