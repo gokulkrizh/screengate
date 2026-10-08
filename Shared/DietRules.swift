@@ -38,6 +38,10 @@ enum DietRules {
     /// DeviceActivity schedule intervals have a 15-minute system minimum.
     static let minimumScheduleMinutes = 15
 
+    /// Effective cheat meal duration (the DeviceActivity minimum overrides the
+    /// shorter debug value).
+    static var cheatMealMinutes: Int { max(minimumScheduleMinutes, DebugConfig.cheatMealMinutes) }
+
     // MARK: Session helpers
 
     static func isCheatActive(_ cheat: CheatSession?, at now: Date = Date()) -> Bool {

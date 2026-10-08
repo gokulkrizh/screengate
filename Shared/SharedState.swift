@@ -56,13 +56,24 @@ struct FastSession: Codable, Equatable {
     var source: Source
 }
 
-/// 2-tap cheat confirmation from a shield (Phase 2). Scoped to the shielded item
-/// and valid for a short TTL.
+/// 2-tap cheat confirmation from a shield. Scoped to the shielded item and valid
+/// for a short TTL so a stray tap can't lift restrictions.
 struct ShieldPending: Codable, Equatable {
     var scope: String
     var expiresAt: Date
 
     func isActive(at now: Date = Date()) -> Bool { expiresAt > now }
+
+    /// Opaque scope string for a shield token (stable across processes).
+    static func scope(for token: some Encodable) -> String {
+        guard let data = try? JSONEncoder().encode(token) else { return "any" }
+        return data.base64EncodedString()
+    }
+
+    /// Create a pending confirmation for a token.
+    static func make(for token: some Encodable, ttl: TimeInterval = 20) -> ShieldPending {
+        ShieldPending(scope: scope(for: token), expiresAt: Date().addingTimeInterval(ttl))
+    }
 }
 
 // MARK: - Onboarding

@@ -173,7 +173,7 @@ struct DietSettingsView: View {
                 .font(appTheme.fonts.headlineMedium)
                 .foregroundColor(appTheme.colors.text)
 
-            Text("This will temporarily allow all carb apps for \(DebugConfig.cheatMealMinutes) minutes. You have \(dietManager.cheatsRemaining) cheat meals remaining this week.")
+            Text("This will temporarily allow all carb apps for \(DietRules.cheatMealMinutes) minutes. You have \(dietManager.cheatsRemaining) cheat meals remaining this week.")
                 .font(appTheme.fonts.bodyMedium)
                 .foregroundColor(appTheme.colors.textSecondary)
                 .multilineTextAlignment(.center)
@@ -186,7 +186,7 @@ struct DietSettingsView: View {
                     try? dietManager.useCheatMeal()
                     showCheatMeal = false
                 }) {
-                    Text("Use Cheat Meal (\(DebugConfig.cheatMealMinutes) min)")
+                    Text("Use Cheat Meal (\(DietRules.cheatMealMinutes) min)")
                         .font(appTheme.fonts.titleMedium)
                         .foregroundColor(appTheme.colors.background)
                         .frame(maxWidth: .infinity)

@@ -76,6 +76,7 @@
 				DebugConfig.swift,
 				DietProfile.swift,
 				DietRules.swift,
+				Entitlement.swift,
 				FoodGroup.swift,
 				SharedState.swift,
 				SharedStore.swift,
@@ -88,6 +89,7 @@
 				DebugConfig.swift,
 				DietProfile.swift,
 				DietRules.swift,
+				Entitlement.swift,
 				FoodGroup.swift,
 				SharedState.swift,
 			);
@@ -137,6 +139,7 @@
 				DeviceActivityManager.swift,
 				DietProfile.swift,
 				DietRules.swift,
+				Entitlement.swift,
 				FoodGroup.swift,
 				ScheduleNames.swift,
 				SharedState.swift,

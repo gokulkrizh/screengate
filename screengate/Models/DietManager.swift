@@ -183,7 +183,7 @@ final class DietManager {
         guard !DietRules.isFastActive(state.fast) else { throw DietError.cheatNotAvailableDuringFast }
 
         let now = Date()
-        let minutes = max(DietRules.minimumScheduleMinutes, durationMinutes ?? DebugConfig.cheatMealMinutes)
+        let minutes = durationMinutes ?? DietRules.cheatMealMinutes
         let endsAt = now.addingTimeInterval(TimeInterval(minutes * 60))
 
         state.cheat = CheatSession(startedAt: now, endsAt: endsAt, source: .app)
@@ -368,7 +368,8 @@ final class DietManager {
 
     private func cheatsRemaining(in state: SharedState) -> Int {
         guard let profile = state.profile else { return 0 }
-        return max(0, profile.cheatsPerWeek - state.week.cheatsUsed)
+        let allowed = Entitlement.clampedCheats(profile.cheatsPerWeek, isPremium: state.isPremium)
+        return max(0, allowed - state.week.cheatsUsed)
     }
 
     private func minutesSinceWindowClosed(profile: DietProfile, now: Date) -> Int {
