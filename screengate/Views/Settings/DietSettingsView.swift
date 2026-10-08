@@ -167,6 +167,7 @@ struct DietSettingsView: View {
         }
         .sheet(isPresented: $showCheatMeal) {
             cheatMealSheet
+                .paywallPresenter()
         }
         .sheet(isPresented: $showNotifications) {
             NotificationSettingsView()
@@ -177,6 +178,7 @@ struct DietSettingsView: View {
                 AdjustDietView(profile: profile)
                     .environment(dietManager)
                     .environment(entitlements)
+                    .paywallPresenter()
             }
         }
         .alert("Enable Strict Mode?", isPresented: $showStrictConfirm) {

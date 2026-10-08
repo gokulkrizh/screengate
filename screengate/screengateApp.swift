@@ -33,14 +33,8 @@ struct ScreenDietApp: App {
                     .environment(dietManager)
                 }
             }
+            .paywallPresenter()
             .environment(entitlementManager)
-            .sheet(item: $entitlementManager.activePlacement) { placement in
-                PaywallView(placement: placement) {
-                    entitlementManager.dismissPaywall()
-                }
-                .environment(entitlementManager)
-                .environment(dietManager)
-            }
             .alert("You're back on the free plan", isPresented: Binding(
                 get: { entitlementManager.showDowngradeNotice },
                 set: { if !$0 { entitlementManager.acknowledgeDowngrade() } }

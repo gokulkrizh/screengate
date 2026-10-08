@@ -38,6 +38,19 @@ final class EntitlementManager {
     /// Non-nil while a paywall should be shown (observers present the sheet).
     var activePlacement: PaywallPlacement?
 
+    /// Views able to present the paywall, innermost last. SwiftUI can't present a
+    /// sheet from a view that is already presenting one, so only the top-most
+    /// presenter shows it — a paywall requested inside a sheet opens on that sheet.
+    private(set) var paywallPresenters: [UUID] = []
+
+    func registerPaywallPresenter(_ id: UUID) {
+        paywallPresenters.append(id)
+    }
+
+    func unregisterPaywallPresenter(_ id: UUID) {
+        paywallPresenters.removeAll { $0 == id }
+    }
+
     /// One-time "you're back on the free plan" notice.
     var showDowngradeNotice: Bool
 

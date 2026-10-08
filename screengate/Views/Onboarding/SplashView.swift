@@ -107,6 +107,7 @@ struct SplashView: View {
         }
         .fullScreenCover(isPresented: $proceed) {
             OnboardingView(onCompletion: onCompletion)
+                .paywallPresenter()
         }
         .onAppear {
             // Animate logo
