@@ -4,7 +4,7 @@ struct EatingWindowSetupView: View {
     @ObservedObject var data: OnboardingData
     @State private var windowStartHour: Int = 12
     @State private var windowEndHour: Int = 18
-    @State private var dailyCarbLimit: Int = 60
+    @State private var dailyCarbLimit: Int = DebugConfig.defaultPortionMinutes
     @State private var nightLockHour: Int = 21
     private let appTheme = AppTheme.shared
 

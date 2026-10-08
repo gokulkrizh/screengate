@@ -233,7 +233,7 @@ final class DietManager {
         profile.cheatsUsedThisWeek += 1
         self.dietProfile = profile
         self.isCheatMealActive = true
-        self.cheatMealExpiresAt = Date().addingTimeInterval(6 * 60)  // 6 min (testing; change back to 30 * 60 for production)
+        self.cheatMealExpiresAt = Date().addingTimeInterval(TimeInterval(DebugConfig.cheatMealMinutes * 60))
 
         // Remove carb restrictions temporarily
         deviceActivityManager.removeRestrictions()

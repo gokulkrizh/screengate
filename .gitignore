@@ -167,3 +167,9 @@ THRESHOLD_ARCHITECTURE.md
 tools.md
 .github/copilot-instructions.md
 .github/copilot-instructions.md
+
+# App Store Connect API keys (never commit)
+*.p8
+
+# Claude Code local settings
+.claude/settings.local.json

@@ -75,7 +75,7 @@ class ShieldActionExtension: ShieldActionDelegate {
         userDefaults.set(newUsed, forKey: "cheatsUsedThisWeek")
 
         // Set cheat meal state
-        let expiresAt = Date().addingTimeInterval(6 * 60) // 6 min (testing; change back to 30 * 60 for production)
+        let expiresAt = Date().addingTimeInterval(TimeInterval(DebugConfig.cheatMealMinutes * 60))
         userDefaults.set(true, forKey: "cheatMealActive")
         userDefaults.set(expiresAt, forKey: "cheatMealExpires")
 

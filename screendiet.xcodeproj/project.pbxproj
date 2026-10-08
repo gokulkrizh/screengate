@@ -93,6 +93,7 @@
 		557B53742EBA693F00E46D58 /* Exceptions for "Shared" folder in "screendiet" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				DebugConfig.swift,
 				DeviceActivityManager.swift,
 			);
 			target = 557B516C2EB633C500E46D58 /* screendiet */;
@@ -100,9 +101,17 @@
 		557B53752EBA693F00E46D58 /* Exceptions for "Shared" folder in "ShieldActionExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				DebugConfig.swift,
 				DeviceActivityManager.swift,
 			);
 			target = 557B52482EB659BD00E46D58 /* ShieldActionExtension */;
+		};
+		551538A02F08CD91008DABB6 /* Exceptions for "Shared" folder in "ShieldConfigurationExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				DebugConfig.swift,
+			);
+			target = 557B52312EB6598000E46D58 /* ShieldConfigurationExtension */;
 		};
 		557B53782EBA69FB00E46D58 /* Exceptions for "screengate" folder in "ShieldActionExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -159,6 +168,7 @@
 			exceptions = (
 				557B53742EBA693F00E46D58 /* Exceptions for "Shared" folder in "screendiet" target */,
 				557B53752EBA693F00E46D58 /* Exceptions for "Shared" folder in "ShieldActionExtension" target */,
+				551538A02F08CD91008DABB6 /* Exceptions for "Shared" folder in "ShieldConfigurationExtension" target */,
 			);
 			path = Shared;
 			sourceTree = "<group>";

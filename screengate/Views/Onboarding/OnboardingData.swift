@@ -8,7 +8,7 @@ class OnboardingData: ObservableObject {
     @Published var selectedDietType: DietType?
     @Published var windowStartHour: Int = 12
     @Published var windowEndHour: Int = 18
-    @Published var dailyCarbLimitMinutes: Int = 6  // Testing value (change back to 60 for production)
+    @Published var dailyCarbLimitMinutes: Int = DebugConfig.defaultPortionMinutes
     @Published var nightLockHour: Int = 21
 
     // Track completion

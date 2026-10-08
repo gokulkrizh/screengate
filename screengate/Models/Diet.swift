@@ -55,10 +55,10 @@ enum DietType: String, Codable, CaseIterable, Identifiable {
     /// Default daily carb limit in minutes
     var defaultCarbLimitMinutes: Int {
         switch self {
-        case .keto: return 6       // Testing value (change back to 60 for production)
-        case .balanced: return 6   // Testing value (change back to 90 for production)
+        case .keto: return DebugConfig.defaultPortionMinutes
+        case .balanced: return DebugConfig.relaxedPortionMinutes
         case .detox: return 0
-        case .custom: return 6     // Testing value (change back to 60 for production)
+        case .custom: return DebugConfig.defaultPortionMinutes
         }
     }
 
@@ -194,7 +194,7 @@ struct EatingWindow: Codable, Equatable {
     static let defaultKeto = EatingWindow(
         startHour: 12, startMinute: 0,
         endHour: 18, endMinute: 0,
-        dailyCarbLimitMinutes: 6  // Testing value (change back to 60 for production)
+        dailyCarbLimitMinutes: DebugConfig.defaultPortionMinutes
     )
 }
 

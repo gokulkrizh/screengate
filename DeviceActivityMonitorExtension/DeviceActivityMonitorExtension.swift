@@ -67,7 +67,7 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         guard let userDefaults = userDefaults,
               let data = userDefaults.data(forKey: "dietProfile"),
               let profile = try? jsonDecoder.decode(DietProfileLight.self, from: data) else {
-            return 60
+            return DebugConfig.defaultPortionMinutes
         }
         return profile.eatingWindow.dailyCarbLimitMinutes
     }
