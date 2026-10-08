@@ -17,6 +17,7 @@
 		557B532A2EBA635800E46D58 /* DeviceActivityMonitorExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 557B53202EBA635800E46D58 /* DeviceActivityMonitorExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		551538CA2F08CD91008DABB6 /* NutritionReportExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 551538C12F08CD91008DABB6 /* NutritionReportExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		551538CD2F08CD91008DABB6 /* DeviceActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 557B53212EBA635800E46D58 /* DeviceActivity.framework */; };
+		551538DA2F08CD91008DABB6 /* ScreenDietWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 551538D12F08CD91008DABB6 /* ScreenDietWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -48,6 +49,13 @@
 			remoteGlobalIDString = 551538C02F08CD91008DABB6;
 			remoteInfo = NutritionReportExtension;
 		};
+		551538DC2F08CD91008DABB6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 557B51652EB633C500E46D58 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 551538D02F08CD91008DABB6;
+			remoteInfo = ScreenDietWidgets;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -59,6 +67,7 @@
 			files = (
 				557B532A2EBA635800E46D58 /* DeviceActivityMonitorExtension.appex in Embed Foundation Extensions */,
 				551538CA2F08CD91008DABB6 /* NutritionReportExtension.appex in Embed Foundation Extensions */,
+				551538DA2F08CD91008DABB6 /* ScreenDietWidgets.appex in Embed Foundation Extensions */,
 				557B523F2EB6598000E46D58 /* ShieldConfigurationExtension.appex in Embed Foundation Extensions */,
 				557B52522EB659BD00E46D58 /* ShieldActionExtension.appex in Embed Foundation Extensions */,
 			);
@@ -71,6 +80,7 @@
 		551538DE2F08CD91008DABB6 /* screendiet-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "screendiet-Info.plist"; sourceTree = "<group>"; };
 		551538B12F08CD91008DABB6 /* ScreenDietTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ScreenDietTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		551538C12F08CD91008DABB6 /* NutritionReportExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NutritionReportExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		551538D12F08CD91008DABB6 /* ScreenDietWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ScreenDietWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		557B516D2EB633C500E46D58 /* screendiet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = screendiet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		557B52322EB6598000E46D58 /* ShieldConfigurationExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShieldConfigurationExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		557B52342EB6598000E46D58 /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettings.framework; path = System/Library/Frameworks/ManagedSettings.framework; sourceTree = SDKROOT; };
@@ -128,6 +138,13 @@
 				Info.plist,
 			);
 			target = 551538C02F08CD91008DABB6 /* NutritionReportExtension */;
+		};
+		551538D72F08CD91008DABB6 /* Exceptions for "ScreenDietWidgets" folder in "ScreenDietWidgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 551538D02F08CD91008DABB6 /* ScreenDietWidgets */;
 		};
 		557B52432EB6598000E46D58 /* Exceptions for "ShieldConfigurationExtension" folder in "ShieldConfigurationExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -260,6 +277,19 @@
 			path = NutritionReportExtension;
 			sourceTree = "<group>";
 		};
+		551538D22F08CD91008DABB6 /* ScreenDietWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				551538D72F08CD91008DABB6 /* Exceptions for "ScreenDietWidgets" folder in "ScreenDietWidgets" target */,
+			);
+			path = ScreenDietWidgets;
+			sourceTree = "<group>";
+		};
+		551538DD2F08CD91008DABB6 /* WidgetsShared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = WidgetsShared;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -311,6 +341,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		551538D42F08CD91008DABB6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -325,6 +362,8 @@
 				557B53232EBA635800E46D58 /* DeviceActivityMonitorExtension */,
 				551538B22F08CD91008DABB6 /* ScreenDietTests */,
 				551538C22F08CD91008DABB6 /* NutritionReportExtension */,
+				551538D22F08CD91008DABB6 /* ScreenDietWidgets */,
+				551538DD2F08CD91008DABB6 /* WidgetsShared */,
 				557B52332EB6598000E46D58 /* Frameworks */,
 				557B516E2EB633C500E46D58 /* Products */,
 			);
@@ -339,6 +378,7 @@
 				557B53202EBA635800E46D58 /* DeviceActivityMonitorExtension.appex */,
 				551538B12F08CD91008DABB6 /* ScreenDietTests.xctest */,
 				551538C12F08CD91008DABB6 /* NutritionReportExtension.appex */,
+				551538D12F08CD91008DABB6 /* ScreenDietWidgets.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -372,9 +412,11 @@
 				557B52512EB659BD00E46D58 /* PBXTargetDependency */,
 				557B53292EBA635800E46D58 /* PBXTargetDependency */,
 				551538CB2F08CD91008DABB6 /* PBXTargetDependency */,
+				551538DB2F08CD91008DABB6 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				557B516F2EB633C500E46D58 /* screengate */,
+				551538DD2F08CD91008DABB6 /* WidgetsShared */,
 			);
 			name = screendiet;
 			packageProductDependencies = (
@@ -495,6 +537,30 @@
 			productReference = 551538C12F08CD91008DABB6 /* NutritionReportExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		551538D02F08CD91008DABB6 /* ScreenDietWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 551538D62F08CD91008DABB6 /* Build configuration list for PBXNativeTarget "ScreenDietWidgets" */;
+			buildPhases = (
+				551538D32F08CD91008DABB6 /* Sources */,
+				551538D42F08CD91008DABB6 /* Frameworks */,
+				551538D52F08CD91008DABB6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				551538D22F08CD91008DABB6 /* ScreenDietWidgets */,
+				551538DD2F08CD91008DABB6 /* WidgetsShared */,
+				557B535F2EBA65B900E46D58 /* Shared */,
+			);
+			name = ScreenDietWidgets;
+			packageProductDependencies = (
+			);
+			productName = ScreenDietWidgets;
+			productReference = 551538D12F08CD91008DABB6 /* ScreenDietWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -523,6 +589,9 @@
 					551538C02F08CD91008DABB6 = {
 						CreatedOnToolsVersion = 26.0.1;
 					};
+					551538D02F08CD91008DABB6 = {
+						CreatedOnToolsVersion = 26.0.1;
+					};
 				};
 			};
 			buildConfigurationList = 557B51682EB633C500E46D58 /* Build configuration list for PBXProject "screendiet" */;
@@ -547,6 +616,7 @@
 				557B52482EB659BD00E46D58 /* ShieldActionExtension */,
 				557B531F2EBA635800E46D58 /* DeviceActivityMonitorExtension */,
 				551538C02F08CD91008DABB6 /* NutritionReportExtension */,
+				551538D02F08CD91008DABB6 /* ScreenDietWidgets */,
 				551538B02F08CD91008DABB6 /* ScreenDietTests */,
 			);
 		};
@@ -589,6 +659,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		551538C62F08CD91008DABB6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		551538D52F08CD91008DABB6 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -640,6 +717,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		551538D32F08CD91008DABB6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -662,6 +746,11 @@
 			isa = PBXTargetDependency;
 			target = 551538C02F08CD91008DABB6 /* NutritionReportExtension */;
 			targetProxy = 551538CC2F08CD91008DABB6 /* PBXContainerItemProxy */;
+		};
+		551538DB2F08CD91008DABB6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 551538D02F08CD91008DABB6 /* ScreenDietWidgets */;
+			targetProxy = 551538DC2F08CD91008DABB6 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1029,6 +1118,64 @@
 			};
 			name = Release;
 		};
+		551538D82F08CD91008DABB6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ScreenDietWidgets/ScreenDietWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3DCZZ33R7Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ScreenDietWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ScreenDietWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gia.screendiet.ScreenDietWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		551538D92F08CD91008DABB6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ScreenDietWidgets/ScreenDietWidgets.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3DCZZ33R7Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ScreenDietWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ScreenDietWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gia.screendiet.ScreenDietWidgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		551538C82F08CD91008DABB6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1181,6 +1328,15 @@
 			buildConfigurations = (
 				551538C82F08CD91008DABB6 /* Debug */,
 				551538C92F08CD91008DABB6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		551538D62F08CD91008DABB6 /* Build configuration list for PBXNativeTarget "ScreenDietWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				551538D82F08CD91008DABB6 /* Debug */,
+				551538D92F08CD91008DABB6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -12,6 +12,7 @@ import DeviceActivity
 import Foundation
 import UserNotifications
 import OSLog
+import WidgetKit
 
 class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
@@ -38,6 +39,8 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
     private func reconcile(_ state: SharedState) {
         manager.reconcile(state: state)
+        // Keep widget numbers fresh; countdowns tick on their own.
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func sendNotification(

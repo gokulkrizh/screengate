@@ -3,6 +3,7 @@ import FamilyControls
 import UserNotifications
 import DeviceActivity
 import Observation
+import WidgetKit
 
 /// App-side coordinator. All persistent state lives in `SharedStore`; this class
 /// is a thin observable façade over `SharedState` plus schedule registration.
@@ -175,6 +176,7 @@ final class DietManager {
         state.fast = nil
         sharedState = persist(state)
         refreshNotifications()
+        FastActivityStarter.endAll()
     }
 
     /// Update the profile (window, portion, night fast, cheats).
@@ -212,6 +214,7 @@ final class DietManager {
         registerCheatSchedule(until: endsAt)
         syncStores()
         refreshNotifications()
+        FastActivityStarter.start(kind: .cheatMeal, endsAt: endsAt, streak: state.streak)
     }
 
     /// End the cheat meal early.
@@ -223,6 +226,7 @@ final class DietManager {
         sharedState = persist(state)
         syncStores()
         refreshNotifications()
+        FastActivityStarter.end(kind: .cheatMeal)
     }
 
     // MARK: - Fast Now
@@ -243,6 +247,8 @@ final class DietManager {
 
         registerFastSchedule(until: endsAt)
         syncStores()
+        refreshNotifications()
+        FastActivityStarter.start(kind: .fastNow, endsAt: endsAt, streak: state.streak)
     }
 
     func endFast() {
@@ -252,6 +258,7 @@ final class DietManager {
         state.fast = nil
         sharedState = persist(state)
         syncStores()
+        FastActivityStarter.end(kind: .fastNow)
     }
 
     // MARK: - Restrictions & schedules
@@ -339,6 +346,12 @@ final class DietManager {
         refreshSchedules()
         syncStores()
         refreshNotifications()
+
+        // Live Activity reconciliation on foreground (extensions can't do it).
+        FastActivityStarter.syncNightFast(state: sharedState)
+        if !DietRules.isCheatActive(sharedState.cheat) {
+            FastActivityStarter.end(kind: .cheatMeal)
+        }
     }
 
     /// Rebuild the rolling notification plan.
@@ -387,6 +400,8 @@ final class DietManager {
     private func persist(_ state: SharedState) -> SharedState {
         let saved = store.save(state)
         lastSeenRevision = saved.revision
+        // Widget countdowns self-update; numbers need a reload.
+        WidgetCenter.shared.reloadAllTimelines()
         return saved
     }
 

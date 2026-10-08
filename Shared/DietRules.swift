@@ -235,4 +235,43 @@ enum DietRules {
     static func components(fromMinutes minutes: Int) -> DateComponents {
         DateComponents(hour: (minutes / 60) % 24, minute: minutes % 60)
     }
+
+    // MARK: Boundaries (widget timelines)
+
+    /// The next known boundary dates (within ~48 h), sorted.
+    static func nextBoundaries(
+        profile: DietProfile?,
+        cheat: CheatSession? = nil,
+        fast: FastSession? = nil,
+        after now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> [Date] {
+        var dates: Set<Date> = []
+
+        if let cheat, cheat.endsAt > now { dates.insert(cheat.endsAt) }
+        if let fast, fast.endsAt > now { dates.insert(fast.endsAt) }
+
+        if let profile, profile.isActive {
+            let window = profile.eatingWindow
+            dates.insert(nextOccurrence(hour: window.startHour, minute: window.startMinute, after: now, calendar: calendar))
+            dates.insert(nextOccurrence(hour: window.endHour, minute: window.endMinute, after: now, calendar: calendar))
+            if profile.nightFast.isEnabled {
+                dates.insert(nextOccurrence(hour: profile.nightFast.startHour, minute: profile.nightFast.startMinute, after: now, calendar: calendar))
+                dates.insert(nextOccurrence(hour: profile.nightFast.endHour, minute: profile.nightFast.endMinute, after: now, calendar: calendar))
+            }
+        }
+
+        return dates.sorted()
+    }
+
+    /// The next time-of-day occurrence after `now`.
+    static func nextOccurrence(
+        hour: Int,
+        minute: Int,
+        after now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> Date {
+        let today = calendar.date(bySettingHour: hour, minute: minute, second: 0, of: now) ?? now
+        return today > now ? today : calendar.date(byAdding: .day, value: 1, to: today) ?? today
+    }
 }

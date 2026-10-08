@@ -57,6 +57,9 @@ struct ScreenDietApp: App {
                 }
                 // `.report` is handled by HomeScreen (tab switch / paywall).
             }
+            .onOpenURL { url in
+                handleDeepLink(url)
+            }
         }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
@@ -65,5 +68,16 @@ struct ScreenDietApp: App {
                 Task { await entitlementManager.refreshEntitlements() }
             }
         }
+    }
+
+    /// Handles widget deep links: `screengate://paywall?placement=feature_widgets`.
+    private func handleDeepLink(_ url: URL) {
+        guard url.scheme == "screengate", url.host == "paywall" else { return }
+        let placement = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+            .queryItems?
+            .first(where: { $0.name == "placement" })?
+            .value
+            .flatMap(PaywallPlacement.init(rawValue:)) ?? .featureWidgets
+        entitlementManager.presentPaywall(placement)
     }
 }
