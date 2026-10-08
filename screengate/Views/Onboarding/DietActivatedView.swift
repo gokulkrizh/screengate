@@ -7,6 +7,7 @@ struct DietActivatedView: View {
     @State private var isActivating = false
     @State private var isActivated = false
     @State private var showCheckmark = false
+    @State private var activationError: String?
     private let appTheme = AppTheme.shared
 
     var body: some View {
@@ -74,6 +75,14 @@ struct DietActivatedView: View {
                 Spacer().frame(height: appTheme.spacing.extraLarge)
             }
         }
+        .alert("Can't activate this plan", isPresented: Binding(
+            get: { activationError != nil },
+            set: { if !$0 { activationError = nil } }
+        )) {
+            Button("OK", role: .cancel) { activationError = nil }
+        } message: {
+            Text(activationError ?? "")
+        }
     }
 
     // MARK: - Activated Content
@@ -127,15 +136,16 @@ struct DietActivatedView: View {
 
             // Summary cards
             VStack(spacing: appTheme.spacing.medium) {
-                if let diet = data.selectedDietType {
-                    summaryRow(icon: "fork.knife", label: "Diet Type", value: diet.displayName)
+                if let plan = data.selectedPlan {
+                    summaryRow(icon: "fork.knife", label: "Diet Type", value: plan.displayName)
                     summaryRow(icon: "clock", label: "Eating Window",
                                value: "\(formatHour(data.windowStartHour)) - \(formatHour(data.windowEndHour))")
-                    summaryRow(icon: "timer", label: "Daily Carb Limit",
-                               value: "\(data.dailyCarbLimitMinutes) minutes")
-                    summaryRow(icon: "moon.fill", label: "Night Lock",
-                               value: formatHour(data.nightLockHour))
-                    summaryRow(icon: "ticket", label: "Weekly Cheat Meals", value: "3 meals")
+                    summaryRow(icon: "timer", label: "Carb Portion",
+                               value: data.dailyCarbLimitMinutes > 0 ? "\(data.dailyCarbLimitMinutes) minutes" : "No carbs")
+                    summaryRow(icon: "moon.fill", label: "Night Fast",
+                               value: "from \(formatHour(data.nightLockHour))")
+                    summaryRow(icon: "ticket", label: "Weekly Cheat Meals",
+                               value: "\(plan.defaultCheatsPerWeek) meals")
                 }
             }
             .padding(.horizontal, appTheme.spacing.large)
@@ -201,19 +211,27 @@ struct DietActivatedView: View {
     }
 
     private func activateDiet() {
-        guard let dietType = data.selectedDietType else { return }
+        guard let plan = data.selectedPlan else { return }
         isActivating = true
 
-        var profile = DietProfile.create(dietType: dietType)
+        var profile = DietProfile.create(plan: plan)
         profile.eatingWindow = EatingWindow(
             startHour: data.windowStartHour,
             startMinute: 0,
             endHour: data.windowEndHour,
-            endMinute: 0,
-            dailyCarbLimitMinutes: data.dailyCarbLimitMinutes
+            endMinute: 0
         )
-        profile.nightLockHour = data.nightLockHour
-        profile.nightLockMinute = 0
+        profile.portionMinutes = data.dailyCarbLimitMinutes
+        profile.nightFast = NightFast(
+            isEnabled: true,
+            startHour: data.nightLockHour,
+            startMinute: 0,
+            endHour: data.windowStartHour,
+            endMinute: 0
+        )
+        profile.cheatsPerWeek = Entitlement.canUse(plan: plan, isPremium: dietManager.isPremium)
+            ? plan.defaultCheatsPerWeek
+            : Entitlement.freeCheatsPerWeek
 
         do {
             try dietManager.activateDiet(profile: profile)
@@ -226,6 +244,7 @@ struct DietActivatedView: View {
             }
         } catch {
             isActivating = false
+            activationError = error.localizedDescription
             print("Failed to activate diet: \(error)")
         }
     }

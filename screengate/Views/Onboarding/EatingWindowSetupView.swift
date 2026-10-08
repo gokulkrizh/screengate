@@ -224,10 +224,10 @@ struct EatingWindowSetupView: View {
     }
 
     private func loadDefaults() {
-        if let diet = data.selectedDietType {
-            windowStartHour = diet.defaultWindowStartHour
-            windowEndHour = diet.defaultWindowEndHour
-            dailyCarbLimit = diet.defaultCarbLimitMinutes
+        if let plan = data.selectedPlan {
+            windowStartHour = plan.defaultWindowStartHour
+            windowEndHour = plan.defaultWindowEndHour
+            dailyCarbLimit = plan.defaultPortionMinutes
         }
     }
 

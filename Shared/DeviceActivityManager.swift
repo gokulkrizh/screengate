@@ -1,316 +1,228 @@
 //
 //  DeviceActivityManager.swift
-//  DeviceActivityMonitorDemo
+//  Shared
 //
-//  Created by Gokul on 2025/11/05.
+//  Thin wrapper around ManagedSettings + DeviceActivity. Stateless: the desired
+//  rules come from `SharedState` via the pure `DietRules`, so the app and the
+//  monitor extension always reconcile to the same result.
 //
 
-import SwiftUI
+import Foundation
 import FamilyControls
 import ManagedSettings
 import DeviceActivity
 
-class DeviceActivityManager {
+final class DeviceActivityManager {
 
-    var monitoringActivities: [String] = []
-    
     private static let nameIdentifier = "com.gia.screendiet"
-    // A data store that stores settings to the current user or device.
-    private let managedSettingsStore: ManagedSettingsStore = ManagedSettingsStore(named: .init(nameIdentifier))
-    
-    // A class that we use this to schedule monitoring within our main app,
-    // and enables an application’s extension to start monitoring scheduled device activity.
-    // * All instances are equivalent and manage the activities monitored by the application’s extension.
-    private let deviceActivityCenter: DeviceActivityCenter = DeviceActivityCenter()
-    
 
-    private let userDefaults: UserDefaults = UserDefaults(suiteName: "group.com.gia.screendiet") ?? .standard
-    private let jsonEncoder = JSONEncoder()
-    private let jsonDecoder = JSONDecoder()
-    
-    init() {
-        monitoringActivities = deviceActivityCenter.activities.map({self.parseActivityName($0)})
+    // One store per rule — blocks stack, nothing overwrites anything else.
+    private let carbsStore = ManagedSettingsStore(named: .carbs)
+    private let nightStore = ManagedSettingsStore(named: .night)
+    private let fastStore = ManagedSettingsStore(named: .fast)
+    private let strictStore = ManagedSettingsStore(named: .strict)
+
+    private let deviceActivityCenter = DeviceActivityCenter()
+
+    // MARK: - Store reconciliation
+
+    /// Block the carbs selection in the `.carbs` store.
+    func applyCarbsBlock(selection: FamilyActivitySelection) {
+        apply(store: carbsStore, selection: selection)
     }
-    
-    func applyImmediateRestrictions(activitySelection: FamilyActivitySelection) {
-        self.applyImmediateRestrictions(
-            applicationTokens: activitySelection.applicationTokens,
-            categoryTokens: activitySelection.categoryTokens,
-            webDomainTokens: activitySelection.webDomainTokens
+
+    /// Block carbs + fats in the `.night` store (Night Fast).
+    func applyNightBlock(selection: FamilyActivitySelection) {
+        apply(store: nightStore, selection: selection)
+    }
+
+    /// Block carbs + fats in the `.fast` store (Fast Now).
+    func applyFastBlock(selection: FamilyActivitySelection) {
+        apply(store: fastStore, selection: selection)
+    }
+
+    func clearCarbsBlock() { carbsStore.clearAllSettings() }
+    func clearNightBlock() { nightStore.clearAllSettings() }
+    func clearFastBlock() { fastStore.clearAllSettings() }
+
+    func clearDietStores() {
+        clearCarbsBlock()
+        clearNightBlock()
+        clearFastBlock()
+    }
+
+    /// Clear the single pre-v1 store so old shields disappear after migration.
+    func clearLegacyStore() {
+        ManagedSettingsStore(named: .legacy).clearAllSettings()
+    }
+
+    /// Compute the desired blocks from shared state and apply them.
+    func reconcile(state: SharedState, at now: Date = Date()) {
+        let plan = DietRules.storePlan(
+            at: now,
+            profile: state.profile,
+            counters: state.counters,
+            cheat: state.cheat,
+            fast: state.fast
         )
+
+        let carbs = state.selection(for: .carbs)
+        let fats = state.selection(for: .fats)
+        let carbsAndFats = Self.union(carbs, fats)
+
+        set(store: carbsStore, blocked: plan.carbsBlocked, selection: carbs)
+        set(store: nightStore, blocked: plan.nightBlocked, selection: carbsAndFats)
+        set(store: fastStore, blocked: plan.fastBlocked, selection: carbsAndFats)
     }
-    
-    func applyImmediateRestrictions(applicationTokens: Set<ApplicationToken>, categoryTokens: Set<ActivityCategoryToken>, webDomainTokens: Set<WebDomainToken>) {
-        if !applicationTokens.isEmpty {
-            managedSettingsStore.shield.applications = applicationTokens
+
+    private func set(store: ManagedSettingsStore, blocked: Bool, selection: FamilyActivitySelection) {
+        if blocked {
+            apply(store: store, selection: selection)
         } else {
-            managedSettingsStore.shield.applications = nil
-        }
-
-        if !categoryTokens.isEmpty {
-            managedSettingsStore.shield.applicationCategories = .specific(categoryTokens)
-        } else {
-            managedSettingsStore.shield.applicationCategories = nil
-        }
-
-        if !webDomainTokens.isEmpty {
-            managedSettingsStore.shield.webDomains = webDomainTokens
-        } else {
-            managedSettingsStore.shield.webDomains = nil
+            store.clearAllSettings()
         }
     }
-    
-    
-    func removeRestrictions() {
-        managedSettingsStore.shield.applications = nil
-        managedSettingsStore.shield.applicationCategories = nil
-        managedSettingsStore.shield.webDomains = nil
-    }
-    
-    
-    // If the specified applications, categories, and webDomains have been in use longer than the event’s `threshold` within the activity’s scheduled interval (start - end), we will shield those applications.
-    func startMonitor(activitySelection: FamilyActivitySelection, shieldThreshold: TimeInterval, start: Date, end: Date, repeatDaily: Bool, activityName: String, eventName: String = "threshold", warningTimeMinutes: Int = 10, includesPastActivity: Bool = false) throws {
-        let (start, end) = repeatDaily ? createRepeatDailySchedule(start: start, end: end) : createOneTimeSchedule(start: start, end: end)
 
-        let deviceActivityName = makeActivityName(activityName)
-        let deviceEventName = DeviceActivityEvent.Name(eventName)
-
-        try self.saveSelection(activitySelection, activityName: deviceActivityName, eventName: deviceEventName)
-
-        let schedule = DeviceActivitySchedule(
-            intervalStart: start,
-            intervalEnd: end,
-            repeats: repeatDaily,
-            warningTime: DateComponents(minute: warningTimeMinutes)
-        )
-
-        let event = DeviceActivityEvent(
-            applications: activitySelection.applicationTokens,
-            categories: activitySelection.categoryTokens,
-            webDomains: activitySelection.webDomainTokens,
-            threshold: createThreshold(shieldThreshold),
-            includesPastActivity: includesPastActivity,
-        )
-
-        try self.deviceActivityCenter.startMonitoring(
-            deviceActivityName,
-            during: schedule,
-            events: [
-                deviceEventName : event,
-            ]
-        )
-
-        self.monitoringActivities.append(activityName)
+    private func apply(store: ManagedSettingsStore, selection: FamilyActivitySelection) {
+        store.shield.applications = selection.applicationTokens.isEmpty ? nil : selection.applicationTokens
+        store.shield.applicationCategories = selection.categoryTokens.isEmpty ? nil : .specific(selection.categoryTokens)
+        store.shield.webDomains = selection.webDomainTokens.isEmpty ? nil : selection.webDomainTokens
     }
 
-    /// Start a monitor with multiple threshold events for incremental usage tracking.
-    /// Each threshold fires `eventDidReachThreshold` in the extension, enabling granular tracking.
-    func startMonitorWithIncrementalThresholds(
-        activitySelection: FamilyActivitySelection,
-        thresholdMinutes: [Int],
-        start: Date,
-        end: Date,
-        repeatDaily: Bool,
-        activityName: String,
-        warningTimeMinutes: Int = 5,
-        includesPastActivity: Bool = false
+    /// Union of two selections (applications, categories and web domains).
+    static func union(_ a: FamilyActivitySelection, _ b: FamilyActivitySelection) -> FamilyActivitySelection {
+        var merged = FamilyActivitySelection()
+        merged.applicationTokens = a.applicationTokens.union(b.applicationTokens)
+        merged.categoryTokens = a.categoryTokens.union(b.categoryTokens)
+        merged.webDomainTokens = a.webDomainTokens.union(b.webDomainTokens)
+        return merged
+    }
+
+    // MARK: - Scheduling
+
+    /// Start a DeviceActivity schedule. `name` is a `ScheduleNames` value; the
+    /// manager adds the `com.gia.screendiet.` prefix.
+    func start(
+        name: String,
+        schedule: DeviceActivitySchedule,
+        events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
     ) throws {
-        let (start, end) = repeatDaily ? createRepeatDailySchedule(start: start, end: end) : createOneTimeSchedule(start: start, end: end)
+        try deviceActivityCenter.startMonitoring(makeActivityName(name), during: schedule, events: events)
+    }
 
-        let deviceActivityName = makeActivityName(activityName)
+    func stop(name: String) {
+        deviceActivityCenter.stopMonitoring([makeActivityName(name)])
+    }
 
-        let schedule = DeviceActivitySchedule(
-            intervalStart: start,
-            intervalEnd: end,
-            repeats: repeatDaily,
-            warningTime: DateComponents(minute: warningTimeMinutes)
-        )
+    func stopAll() {
+        let all = Array(deviceActivityCenter.activities)
+        if !all.isEmpty {
+            deviceActivityCenter.stopMonitoring(all)
+        }
+    }
 
+    /// Stop the pre-v1 schedules (`diet.carbs.window`, `diet.nightlock`, ...).
+    func stopLegacySchedules() {
+        deviceActivityCenter.stopMonitoring(ScheduleNames.legacyNames.map(makeActivityName))
+    }
+
+    var activeScheduleNames: [String] {
+        deviceActivityCenter.activities.map(parseActivityName)
+    }
+
+    /// Build incremental usage-threshold events (`usage-N`).
+    static func thresholdEvents(selection: FamilyActivitySelection, thresholds: [Int]) -> [DeviceActivityEvent.Name: DeviceActivityEvent] {
         var events: [DeviceActivityEvent.Name: DeviceActivityEvent] = [:]
-
-        for minutes in thresholdMinutes {
-            let eventName = DeviceActivityEvent.Name("usage-\(minutes)")
-            try self.saveSelection(activitySelection, activityName: deviceActivityName, eventName: eventName)
-
-            let event = DeviceActivityEvent(
-                applications: activitySelection.applicationTokens,
-                categories: activitySelection.categoryTokens,
-                webDomains: activitySelection.webDomainTokens,
+        for minutes in thresholds {
+            let name = DeviceActivityEvent.Name("usage-\(minutes)")
+            events[name] = DeviceActivityEvent(
+                applications: selection.applicationTokens,
+                categories: selection.categoryTokens,
+                webDomains: selection.webDomainTokens,
                 threshold: DateComponents(minute: minutes),
-                includesPastActivity: includesPastActivity
-            )
-            events[eventName] = event
-        }
-
-        try self.deviceActivityCenter.startMonitoring(
-            deviceActivityName,
-            during: schedule,
-            events: events
-        )
-
-        self.monitoringActivities.append(activityName)
-    }
-    
-    func stopMonitor(activityName: String) {
-        self.stopMonitor(activityName: makeActivityName(activityName))
-    }
-
-    func stopMonitor(activityName: DeviceActivityName) {
-        let schedule = self.deviceActivityCenter.schedule(for: activityName)
-        guard schedule != nil else { return }
-
-        let events = self.getEvents(activityName: activityName, details: false)
-        events.keys.forEach({
-            let key = makeUserDefaultsKey(activityName: activityName, eventName: $0)
-            self.removeSavedSelection(key: key)
-        })
-
-        self.deviceActivityCenter.stopMonitoring([activityName])
-        self.monitoringActivities.removeAll(where: {$0 == parseActivityName(activityName)})
-    }
-    
-    func stopAllMonitors() {
-        let allActivities = Array(deviceActivityCenter.activities)
-        for activityName in allActivities {
-            stopMonitor(activityName: activityName)
-        }
-        self.deviceActivityCenter.stopMonitoring([])
-        self.monitoringActivities.removeAll()
-    }
-    
-    
-    func getEvents(activityName: String, details: Bool) -> [DeviceActivityEvent.Name : DeviceActivityEvent] {
-        return self.getEvents(activityName: makeActivityName(activityName), details: details)
-    }
-    
-    func getEvents(activityName: DeviceActivityName, details: Bool) -> [DeviceActivityEvent.Name : DeviceActivityEvent] {
-        var events = self.deviceActivityCenter.events(for: activityName)
-        if !details {
-            return events
-        }
-
-        for (key, value) in events {
-            let userDefaultsKey = self.makeUserDefaultsKey(activityName: activityName, eventName: key)
-            let tokens = self.getSavedSelection(key: userDefaultsKey)
-            events[key] = DeviceActivityEvent(
-                applications: tokens.applicationTokens,
-                categories: tokens.categoryTokens,
-                webDomains: tokens.webDomainTokens,
-                threshold: value.threshold,
-                includesPastActivity: value.includesPastActivity
+                includesPastActivity: false
             )
         }
-
         return events
     }
-    
-    
-    func getSchedule(activityName: String) -> DeviceActivitySchedule? {
-        return self.getSchedule(activityName: makeActivityName(activityName))
-    }
-    
-    func getSchedule(activityName: DeviceActivityName) -> DeviceActivitySchedule? {
-        return self.deviceActivityCenter.schedule(for: activityName)
+
+    // MARK: - Names
+
+    private func makeActivityName(_ name: String) -> DeviceActivityName {
+        DeviceActivityName("\(Self.nameIdentifier).\(name)")
     }
 
+    private func parseActivityName(_ name: DeviceActivityName) -> String {
+        name.rawValue.replacing("\(Self.nameIdentifier).", with: "")
+    }
 }
 
+// MARK: - Schedule builders
 
+extension DeviceActivitySchedule {
 
+    /// Repeating daily schedule (hour/minute only).
+    static func repeatingDaily(start: DateComponents, end: DateComponents, warningMinutes: Int = 0) -> DeviceActivitySchedule {
+        var start = start
+        var end = end
+        start.hour = start.hour ?? 0
+        start.minute = start.minute ?? 0
+        start.second = nil
+        start.nanosecond = nil
+        end.hour = end.hour ?? 0
+        end.minute = end.minute ?? 0
+        end.second = nil
+        end.nanosecond = nil
+        // Keep time zone + calendar so overnight windows resolve correctly.
+        start.calendar = Calendar.current
+        start.timeZone = TimeZone.current
+        end.calendar = Calendar.current
+        end.timeZone = TimeZone.current
+        return DeviceActivitySchedule(
+            intervalStart: start,
+            intervalEnd: end,
+            repeats: true,
+            warningTime: warningMinutes > 0 ? DateComponents(minute: warningMinutes) : nil
+        )
+    }
 
-// MARK: Permission
+    /// One-off schedule for a concrete start/end date (cheat meal, Fast Now).
+    static func oneOff(start: Date, end: Date, warningMinutes: Int = 0) -> DeviceActivitySchedule {
+        let startComponents = Calendar.current.dateComponents(
+            [.calendar, .timeZone, .year, .month, .day, .hour, .minute],
+            from: start
+        )
+        let endComponents = Calendar.current.dateComponents(
+            [.calendar, .timeZone, .year, .month, .day, .hour, .minute],
+            from: end
+        )
+        return DeviceActivitySchedule(
+            intervalStart: startComponents,
+            intervalEnd: endComponents,
+            repeats: false,
+            warningTime: warningMinutes > 0 ? DateComponents(minute: warningMinutes) : nil
+        )
+    }
+}
+
+extension FamilyActivitySelection {
+    /// True when the selection contains at least one app, category or web domain.
+    var hasAnyTokens: Bool {
+        !applicationTokens.isEmpty || !categoryTokens.isEmpty || !webDomainTokens.isEmpty
+    }
+}
+
+// MARK: - Permission
+
 extension DeviceActivityManager {
     func requestFamilyControlAuthorization() async {
         let center = AuthorizationCenter.shared
         if center.authorizationStatus == .notDetermined {
             do {
-                // to request authorization parental controls for FamilyControlsMember.child, use .child instead.
                 try await center.requestAuthorization(for: .individual)
-            } catch(let error) {
-                print(error)
+            } catch {
+                print("[DeviceActivityManager] Authorization error: \(error)")
             }
         }
-    }
-}
-
-
-// MARK: UserDefaults
-extension DeviceActivityManager {
-    private func getSavedSelection(key: String) -> FamilyActivitySelection {
-        guard let data = userDefaults.data(forKey: key), let selection = try? self.jsonDecoder.decode(FamilyActivitySelection.self, from: data) else {
-            return FamilyActivitySelection()
-        }
-        return selection
-    }
-
-    private func saveSelection(_ selection: FamilyActivitySelection, activityName: DeviceActivityName, eventName: DeviceActivityEvent.Name) throws {
-        let key = self.makeUserDefaultsKey(activityName: activityName, eventName: eventName)
-        let data = try self.jsonEncoder.encode(selection)
-        userDefaults.set(data, forKey: key)
-    }
-    
-    
-    private func removeSavedSelection(key: String) {
-        userDefaults.removeObject(forKey: key)
-    }
-    
-    private func makeUserDefaultsKey(activityName: DeviceActivityName, eventName: DeviceActivityEvent.Name) -> String {
-        return "\(activityName.rawValue).\(eventName.rawValue)"
-    }
-    
-    /// Clear all UserDefaults data except onboarding-related keys (for development/debugging)
-    func clearAllData() {
-        let suiteDomain = userDefaults.dictionaryRepresentation()
-
-        let onboardingKeys = suiteDomain.keys.filter { $0.lowercased().contains("onboarding") }
-
-        var onboardingData: [String: Any] = [:]
-        for key in onboardingKeys {
-            if let value = suiteDomain[key] {
-                onboardingData[key] = value
-            }
-        }
-
-        for key in suiteDomain.keys {
-            userDefaults.removeObject(forKey: key)
-        }
-
-        for (key, value) in onboardingData {
-            userDefaults.set(value, forKey: key)
-        }
-    }
-}
-
-
-// MARK: Helpers
-extension DeviceActivityManager {
-    
-    private func makeActivityName(_ activityName: String) -> DeviceActivityName {
-        return DeviceActivityName("\(DeviceActivityManager.nameIdentifier).\(activityName)")
-    }
-    
-    private func parseActivityName(_ activityName: DeviceActivityName) -> String {
-        return activityName.rawValue.replacing("\(DeviceActivityManager.nameIdentifier).", with: "")
-    }
-    
-    
-    private func createThreshold(_ threshold: TimeInterval) -> DateComponents {
-        let (h, m, _) = threshold.hms
-        var component = DateComponents()
-        component.hour = h
-        component.minute = m
-        return component
-    }
-    
-    private func createOneTimeSchedule(start: Date, end: Date) -> (DateComponents, DateComponents) {
-        let start = Calendar.current.dateComponents([.calendar, .timeZone, .year, .month, .day, .hour, .minute], from: start)
-        let end = Calendar.current.dateComponents([.calendar, .timeZone, .year, .month, .day, .hour, .minute], from: end)
-        return (start, end)
-    }
-    
-    private func createRepeatDailySchedule(start: Date, end: Date) -> (DateComponents, DateComponents) {
-        let start = Calendar.current.dateComponents([.calendar, .timeZone, .hour, .minute], from: start)
-        let end = Calendar.current.dateComponents([.calendar, .timeZone, .hour, .minute], from: end)
-        return (start, end)
     }
 }

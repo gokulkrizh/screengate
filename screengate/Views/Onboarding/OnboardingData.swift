@@ -5,7 +5,7 @@ class OnboardingData: ObservableObject {
     @Published var currentScreen = 0
 
     // Diet setup data
-    @Published var selectedDietType: DietType?
+    @Published var selectedPlan: DietPlan?
     @Published var windowStartHour: Int = 12
     @Published var windowEndHour: Int = 18
     @Published var dailyCarbLimitMinutes: Int = DebugConfig.defaultPortionMinutes

@@ -7,7 +7,6 @@ struct FoodGroupSelectionView: View {
     @State private var proteinSelection = FamilyActivitySelection()
     @State private var carbsSelection = FamilyActivitySelection()
     @State private var fatsSelection = FamilyActivitySelection()
-    @State private var fiberSelection = FamilyActivitySelection()
     @State private var activePickerGroup: FoodGroup?
     private let appTheme = AppTheme.shared
 
@@ -47,11 +46,6 @@ struct FoodGroupSelectionView: View {
                             group: .fats,
                             selection: $fatsSelection,
                             count: fatsSelection.applicationTokens.count + fatsSelection.categoryTokens.count
-                        )
-                        foodGroupCard(
-                            group: .fiber,
-                            selection: $fiberSelection,
-                            count: fiberSelection.applicationTokens.count + fiberSelection.categoryTokens.count
                         )
                     }
                     .padding(.horizontal, appTheme.spacing.large)
@@ -96,7 +90,6 @@ struct FoodGroupSelectionView: View {
                 case .protein: return proteinSelection
                 case .carbs: return carbsSelection
                 case .fats: return fatsSelection
-                case .fiber: return fiberSelection
                 case nil: return FamilyActivitySelection()
                 }
             },
@@ -105,7 +98,6 @@ struct FoodGroupSelectionView: View {
                 case .protein: proteinSelection = newValue
                 case .carbs: carbsSelection = newValue
                 case .fats: fatsSelection = newValue
-                case .fiber: fiberSelection = newValue
                 case nil: break
                 }
             }
@@ -185,7 +177,6 @@ struct FoodGroupSelectionView: View {
         dietManager.setFoodGroupSelection(proteinSelection, for: .protein)
         dietManager.setFoodGroupSelection(carbsSelection, for: .carbs)
         dietManager.setFoodGroupSelection(fatsSelection, for: .fats)
-        dietManager.setFoodGroupSelection(fiberSelection, for: .fiber)
         data.nextScreen()
     }
 
@@ -193,6 +184,5 @@ struct FoodGroupSelectionView: View {
         if let sel = dietManager.foodGroupSelections[.protein] { proteinSelection = sel }
         if let sel = dietManager.foodGroupSelections[.carbs] { carbsSelection = sel }
         if let sel = dietManager.foodGroupSelections[.fats] { fatsSelection = sel }
-        if let sel = dietManager.foodGroupSelections[.fiber] { fiberSelection = sel }
     }
 }

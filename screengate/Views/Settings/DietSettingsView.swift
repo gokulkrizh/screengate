@@ -22,11 +22,11 @@ struct DietSettingsView: View {
                 // My Prescription
                 settingsSection(title: "MY PRESCRIPTION") {
                     if let profile = dietManager.dietProfile {
-                        settingsRow(icon: "fork.knife", title: "Diet Type", value: profile.dietType.displayName) {
+                        settingsRow(icon: "fork.knife", title: "Diet Type", value: profile.plan.displayName) {
                             showAdjustDiet = true
                         }
                         settingsRow(icon: "calendar", title: "Week", value: "\(profile.weekNumber)")
-                        settingsRow(icon: "target", title: "Macro Split", value: macroSplit(profile))
+                        settingsRow(icon: "target", title: "Portion", value: "\(profile.portionMinutes)m carbs")
                     }
                 }
 
@@ -35,10 +35,10 @@ struct DietSettingsView: View {
                     if let profile = dietManager.dietProfile {
                         settingsRow(icon: "clock", title: "Eating Window",
                                     value: "\(profile.eatingWindow.startTimeString) - \(profile.eatingWindow.endTimeString)")
-                        settingsRow(icon: "timer", title: "Daily Carb Limit",
-                                    value: "\(profile.eatingWindow.dailyCarbLimitMinutes)m")
-                        settingsRow(icon: "moon.fill", title: "Night Lock",
-                                    value: profile.nightLockTimeString)
+                        settingsRow(icon: "timer", title: "Carb Portion",
+                                    value: "\(profile.portionMinutes)m")
+                        settingsRow(icon: "moon.fill", title: "Night Fast",
+                                    value: profile.nightFastTimeRange)
                     }
                 }
 
@@ -173,7 +173,7 @@ struct DietSettingsView: View {
                 .font(appTheme.fonts.headlineMedium)
                 .foregroundColor(appTheme.colors.text)
 
-            Text("This will temporarily allow all carb apps for 30 minutes. You have \(dietManager.cheatsRemaining) cheat meals remaining this week.")
+            Text("This will temporarily allow all carb apps for \(DebugConfig.cheatMealMinutes) minutes. You have \(dietManager.cheatsRemaining) cheat meals remaining this week.")
                 .font(appTheme.fonts.bodyMedium)
                 .foregroundColor(appTheme.colors.textSecondary)
                 .multilineTextAlignment(.center)
@@ -186,7 +186,7 @@ struct DietSettingsView: View {
                     try? dietManager.useCheatMeal()
                     showCheatMeal = false
                 }) {
-                    Text("Use Cheat Meal (30 min)")
+                    Text("Use Cheat Meal (\(DebugConfig.cheatMealMinutes) min)")
                         .font(appTheme.fonts.titleMedium)
                         .foregroundColor(appTheme.colors.background)
                         .frame(maxWidth: .infinity)
@@ -209,13 +209,4 @@ struct DietSettingsView: View {
         .presentationDetents([.medium])
     }
 
-    // MARK: - Helpers
-
-    private func macroSplit(_ profile: DietProfile) -> String {
-        let p = profile.ratio(for: .protein)
-        let c = profile.ratio(for: .carbs)
-        let f = profile.ratio(for: .fats)
-        let fi = profile.ratio(for: .fiber)
-        return "\(p)/\(c)/\(f)/\(fi)"
-    }
 }

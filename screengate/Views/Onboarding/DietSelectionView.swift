@@ -2,7 +2,7 @@ import SwiftUI
 
 struct DietSelectionView: View {
     @ObservedObject var data: OnboardingData
-    @State private var selectedDiet: DietType?
+    @State private var selectedPlan: DietPlan?
     private let appTheme = AppTheme.shared
 
     var body: some View {
@@ -27,7 +27,7 @@ struct DietSelectionView: View {
                 // Diet cards
                 ScrollView {
                     VStack(spacing: appTheme.spacing.medium) {
-                        ForEach(DietType.allCases) { diet in
+                        ForEach(DietPlan.allCases) { diet in
                             dietCard(diet: diet)
                         }
                     }
@@ -36,8 +36,8 @@ struct DietSelectionView: View {
 
                 // Continue button
                 Button(action: {
-                    if let diet = selectedDiet {
-                        data.selectedDietType = diet
+                    if let diet = selectedPlan {
+                        data.selectedPlan = diet
                         data.nextScreen()
                     }
                 }) {
@@ -46,20 +46,20 @@ struct DietSelectionView: View {
                         .foregroundColor(appTheme.colors.background)
                         .frame(maxWidth: .infinity)
                         .frame(height: 56)
-                        .background(selectedDiet != nil ? appTheme.colors.primary : appTheme.colors.secondary)
+                        .background(selectedPlan != nil ? appTheme.colors.primary : appTheme.colors.secondary)
                         .cornerRadius(appTheme.spacing.cornerRadiusLarge)
                 }
-                .disabled(selectedDiet == nil)
+                .disabled(selectedPlan == nil)
                 .padding(.horizontal, appTheme.spacing.large)
                 .padding(.bottom, appTheme.spacing.extraLarge)
             }
         }
     }
 
-    private func dietCard(diet: DietType) -> some View {
-        let isSelected = selectedDiet == diet
+    private func dietCard(diet: DietPlan) -> some View {
+        let isSelected = selectedPlan == diet
 
-        return Button(action: { selectedDiet = diet }) {
+        return Button(action: { selectedPlan = diet }) {
             VStack(alignment: .leading, spacing: appTheme.spacing.medium) {
                 // Header row
                 HStack {
@@ -67,9 +67,21 @@ struct DietSelectionView: View {
                         .font(.system(size: 32))
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(diet.displayName)
-                            .font(appTheme.fonts.titleLarge)
-                            .foregroundColor(appTheme.colors.text)
+                        HStack(spacing: 6) {
+                            Text(diet.displayName)
+                                .font(appTheme.fonts.titleLarge)
+                                .foregroundColor(appTheme.colors.text)
+
+                            if diet.isPremium {
+                                Text("PREMIUM")
+                                    .font(.system(size: 9, weight: .bold))
+                                    .foregroundColor(appTheme.colors.primary)
+                                    .padding(.horizontal, 5)
+                                    .padding(.vertical, 2)
+                                    .background(appTheme.colors.primary.opacity(0.15))
+                                    .cornerRadius(4)
+                            }
+                        }
                         Text(diet.subtitle)
                             .font(appTheme.fonts.bodySmall)
                             .foregroundColor(appTheme.colors.textSecondary)
@@ -88,18 +100,14 @@ struct DietSelectionView: View {
                     }
                 }
 
-                // Macro ratio bar
-                macroRatioBar(ratios: diet.defaultRatios)
-
-                // Ratio text
-                Text(diet.ratioSummary)
-                    .font(appTheme.fonts.labelSmall)
-                    .foregroundColor(appTheme.colors.textSecondary)
-
                 // Diet details
                 HStack(spacing: appTheme.spacing.medium) {
                     dietDetail(icon: "clock", text: "\(diet.defaultWindowStartHour):00-\(diet.defaultWindowEndHour):00")
-                    dietDetail(icon: "timer", text: "\(diet.defaultCarbLimitMinutes)m carbs/day")
+                    if diet.defaultPortionMinutes > 0 {
+                        dietDetail(icon: "timer", text: "\(diet.defaultPortionMinutes)m carbs/day")
+                    } else {
+                        dietDetail(icon: "nosign", text: "Carbs always blocked")
+                    }
                 }
             }
             .padding(appTheme.spacing.medium)
@@ -109,30 +117,6 @@ struct DietSelectionView: View {
                 RoundedRectangle(cornerRadius: appTheme.spacing.cornerRadiusMedium)
                     .stroke(isSelected ? appTheme.colors.primary : Color.clear, lineWidth: 2)
             )
-        }
-    }
-
-    private func macroRatioBar(ratios: [FoodGroup: Int]) -> some View {
-        GeometryReader { geometry in
-            HStack(spacing: 1) {
-                let total = geometry.size.width - 3  // 3px for gaps
-                ForEach(FoodGroup.allCases) { group in
-                    let ratio = CGFloat(ratios[group] ?? 0) / 100.0
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(colorForGroup(group))
-                        .frame(width: total * ratio)
-                }
-            }
-        }
-        .frame(height: 8)
-    }
-
-    private func colorForGroup(_ group: FoodGroup) -> Color {
-        switch group {
-        case .protein: return appTheme.colors.primary
-        case .carbs: return appTheme.colors.warning
-        case .fats: return Color(red: 0.6, green: 0.4, blue: 1.0)  // purple
-        case .fiber: return Color(red: 0.2, green: 0.8, blue: 0.8)  // teal
         }
     }
 

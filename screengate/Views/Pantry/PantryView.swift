@@ -83,9 +83,9 @@ struct PantryView: View {
 
                 Spacer()
 
-                // Today's usage
+                // Today's usage (carbs only; exact numbers live in the report)
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text("\(dietManager.todayLog.minutes(for: group))m")
+                    Text(todayMinutes(for: group))
                         .font(appTheme.fonts.titleSmall)
                         .foregroundColor(appTheme.colors.text)
                     Text("today")
@@ -135,38 +135,45 @@ struct PantryView: View {
         .cornerRadius(appTheme.spacing.cornerRadiusMedium)
     }
 
+    private func todayMinutes(for group: FoodGroup) -> String {
+        switch group {
+        case .carbs: return "≈\(dietManager.todayLog.carbsMinutes)m"
+        case .fats, .protein: return "—"
+        }
+    }
+
     private func statusColor(for group: FoodGroup) -> Color {
         switch dietManager.currentDietState {
-        case .fasting:
-            // Only carbs are blocked during fasting; protein, fats, fiber remain available
-            return group == .carbs ? appTheme.colors.error : appTheme.colors.primary
-        case .windowOpen:
-            return appTheme.colors.primary
-        case .limitReached:
-            return group == .carbs ? appTheme.colors.error : appTheme.colors.primary
-        case .nightLock:
-            return group == .protein ? appTheme.colors.primary : appTheme.colors.error
         case .inactive:
             return appTheme.colors.secondary
+        case .windowOpen:
+            return appTheme.colors.primary
+        case .portionHit, .fasting:
+            // Only carbs are blocked; fats and protein remain available.
+            return group == .carbs ? appTheme.colors.error : appTheme.colors.primary
+        case .nightFast, .fastNow:
+            // Carbs and fats are blocked during fasts.
+            return group == .protein ? appTheme.colors.primary : appTheme.colors.error
         }
     }
 
     private func statusText(for group: FoodGroup) -> String {
         switch dietManager.currentDietState {
-        case .fasting:
-            // Only carbs are blocked during fasting; protein, fats, fiber remain available
-            return group == .carbs ? "Blocked (fasting)" : "Available"
+        case .inactive:
+            return "Inactive"
         case .windowOpen:
             if group == .carbs {
                 return "Open (\(dietManager.carbsRemainingMinutes)m remaining)"
             }
             return "Available"
-        case .limitReached:
-            return group == .carbs ? "Blocked (limit reached)" : "Available"
-        case .nightLock:
-            return group == .protein ? "Available" : "Blocked (night lock)"
-        case .inactive:
-            return "Inactive"
+        case .portionHit:
+            return group == .carbs ? "Blocked (portion used)" : "Available"
+        case .fasting:
+            return group == .carbs ? "Blocked (fasting)" : "Available"
+        case .nightFast:
+            return group == .protein ? "Available" : "Blocked (Night Fast)"
+        case .fastNow:
+            return group == .protein ? "Available" : "Blocked (Fast Now)"
         }
     }
 }

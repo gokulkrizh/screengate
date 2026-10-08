@@ -17,14 +17,16 @@ struct KitchenView: View {
 
                 // State-dependent content
                 switch dietManager.currentDietState {
-                case .fasting:
-                    fastingContent
+                case .fastNow:
+                    fastNowContent
+                case .nightFast:
+                    nightFastContent
+                case .portionHit:
+                    limitReachedContent
                 case .windowOpen:
                     windowOpenContent
-                case .limitReached:
-                    limitReachedContent
-                case .nightLock:
-                    nightLockContent
+                case .fasting:
+                    fastingContent
                 case .inactive:
                     inactiveContent
                 }
@@ -40,12 +42,7 @@ struct KitchenView: View {
         .onReceive(Self.minuteTimer) { _ in
             currentTime = Date()
             #if DEBUG
-            print("[KitchenView] Timer tick - carbs: \(dietManager.todayLog.carbsMinutes), state: \(dietManager.currentDietState)")
-            #endif
-        }
-        .onAppear {
-            #if DEBUG
-            print("[KitchenView] onAppear - carbs: \(dietManager.todayLog.carbsMinutes), protein: \(dietManager.todayLog.proteinMinutes), fats: \(dietManager.todayLog.fatsMinutes), fiber: \(dietManager.todayLog.fiberMinutes), state: \(dietManager.currentDietState)")
+            print("[KitchenView] Timer tick - carbs≈\(dietManager.todayLog.carbsMinutes), state: \(dietManager.currentDietState)")
             #endif
         }
     }
@@ -63,7 +60,7 @@ struct KitchenView: View {
                         .foregroundColor(appTheme.colors.text)
                 }
                 if let profile = dietManager.dietProfile {
-                    Text("\(profile.dietType.displayName) Diet - Week \(profile.weekNumber)")
+                    Text("\(profile.plan.displayName) Diet - Week \(profile.weekNumber)")
                         .font(appTheme.fonts.labelSmall)
                         .foregroundColor(appTheme.colors.textSecondary)
                 }
@@ -80,8 +77,9 @@ struct KitchenView: View {
             switch state {
             case .fasting: return ("moon.fill", Color(red: 0.4, green: 0.4, blue: 0.8), "FASTING")
             case .windowOpen: return ("checkmark.circle.fill", appTheme.colors.primary, "KITCHEN OPEN")
-            case .limitReached: return ("exclamationmark.octagon.fill", appTheme.colors.error, "LIMIT REACHED")
-            case .nightLock: return ("lock.fill", Color(red: 0.6, green: 0.3, blue: 0.8), "NIGHT LOCK")
+            case .portionHit: return ("exclamationmark.octagon.fill", appTheme.colors.error, "PLATE EMPTY")
+            case .nightFast: return ("moon.zzz.fill", Color(red: 0.6, green: 0.3, blue: 0.8), "NIGHT FAST")
+            case .fastNow: return ("bolt.fill", appTheme.colors.primary, "FAST NOW")
             case .inactive: return ("pause.circle.fill", appTheme.colors.secondary, "INACTIVE")
             }
         }()
@@ -188,7 +186,7 @@ struct KitchenView: View {
                 if let profile = dietManager.dietProfile {
                     let used = dietManager.regularCarbMinutes
                     let cheat = dietManager.cheatCarbMinutes
-                    let limit = profile.eatingWindow.dailyCarbLimitMinutes
+                    let limit = profile.portionMinutes
                     let progress = limit > 0 ? min(1.0, Double(used) / Double(limit)) : 0
 
                     VStack(spacing: appTheme.spacing.small) {
@@ -245,7 +243,7 @@ struct KitchenView: View {
                     .foregroundColor(appTheme.colors.text)
 
                 if let profile = dietManager.dietProfile {
-                    let limit = profile.eatingWindow.dailyCarbLimitMinutes
+                    let limit = profile.portionMinutes
                     let cheat = dietManager.cheatCarbMinutes
                     if cheat > 0 {
                         (Text("\(limit)/\(limit) min consumed")
@@ -301,20 +299,20 @@ struct KitchenView: View {
         }
     }
 
-    // MARK: - Night Lock Content
+    // MARK: - Night Fast Content
 
-    private var nightLockContent: some View {
+    private var nightFastContent: some View {
         VStack(spacing: appTheme.spacing.large) {
             VStack(spacing: appTheme.spacing.medium) {
                 Image(systemName: "moon.zzz.fill")
                     .font(.system(size: 40))
                     .foregroundColor(Color(red: 0.6, green: 0.3, blue: 0.8))
 
-                Text("Night Lock Active")
+                Text("Night Fast Active")
                     .font(appTheme.fonts.headlineSmall)
                     .foregroundColor(appTheme.colors.text)
 
-                Text("All apps except protein are locked until the kitchen opens tomorrow.")
+                Text("Carbs and social apps are locked until the kitchen opens.")
                     .font(appTheme.fonts.bodyMedium)
                     .foregroundColor(appTheme.colors.textSecondary)
                     .multilineTextAlignment(.center)
@@ -324,6 +322,44 @@ struct KitchenView: View {
                         .font(appTheme.fonts.titleSmall)
                         .foregroundColor(appTheme.colors.primary)
                 }
+            }
+            .padding(appTheme.spacing.large)
+            .background(appTheme.colors.surface)
+            .cornerRadius(appTheme.spacing.cornerRadiusLarge)
+
+            proteinCard
+        }
+    }
+
+    // MARK: - Fast Now Content
+
+    private var fastNowContent: some View {
+        VStack(spacing: appTheme.spacing.large) {
+            VStack(spacing: appTheme.spacing.medium) {
+                Image(systemName: "bolt.fill")
+                    .font(.system(size: 40))
+                    .foregroundColor(appTheme.colors.primary)
+
+                Text("Fast Now")
+                    .font(appTheme.fonts.headlineSmall)
+                    .foregroundColor(appTheme.colors.text)
+
+                Text("Carbs and social apps are blocked while your focus fast runs.")
+                    .font(appTheme.fonts.bodyMedium)
+                    .foregroundColor(appTheme.colors.textSecondary)
+                    .multilineTextAlignment(.center)
+
+                if let endsAt = dietManager.fastEndsAt {
+                    Text("Ends at \(endsAt.formatted(date: .omitted, time: .shortened))")
+                        .font(appTheme.fonts.titleSmall)
+                        .foregroundColor(appTheme.colors.primary)
+                }
+
+                Button("End Fast") {
+                    dietManager.endFast()
+                }
+                .font(appTheme.fonts.labelMedium)
+                .foregroundColor(appTheme.colors.error)
             }
             .padding(appTheme.spacing.large)
             .background(appTheme.colors.surface)
@@ -429,85 +465,68 @@ struct KitchenView: View {
                 .foregroundColor(appTheme.colors.primary)
                 .tracking(1.0)
 
-            ForEach(FoodGroup.allCases) { group in
-                let minutes = dietManager.todayLog.minutes(for: group)
-                let percentage = dietManager.todayLog.percentage(for: group)
-                let cheat = group == .carbs ? dietManager.cheatCarbMinutes : 0
-                let regular = group == .carbs ? dietManager.regularCarbMinutes : minutes
-                let usageColor = nutritionColor(for: group)
+            // Carbs — the only live counter (approximate; 5-min threshold steps).
+            carbRow
 
-                VStack(spacing: 4) {
-                    HStack {
-                        Text(group.emoji)
-                        Text(group.displayName)
-                            .font(appTheme.fonts.labelMedium)
-                            .foregroundColor(appTheme.colors.textSecondary)
-                        Spacer()
-                        if cheat > 0 {
-                            Text("\(regular)m")
-                                .font(appTheme.fonts.titleSmall)
-                                .foregroundColor(usageColor)
-                            + Text(" + \(cheat)m cheat")
-                                .font(appTheme.fonts.labelSmall)
-                                .foregroundColor(appTheme.colors.warning)
-                        } else {
-                            Text("\(minutes)m")
-                                .font(appTheme.fonts.titleSmall)
-                                .foregroundColor(usageColor)
-                        }
-                        Text("(\(Int(percentage))%)")
-                            .font(appTheme.fonts.labelSmall)
-                            .foregroundColor(appTheme.colors.textSecondary)
-                            .frame(width: 40, alignment: .trailing)
-                    }
-
-                    // Usage bar
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 2)
-                                .fill(appTheme.colors.surfaceVariant)
-                                .frame(height: 4)
-
-                            let barWidth = percentage > 0 ? max(4, geo.size.width * CGFloat(percentage) / 100) : 0
-                            RoundedRectangle(cornerRadius: 2)
-                                .fill(usageColor)
-                                .frame(width: barWidth, height: 4)
-                        }
-                    }
-                    .frame(height: 4)
-                }
+            // Cheats used today.
+            HStack {
+                Text("🎟️")
+                Text("CHEATS")
+                    .font(appTheme.fonts.labelMedium)
+                    .foregroundColor(appTheme.colors.textSecondary)
+                Spacer()
+                Text("\(dietManager.todayLog.cheatsUsed)")
+                    .font(appTheme.fonts.titleSmall)
+                    .foregroundColor(appTheme.colors.text)
             }
+
+            Text("Exact fats and protein numbers come from your weekly Nutrition Label.")
+                .font(appTheme.fonts.labelSmall)
+                .foregroundColor(appTheme.colors.textSecondary)
         }
         .padding(appTheme.spacing.medium)
         .background(appTheme.colors.surface)
         .cornerRadius(appTheme.spacing.cornerRadiusMedium)
     }
 
-    /// Color based on usage level for a food group
-    private func nutritionColor(for group: FoodGroup) -> Color {
-        switch group {
-        case .protein:
-            // Protein is always good - more is better
-            return appTheme.colors.primary
-        case .carbs:
-            // Color based on how much of the daily limit is used
-            guard let profile = dietManager.dietProfile else { return appTheme.colors.text }
-            let limit = profile.eatingWindow.dailyCarbLimitMinutes
-            guard limit > 0 else { return appTheme.colors.text }
-            let used = dietManager.todayLog.carbsMinutes
-            let ratio = Double(used) / Double(limit)
-            if ratio > 1.0 { return appTheme.colors.error }       // Over limit (cheat territory)
-            if ratio >= 0.8 { return appTheme.colors.warning }    // Nearing limit
-            if ratio >= 0.5 { return Color.orange }               // Moderate
-            return appTheme.colors.primary                         // Low usage
-        case .fats:
-            let minutes = dietManager.todayLog.fatsMinutes
-            if minutes > 60 { return appTheme.colors.error }
-            if minutes > 30 { return appTheme.colors.warning }
-            return appTheme.colors.primary
-        case .fiber:
-            // Fiber (learning) is good - more is better
-            return appTheme.colors.primary
+    private var carbRow: some View {
+        let used = dietManager.todayLog.carbsMinutes
+        let portion = dietManager.dietProfile?.portionMinutes ?? 0
+        let progress = portion > 0 ? min(1.0, Double(used) / Double(portion)) : (used > 0 ? 1 : 0)
+        let color = usageColor(progress)
+
+        return VStack(spacing: 4) {
+            HStack {
+                Text("🍩")
+                Text("CARBS")
+                    .font(appTheme.fonts.labelMedium)
+                    .foregroundColor(appTheme.colors.textSecondary)
+                Text("≈")
+                    .font(appTheme.fonts.labelSmall)
+                    .foregroundColor(appTheme.colors.textSecondary)
+                Spacer()
+                if dietManager.cheatCarbMinutes > 0 {
+                    Text("\(dietManager.regularCarbMinutes)m")
+                        .font(appTheme.fonts.titleSmall)
+                        .foregroundColor(color)
+                    + Text(" + \(dietManager.cheatCarbMinutes)m cheat")
+                        .font(appTheme.fonts.labelSmall)
+                        .foregroundColor(appTheme.colors.warning)
+                } else {
+                    Text(portion > 0 ? "\(used)m / \(portion)m" : "\(used)m")
+                        .font(appTheme.fonts.titleSmall)
+                        .foregroundColor(color)
+                }
+            }
+
+            ProgressView(value: progress)
+                .tint(color)
         }
+    }
+
+    private func usageColor(_ progress: Double) -> Color {
+        if progress >= 1.0 { return appTheme.colors.error }
+        if progress >= 0.8 { return appTheme.colors.warning }
+        return appTheme.colors.primary
     }
 }

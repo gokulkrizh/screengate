@@ -2,8 +2,6 @@
 //  screengateApp.swift
 //  screengate
 //
-//  Created by Gokul on 2025/11/05.
-//
 
 import SwiftUI
 import UserNotifications
@@ -15,7 +13,7 @@ class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         let userInfo = response.notification.request.content.userInfo
 
         if let _ = userInfo["removeRestrictionsAndShowView"] as? Bool {
-            manager.removeRestrictions()
+            manager.clearDietStores()
             NotificationCenter.default.post(name: .showRestrictionLiftedView, object: nil)
         } else if let _ = userInfo["showRestrictionLiftedView"] as? Bool {
             NotificationCenter.default.post(name: .showRestrictionLiftedView, object: nil)
@@ -34,7 +32,7 @@ extension Notification.Name {
 }
 
 @main
-struct DeviceActivityMonitorDemoApp: App {
+struct ScreenDietApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @State private var showRestrictionLifted = false
     @State private var hasCompletedOnboarding = OnboardingData.hasCompletedOnboarding()
@@ -59,21 +57,10 @@ struct DeviceActivityMonitorDemoApp: App {
                 .environment(dietManager)
             }
         }
-        .onChange(of: scenePhase) { oldPhase, newPhase in
+        .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
-                #if DEBUG
-                print("[App] Scene became active - reloading UserDefaults")
-                #endif
-                dietManager.loadFromUserDefaults()
-                dietManager.applyRestrictionsForCurrentState()
-            }
-        }
-    }
-
-    private func handleDeepLink(_ url: URL) {
-        if url.scheme == "screengate" && url.host == "restriction-lifted" {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                showRestrictionLifted = true
+                // Re-sync with the shared store and the system schedules.
+                dietManager.reloadState()
             }
         }
     }

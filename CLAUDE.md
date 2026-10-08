@@ -16,7 +16,7 @@ ManagedSettings shields and DeviceActivity monitors.
 | Bundle IDs | `com.gia.screendiet` (+ `.ShieldConfigurationExtension`, `.ShieldActionExtension`, `.DeviceActivityMonitorExtension`) |
 | App Group | `group.com.gia.screendiet` |
 | DeviceActivity prefix | `com.gia.screendiet.` |
-| Darwin notification | `com.gia.screendiet.dietChanged` (becomes `.stateChanged` in v1) |
+| Darwin notification | `com.gia.screendiet.stateChanged` |
 | Min iOS | 26.0 · arm64 · Swift 5.0+ · SwiftUI + `@Observable` |
 
 > **v1 integration is in progress** on branch `v1-integration`. The authoritative plan is
@@ -36,7 +36,7 @@ xcodebuild -project screendiet.xcodeproj -scheme screengate -configuration Relea
 
 - **Family Controls / DeviceActivity behavior requires a physical device.** The simulator is for UI work only.
 - `DeviceActivity` requires a 15-minute minimum schedule interval; threshold firing has ~±1 min variance.
-- There is no test target yet; `ScreenDietTests` is added as part of the v1 integration.
+- Unit tests: `xcodebuild test -project screendiet.xcodeproj -scheme ScreenDietTests -destination 'platform=iOS Simulator,name=iPhone 17 Pro'`.
 - Short durations for on-device testing live in `Shared/DebugConfig.swift` (`#if DEBUG` only).
 
 ## Current Targets
@@ -58,39 +58,47 @@ The project uses Xcode 16 folder synchronization:
 - **New files added to `Shared/` must be added to those exception lists** (or they won't compile in the app /
   shield action targets). See `/tmp` build errors like "cannot find X in scope" if missed.
 
-## Current Architecture
+## Current Architecture (v1 engine — Phase 1 landed)
 
 ```
-User action → SwiftUI View → DietManager → DeviceActivityManager → ManagedSettings / DeviceActivity
-                                   ↓                                      ↓
-                        group.com.gia.screendiet              Monitor extension callbacks
-                        UserDefaults (JSON)                   apply shields, persist usage
+SwiftUI View → DietManager ──► SharedStore (SharedState.json, app group)
+                    │                    ▲
+                    ▼                    │
+            DeviceActivityManager   Monitor / Shield extensions
+            (named stores +          compute state via DietRules,
+             schedules)              reconcile stores themselves
 ```
+
+Rules are pure (`DietRules`), state is one file (`SharedState.json`), and every process reconciles the
+same named `ManagedSettingsStore`s from it. No timers, no scattered UserDefaults.
 
 ### Models (`screengate/Models/`)
 | File | Purpose |
 |---|---|
-| `FoodGroup.swift` | 4 groups today (protein, carbs, fats, fiber) → 3 in v1 (fiber merges into protein) |
-| `Diet.swift` | `DietType` (keto/balanced/detox/custom), `EatingWindow`, `DietProfile`, shield/state enums |
-| `DietManager.swift` | `@Observable` coordinator: profile, selections, cheat meal, scheduling, persistence |
-| `NutritionLog.swift` | Daily counters + `WeeklyNutritionSummary` + `MetabolicScoreCalculator` (deleted in v1) |
+| `DietManager.swift` | `@Observable` façade over `SharedState`: schedule registration, cheat/fast sessions, store sync |
+| `NutritionLog.swift` | Approximate daily counters for live UI (carbs only; exact numbers in the report extension) |
 
-### Shared (`Shared/`)
+### Shared (`Shared/`) — member of app + extensions (see exception sets above)
 | File | Purpose |
 |---|---|
-| `DeviceActivityManager.swift` | ManagedSettings store + DeviceActivity scheduling + selection persistence |
-| `DebugConfig.swift` | Debug-only short durations (6-min portion/cheat) vs production (45/90/30) |
+| `SharedState.swift` | Codable state: profile, selections, counters, week, cheat, fast, streak, premium, onboarding |
+| `SharedStore.swift` | `SharedState.json` (atomic + file-coordinated); pre-v1 migration; posts Darwin `stateChanged` |
+| `DietProfile.swift` | `DietPlan` (lean/keto/detox/custom), `EatingWindow`, `NightFast`, `DietProfile` |
+| `DietRules.swift` | Pure rules: state precedence, store plans, thresholds, validation, midnight rollover |
+| `FoodGroup.swift` | 3 groups: 🍩 carbs (portioned), 🥑 fats (fasts only), 🥩 protein (free) |
+| `Stores.swift` | Named stores `carbs`, `night`, `fast`, `strict` (+ legacy cleanup) |
+| `ScheduleNames.swift` | `diet.window.weekday`, `diet.night`, `diet.cheat`, `diet.fast`, `diet.daily.rollover` |
+| `DeviceActivityManager.swift` | Store reconciliation, schedule registration, selection union helpers |
+| `DebugConfig.swift` | Debug-only short durations; release defaults 45/90/30 min |
+| `Entitlement.swift` | Free/premium gates (stubbed until Phase 5 wires Superwall) |
 
-### UserDefaults keys (today)
-`dietProfile`, `foodGroup_*`, `todayLog`, `weeklyLogs`, `cheatMealActive`, `cheatMealExpires`,
-`currentShieldType`, `carbsUsedToday`, `cheatsUsedThisWeek`, `cheatsUsedToday` — replaced by a single
-`SharedState.json` in v1.
-
-### Extensions
-- Each extension decodes a `DietProfileLight` copy of the profile; keep those in sync with the model.
-- The monitor extension reads event names like `usage-5`, `usage-10` and writes `carbsUsedToday`.
-- Extensions post `com.gia.screendiet.dietChanged` Darwin notifications (extensions cannot run timers;
-  main-app `cheatTimer` is not reliable across app death — v1 replaces it with a DeviceActivity schedule).
+### Extension behavior
+- **Monitor extension**: interval callbacks reconcile stores; `usage-N` thresholds update
+  `counters.carbMinutes` / `portionHit`; `diet.daily.rollover` resets counters, updates the streak.
+- **Shield config/action**: compute the kind from state (`fastNow > nightFast > portionHit > kitchenClosed`).
+  Cheat meals lift only the `.carbs` store; `.night` / `.fast` keep stacking.
+- Darwin `stateChanged` is only for the main app to refresh its observable state; extensions re-read the
+  file on every callback and ignore their own writes via `writerID` + `revision`.
 
 ## v1 Target Architecture (in progress)
 

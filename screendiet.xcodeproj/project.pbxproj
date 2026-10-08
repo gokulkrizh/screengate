@@ -59,6 +59,7 @@
 
 /* Begin PBXFileReference section */
 		551538DE2F08CD91008DABB6 /* screendiet-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "screendiet-Info.plist"; sourceTree = "<group>"; };
+		551538B12F08CD91008DABB6 /* ScreenDietTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ScreenDietTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		557B516D2EB633C500E46D58 /* screendiet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = screendiet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		557B52322EB6598000E46D58 /* ShieldConfigurationExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShieldConfigurationExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		557B52342EB6598000E46D58 /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettings.framework; path = System/Library/Frameworks/ManagedSettings.framework; sourceTree = SDKROOT; };
@@ -69,6 +70,29 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		551538A02F08CD91008DABB6 /* Exceptions for "Shared" folder in "ShieldConfigurationExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				DebugConfig.swift,
+				DietProfile.swift,
+				DietRules.swift,
+				FoodGroup.swift,
+				SharedState.swift,
+				SharedStore.swift,
+			);
+			target = 557B52312EB6598000E46D58 /* ShieldConfigurationExtension */;
+		};
+		551538B32F08CD91008DABB6 /* Exceptions for "Shared" folder in "ScreenDietTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				DebugConfig.swift,
+				DietProfile.swift,
+				DietRules.swift,
+				FoodGroup.swift,
+				SharedState.swift,
+			);
+			target = 551538B02F08CD91008DABB6 /* ScreenDietTests */;
+		};
 		557B52432EB6598000E46D58 /* Exceptions for "ShieldConfigurationExtension" folder in "ShieldConfigurationExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -95,6 +119,14 @@
 			membershipExceptions = (
 				DebugConfig.swift,
 				DeviceActivityManager.swift,
+				DietProfile.swift,
+				DietRules.swift,
+				Entitlement.swift,
+				FoodGroup.swift,
+				ScheduleNames.swift,
+				SharedState.swift,
+				SharedStore.swift,
+				Stores.swift,
 			);
 			target = 557B516C2EB633C500E46D58 /* screendiet */;
 		};
@@ -103,15 +135,15 @@
 			membershipExceptions = (
 				DebugConfig.swift,
 				DeviceActivityManager.swift,
+				DietProfile.swift,
+				DietRules.swift,
+				FoodGroup.swift,
+				ScheduleNames.swift,
+				SharedState.swift,
+				SharedStore.swift,
+				Stores.swift,
 			);
 			target = 557B52482EB659BD00E46D58 /* ShieldActionExtension */;
-		};
-		551538A02F08CD91008DABB6 /* Exceptions for "Shared" folder in "ShieldConfigurationExtension" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				DebugConfig.swift,
-			);
-			target = 557B52312EB6598000E46D58 /* ShieldConfigurationExtension */;
 		};
 		557B53782EBA69FB00E46D58 /* Exceptions for "screengate" folder in "ShieldActionExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -167,10 +199,16 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				557B53742EBA693F00E46D58 /* Exceptions for "Shared" folder in "screendiet" target */,
-				557B53752EBA693F00E46D58 /* Exceptions for "Shared" folder in "ShieldActionExtension" target */,
 				551538A02F08CD91008DABB6 /* Exceptions for "Shared" folder in "ShieldConfigurationExtension" target */,
+				551538B32F08CD91008DABB6 /* Exceptions for "Shared" folder in "ScreenDietTests" target */,
+				557B53752EBA693F00E46D58 /* Exceptions for "Shared" folder in "ShieldActionExtension" target */,
 			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		551538B22F08CD91008DABB6 /* ScreenDietTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ScreenDietTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -209,6 +247,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		551538B52F08CD91008DABB6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -221,6 +266,7 @@
 				557B52382EB6598000E46D58 /* ShieldConfigurationExtension */,
 				557B524B2EB659BD00E46D58 /* ShieldActionExtension */,
 				557B53232EBA635800E46D58 /* DeviceActivityMonitorExtension */,
+				551538B22F08CD91008DABB6 /* ScreenDietTests */,
 				557B52332EB6598000E46D58 /* Frameworks */,
 				557B516E2EB633C500E46D58 /* Products */,
 			);
@@ -233,6 +279,7 @@
 				557B52322EB6598000E46D58 /* ShieldConfigurationExtension.appex */,
 				557B52492EB659BD00E46D58 /* ShieldActionExtension.appex */,
 				557B53202EBA635800E46D58 /* DeviceActivityMonitorExtension.appex */,
+				551538B12F08CD91008DABB6 /* ScreenDietTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -344,6 +391,28 @@
 			productReference = 557B53202EBA635800E46D58 /* DeviceActivityMonitorExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		551538B02F08CD91008DABB6 /* ScreenDietTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 551538B72F08CD91008DABB6 /* Build configuration list for PBXNativeTarget "ScreenDietTests" */;
+			buildPhases = (
+				551538B42F08CD91008DABB6 /* Sources */,
+				551538B52F08CD91008DABB6 /* Frameworks */,
+				551538B62F08CD91008DABB6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				551538B22F08CD91008DABB6 /* ScreenDietTests */,
+			);
+			name = ScreenDietTests;
+			packageProductDependencies = (
+			);
+			productName = ScreenDietTests;
+			productReference = 551538B12F08CD91008DABB6 /* ScreenDietTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -364,6 +433,9 @@
 						CreatedOnToolsVersion = 26.0.1;
 					};
 					557B531F2EBA635800E46D58 = {
+						CreatedOnToolsVersion = 26.0.1;
+					};
+					551538B02F08CD91008DABB6 = {
 						CreatedOnToolsVersion = 26.0.1;
 					};
 				};
@@ -389,6 +461,7 @@
 				557B52312EB6598000E46D58 /* ShieldConfigurationExtension */,
 				557B52482EB659BD00E46D58 /* ShieldActionExtension */,
 				557B531F2EBA635800E46D58 /* DeviceActivityMonitorExtension */,
+				551538B02F08CD91008DABB6 /* ScreenDietTests */,
 			);
 		};
 /* End PBXProject section */
@@ -422,6 +495,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		551538B62F08CD91008DABB6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -447,6 +527,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		557B531C2EBA635800E46D58 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		551538B42F08CD91008DABB6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -837,6 +924,38 @@
 			};
 			name = Release;
 		};
+		551538B82F08CD91008DABB6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3DCZZ33R7Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gia.screendiet.ScreenDietTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		551538B92F08CD91008DABB6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3DCZZ33R7Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gia.screendiet.ScreenDietTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -881,6 +1000,15 @@
 			buildConfigurations = (
 				557B532D2EBA635800E46D58 /* Debug */,
 				557B532E2EBA635800E46D58 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		551538B72F08CD91008DABB6 /* Build configuration list for PBXNativeTarget "ScreenDietTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				551538B82F08CD91008DABB6 /* Debug */,
+				551538B92F08CD91008DABB6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
