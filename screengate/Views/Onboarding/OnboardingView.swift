@@ -34,7 +34,9 @@ struct OnboardingView: View {
                     case 8:
                         NotificationPromptView(data: data)
                     case 9:
-                        PaywallView(data: data)
+                        PaywallView(placement: .onboardingComplete) {
+                            data.nextScreen()
+                        }
                     default:
                         DietActivatedView(data: data)
                     }

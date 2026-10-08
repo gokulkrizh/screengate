@@ -1,12 +1,14 @@
 import SwiftUI
 
-/// Paywall step (onboarding #11).
-///
-/// Phase 5 replaces this stub with the Superwall `onboarding_complete` placement
-/// and StoreKit entitlement sync. Until then, both paths continue onboarding and
-/// the app runs on the free tier rules.
+/// The premium offer. Used as onboarding step #11 and as a sheet for feature
+/// placements. Phase 5 keeps local UI + entitlement plumbing; Superwall takes
+/// over the presentation once the API key and products exist.
 struct PaywallView: View {
-    @ObservedObject var data: OnboardingData
+    var placement: PaywallPlacement = .onboardingComplete
+    var onFinished: () -> Void
+
+    @Environment(EntitlementManager.self) private var entitlements
+    @State private var purchaseFailed = false
     private let appTheme = AppTheme.shared
 
     var body: some View {
@@ -43,27 +45,46 @@ struct PaywallView: View {
                 Spacer()
 
                 VStack(spacing: appTheme.spacing.medium) {
-                    Button(action: {
-                        // TODO(Phase 5): Superwall.shared.register(placement: "onboarding_complete")
-                        data.nextScreen()
-                    }) {
-                        Text("Start 7-day free trial")
-                            .font(appTheme.fonts.titleMedium)
-                            .foregroundColor(appTheme.colors.background)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(appTheme.colors.primary)
-                            .cornerRadius(appTheme.spacing.cornerRadiusLarge)
+                    Button(action: purchase) {
+                        VStack(spacing: 2) {
+                            Text("Start 7-day free trial")
+                                .font(appTheme.fonts.titleMedium)
+                            Text("then $29.99/year")
+                                .font(appTheme.fonts.labelSmall)
+                                .opacity(0.8)
+                        }
+                        .foregroundColor(appTheme.colors.background)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 60)
+                        .background(appTheme.colors.primary)
+                        .cornerRadius(appTheme.spacing.cornerRadiusLarge)
                     }
 
                     Button("Continue with Free") {
-                        data.nextScreen()
+                        onFinished()
                     }
                     .font(appTheme.fonts.bodyMedium)
                     .foregroundColor(appTheme.colors.textSecondary)
                 }
                 .padding(.horizontal, appTheme.spacing.large)
                 .padding(.bottom, appTheme.spacing.extraLarge)
+            }
+        }
+        .alert("Purchases are being set up", isPresented: $purchaseFailed) {
+            Button("Continue with Free") { onFinished() }
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("In-app purchases aren't live yet. You can keep using ScreenDiet on the free plan.")
+        }
+    }
+
+    private func purchase() {
+        Task {
+            let succeeded = await entitlements.purchase("screendiet.premium.yearly")
+            if succeeded {
+                onFinished()
+            } else {
+                purchaseFailed = true
             }
         }
     }

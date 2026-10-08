@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DietSettingsView: View {
     @Environment(DietManager.self) private var dietManager
+    @Environment(EntitlementManager.self) private var entitlements
     @State private var showAdjustDiet = false
     @State private var showCheatMeal = false
     @State private var showResetConfirm = false
@@ -93,6 +94,12 @@ struct DietSettingsView: View {
                         OnboardingData.resetOnboarding()
                     }
                     settingsRow(icon: "info.circle", title: "Version", value: "1.0")
+                    #if DEBUG
+                    settingsRow(icon: "wrench.and.screwdriver", title: "Premium (debug)",
+                                value: entitlements.isPremium ? "ON" : "OFF") {
+                        entitlements.debugSetPremium(!entitlements.isPremium)
+                    }
+                    #endif
                 }
 
                 Spacer(minLength: 80)
@@ -182,19 +189,33 @@ struct DietSettingsView: View {
             Spacer()
 
             VStack(spacing: appTheme.spacing.medium) {
-                Button(action: {
-                    try? dietManager.useCheatMeal()
-                    showCheatMeal = false
-                }) {
-                    Text("Use Cheat Meal (\(DietRules.cheatMealMinutes) min)")
-                        .font(appTheme.fonts.titleMedium)
-                        .foregroundColor(appTheme.colors.background)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(dietManager.cheatsRemaining > 0 ? appTheme.colors.warning : appTheme.colors.secondary)
-                        .cornerRadius(appTheme.spacing.cornerRadiusLarge)
+                if dietManager.cheatsRemaining > 0 {
+                    Button(action: {
+                        try? dietManager.useCheatMeal()
+                        showCheatMeal = false
+                    }) {
+                        Text("Use Cheat Meal (\(DietRules.cheatMealMinutes) min)")
+                            .font(appTheme.fonts.titleMedium)
+                            .foregroundColor(appTheme.colors.background)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(appTheme.colors.warning)
+                            .cornerRadius(appTheme.spacing.cornerRadiusLarge)
+                    }
+                } else {
+                    Button(action: {
+                        showCheatMeal = false
+                        entitlements.presentPaywall(.cheatOut)
+                    }) {
+                        Text("Get more cheats")
+                            .font(appTheme.fonts.titleMedium)
+                            .foregroundColor(appTheme.colors.background)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(appTheme.colors.primary)
+                            .cornerRadius(appTheme.spacing.cornerRadiusLarge)
+                    }
                 }
-                .disabled(dietManager.cheatsRemaining <= 0)
 
                 Button("Cancel") {
                     showCheatMeal = false

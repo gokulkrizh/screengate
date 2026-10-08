@@ -3,6 +3,7 @@ import SwiftUI
 /// Plan suggestion — quiz-based, editable before activation.
 struct PlanSuggestionView: View {
     @ObservedObject var data: OnboardingData
+    @Environment(EntitlementManager.self) private var entitlements
     @State private var selected: DietPlan?
     private let appTheme = AppTheme.shared
 
@@ -62,8 +63,9 @@ struct PlanSuggestionView: View {
     private func planCard(_ plan: DietPlan) -> some View {
         let isSelected = selected == plan
         let isSuggested = suggested == plan
+        let isLocked = !entitlements.canUse(plan: plan)
 
-        return Button(action: { selected = plan }) {
+        return Button(action: { select(plan) }) {
             VStack(alignment: .leading, spacing: appTheme.spacing.small) {
                 HStack {
                     Text(plan.icon)
@@ -91,9 +93,15 @@ struct PlanSuggestionView: View {
 
                     Spacer()
 
-                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 22))
-                        .foregroundColor(isSelected ? appTheme.colors.primary : appTheme.colors.secondary.opacity(0.4))
+                    if isLocked {
+                        Image(systemName: "lock.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(appTheme.colors.warning)
+                    } else {
+                        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 22))
+                            .foregroundColor(isSelected ? appTheme.colors.primary : appTheme.colors.secondary.opacity(0.4))
+                    }
                 }
 
                 Text(plan.defaultPortionMinutes > 0
@@ -109,6 +117,14 @@ struct PlanSuggestionView: View {
                 RoundedRectangle(cornerRadius: appTheme.spacing.cornerRadiusMedium)
                     .stroke(isSelected ? appTheme.colors.primary : Color.clear, lineWidth: 2)
             )
+        }
+    }
+
+    private func select(_ plan: DietPlan) {
+        if entitlements.canUse(plan: plan) {
+            selected = plan
+        } else {
+            entitlements.presentPaywall(.featureCustomPlan)
         }
     }
 

@@ -96,7 +96,11 @@ struct DietActivatedView: View {
     }
 
     private var summaryLine: String {
-        "Opens at \(formatTime(data.windowStartHour, data.windowStartMinute)) · Night Fast from \(formatTime(data.nightLockHour, data.nightLockMinute))."
+        let open = "Opens at \(formatTime(data.windowStartHour, data.windowStartMinute))"
+        if dietManager.isPremium {
+            return open + " · Night Fast from \(formatTime(data.nightLockHour, data.nightLockMinute))."
+        }
+        return open + " — Lean rules. Night Fast unlocks with Premium."
     }
 
     private func pill(icon: String, text: String) -> some View {
@@ -130,7 +134,7 @@ struct DietActivatedView: View {
         )
         profile.portionMinutes = data.dailyCarbLimitMinutes
         profile.nightFast = NightFast(
-            isEnabled: true,
+            isEnabled: dietManager.isPremium,
             startHour: data.nightLockHour,
             startMinute: data.nightLockMinute,
             endHour: data.windowStartHour,

@@ -5,6 +5,7 @@ import DeviceActivity
 /// from real device activity. The app never reads or fabricates these values.
 struct NutritionReportView: View {
     @Environment(DietManager.self) private var dietManager
+    @Environment(EntitlementManager.self) private var entitlements
     private let appTheme = AppTheme.shared
 
     private var hasJunkSelection: Bool {
@@ -23,7 +24,9 @@ struct NutritionReportView: View {
                 }
                 .padding(.top, appTheme.spacing.medium)
 
-                if hasJunkSelection {
+                if !entitlements.isPremium {
+                    lockedReport
+                } else if hasJunkSelection {
                     DeviceActivityReport(
                         DeviceActivityReport.Context(ReportContexts.nutritionLabel),
                         filter: ReportFilters.lastSevenDays(state: dietManager.sharedState)
@@ -63,5 +66,33 @@ struct NutritionReportView: View {
             .padding(.horizontal, appTheme.spacing.large)
         }
         .background(appTheme.colors.background.ignoresSafeArea())
+    }
+
+    private var lockedReport: some View {
+        VStack(spacing: appTheme.spacing.medium) {
+            Text("🔒")
+                .font(.system(size: 44))
+            Text("Your Weekly Nutrition Label")
+                .font(appTheme.fonts.headlineSmall)
+                .foregroundColor(appTheme.colors.text)
+            Text("Exact usage, junk share and your weekly grade — unlocked with Premium.")
+                .font(appTheme.fonts.bodyMedium)
+                .foregroundColor(appTheme.colors.textSecondary)
+                .multilineTextAlignment(.center)
+
+            Button("Unlock the full report") {
+                entitlements.presentPaywall(.weeklyReport)
+            }
+            .font(appTheme.fonts.titleSmall)
+            .foregroundColor(appTheme.colors.background)
+            .padding(.horizontal, appTheme.spacing.large)
+            .padding(.vertical, appTheme.spacing.medium)
+            .background(appTheme.colors.primary)
+            .cornerRadius(appTheme.spacing.cornerRadiusMedium)
+        }
+        .padding(appTheme.spacing.large)
+        .frame(maxWidth: .infinity)
+        .background(appTheme.colors.surface)
+        .cornerRadius(appTheme.spacing.cornerRadiusLarge)
     }
 }

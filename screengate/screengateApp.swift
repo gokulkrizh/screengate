@@ -37,6 +37,7 @@ struct ScreenDietApp: App {
     @State private var showRestrictionLifted = false
     @State private var hasCompletedOnboarding = OnboardingData.hasCompletedOnboarding()
     @State private var dietManager = DietManager()
+    @State private var entitlementManager = EntitlementManager()
     private let notificationDelegate = NotificationDelegate()
 
     init() {
@@ -45,22 +46,41 @@ struct ScreenDietApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if hasCompletedOnboarding {
-                HomeScreen()
+            Group {
+                if hasCompletedOnboarding {
+                    HomeScreen()
+                        .environment(dietManager)
+                } else {
+                    NavigationStack {
+                        SplashView(onCompletion: {
+                            hasCompletedOnboarding = true
+                        })
+                    }
                     .environment(dietManager)
-            } else {
-                NavigationStack {
-                    SplashView(onCompletion: {
-                        hasCompletedOnboarding = true
-                    })
                 }
+            }
+            .environment(entitlementManager)
+            .sheet(item: $entitlementManager.activePlacement) { placement in
+                PaywallView(placement: placement) {
+                    entitlementManager.dismissPaywall()
+                }
+                .environment(entitlementManager)
                 .environment(dietManager)
+            }
+            .alert("You're back on the free plan", isPresented: Binding(
+                get: { entitlementManager.showDowngradeNotice },
+                set: { if !$0 { entitlementManager.acknowledgeDowngrade() } }
+            )) {
+                Button("OK") { entitlementManager.acknowledgeDowngrade() }
+            } message: {
+                Text("Your diet keeps running on Lean rules — Night Fast is off and you have 1 cheat meal a week. Resubscribe anytime.")
             }
         }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .active {
                 // Re-sync with the shared store and the system schedules.
                 dietManager.reloadState()
+                Task { await entitlementManager.refreshEntitlements() }
             }
         }
     }
