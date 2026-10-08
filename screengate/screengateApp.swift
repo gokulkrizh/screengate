@@ -6,42 +6,16 @@
 import SwiftUI
 import UserNotifications
 
-class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
-    private let manager = DeviceActivityManager()
-
-    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        let userInfo = response.notification.request.content.userInfo
-
-        if let _ = userInfo["removeRestrictionsAndShowView"] as? Bool {
-            manager.clearDietStores()
-            NotificationCenter.default.post(name: .showRestrictionLiftedView, object: nil)
-        } else if let _ = userInfo["showRestrictionLiftedView"] as? Bool {
-            NotificationCenter.default.post(name: .showRestrictionLiftedView, object: nil)
-        }
-
-        completionHandler()
-    }
-
-    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler([.banner, .sound, .badge])
-    }
-}
-
-extension Notification.Name {
-    static let showRestrictionLiftedView = Notification.Name("showRestrictionLiftedView")
-}
-
 @main
 struct ScreenDietApp: App {
     @Environment(\.scenePhase) private var scenePhase
-    @State private var showRestrictionLifted = false
     @State private var hasCompletedOnboarding = OnboardingData.hasCompletedOnboarding()
     @State private var dietManager = DietManager()
     @State private var entitlementManager = EntitlementManager()
-    private let notificationDelegate = NotificationDelegate()
 
     init() {
-        UNUserNotificationCenter.current().delegate = notificationDelegate
+        UNUserNotificationCenter.current().delegate = NotificationRouter.shared
+        NotificationRouter.shared.registerCategories()
     }
 
     var body: some Scene {
@@ -74,6 +48,14 @@ struct ScreenDietApp: App {
                 Button("OK") { entitlementManager.acknowledgeDowngrade() }
             } message: {
                 Text("Your diet keeps running on Lean rules — Night Fast is off and you have 1 cheat meal a week. Resubscribe anytime.")
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .dietNotificationRoute)) { note in
+                guard let raw = note.userInfo?["route"] as? String,
+                      let route = NotificationRoute(rawValue: raw) else { return }
+                if route == .startFast {
+                    dietManager.startFast(minutes: 60)
+                }
+                // `.report` is handled by HomeScreen (tab switch / paywall).
             }
         }
         .onChange(of: scenePhase) { _, newPhase in

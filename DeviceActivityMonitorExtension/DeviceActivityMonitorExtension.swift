@@ -2,8 +2,10 @@
 //  DeviceActivityMonitorExtension.swift
 //  DeviceActivityMonitorExtension
 //
-//  Background enforcement: applies the named stores from SharedState on every
-//  interval/threshold callback and records approximate usage.
+//  Background enforcement + usage-driven notifications:
+//  portion.half, portion.last5, portion.empty, streak.risk, morning.recap,
+//  cheat.ending. The fixed-time notifications (kitchen.*, night.soon,
+//  sunday.checkin) are scheduled by the app.
 //
 
 import DeviceActivity
@@ -19,7 +21,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
     // MARK: - Helpers
 
-    /// Extract the short schedule name from a DeviceActivityName.
     private func scheduleName(_ activity: DeviceActivityName) -> String? {
         let prefix = "com.gia.screendiet."
         guard activity.rawValue.hasPrefix(prefix) else {
@@ -29,7 +30,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         return String(activity.rawValue.dropFirst(prefix.count))
     }
 
-    /// Parse "usage-5" -> 5.
     private func parseUsageMinutes(from eventName: String) -> Int? {
         guard eventName.hasPrefix("usage-"),
               let minutes = Int(eventName.dropFirst("usage-".count)) else { return nil }
@@ -40,14 +40,35 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         manager.reconcile(state: state)
     }
 
-    private func sendNotification(title: String, body: String) {
+    private func sendNotification(
+        _ id: NotificationID,
+        title: String,
+        body: String,
+        category: String? = nil,
+        route: NotificationRoute = .kitchen,
+        identifier: String? = nil,
+        in state: SharedState
+    ) {
+        guard state.isNotificationEnabled(id) else { return }
+
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
         content.sound = .default
+        if id.isTimeSensitive {
+            content.interruptionLevel = .timeSensitive
+        }
+        if let category {
+            content.categoryIdentifier = category
+        }
+        content.userInfo = [NotificationRoute.userInfoKey: route.rawValue]
 
         UNUserNotificationCenter.current().add(
-            UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+            UNNotificationRequest(
+                identifier: identifier ?? "\(id.rawValue).\(UUID().uuidString)",
+                content: content,
+                trigger: nil
+            )
         ) { error in
             if let error {
                 self.logger.error("Notification error: \(error.localizedDescription)")
@@ -65,26 +86,30 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
 
         switch name {
         case ScheduleNames.windowWeekday, ScheduleNames.windowWeekend:
-            // Kitchen opens — carbs unblocked (unless a portion was already hit).
             let state = store.load()
             reconcile(state)
-            if let portion = state.profile?.portionMinutes, portion > 0 {
-                sendNotification(title: "Kitchen Open", body: "Your carb window is open — \(portion) min on your plate.")
+
+            // Morning recap at night end (window start).
+            if state.profile?.nightFast.isEnabled == true {
+                let fastedMinutes = state.profile?.nightFast.durationMinutes ?? 0
+                let hours = fastedMinutes / 60
+                let streakText = state.streak > 0 ? " Streak: 🔥 \(state.streak)" : ""
+                sendNotification(
+                    .morningRecap,
+                    title: "Morning recap",
+                    body: "You fasted \(hours)h.\(streakText)",
+                    in: state
+                )
             }
 
         case ScheduleNames.night:
-            let state = store.load()
-            reconcile(state)
-            if let end = state.profile?.nightFast.endTimeString {
-                sendNotification(title: "Night Fast", body: "Carbs and social apps are blocked until \(end).")
-            }
-
-        case ScheduleNames.cheat:
-            // Cheat meal started — lift the carbs block.
             reconcile(store.load())
 
+        case ScheduleNames.cheat:
+            reconcile(store.load())
+            scheduleCheatEnding(state: store.load())
+
         case ScheduleNames.fast:
-            // Fast Now started — block carbs + fats.
             reconcile(store.load())
 
         case ScheduleNames.rollover:
@@ -108,7 +133,6 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         case ScheduleNames.cheat:
             let updated = store.mutate { state in state.cheat = nil }
             reconcile(updated)
-            sendNotification(title: "Cheat Meal Over", body: "Back on plan — carbs are blocked again.")
 
         case ScheduleNames.fast:
             let updated = store.mutate { state in state.fast = nil }
@@ -129,6 +153,9 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         guard scheduleName(activity) == ScheduleNames.windowWeekday || scheduleName(activity) == ScheduleNames.windowWeekend,
               let usageMinutes = parseUsageMinutes(from: event.rawValue) else { return }
 
+        let previous = store.load()
+        let previousMinutes = previous.counters.carbMinutes
+
         let updated = store.mutate { state in
             state.counters.carbMinutes = max(state.counters.carbMinutes, usageMinutes)
             if let portion = state.profile?.portionMinutes,
@@ -139,46 +166,85 @@ class DeviceActivityMonitorExtension: DeviceActivityMonitor {
         }
         reconcile(updated)
 
-        if let portion = updated.profile?.portionMinutes, usageMinutes == portion {
+        guard let portion = updated.profile?.portionMinutes, portion > 0 else { return }
+
+        // Half portion crossed?
+        if previousMinutes < portion / 2, usageMinutes >= portion / 2, usageMinutes < portion {
+            let remaining = max(0, portion - usageMinutes)
             sendNotification(
-                title: "Plate's Empty",
-                body: "You've used your \(portion) min of carbs. See you tomorrow 🍽️"
+                .portionHalf,
+                title: "Half your plate's gone",
+                body: "\(remaining) min of carbs left.",
+                in: updated
             )
         }
-    }
 
-    override func intervalWillStartWarning(for activity: DeviceActivityName) {
-        super.intervalWillStartWarning(for: activity)
-        logger.info("[intervalWillStartWarning] \(activity.rawValue)")
-
-        switch scheduleName(activity) {
-        case ScheduleNames.windowWeekday, ScheduleNames.windowWeekend:
-            sendNotification(title: "Kitchen Opening Soon", body: "Your carb window opens in 10 minutes.")
-        case ScheduleNames.night:
-            sendNotification(title: "Night Fast Soon", body: "Night Fast starts in 15 minutes. Wrap up.")
-        default:
-            break
+        // Streak risk at 80% (approximates the plan's window-end check).
+        if previousMinutes < portion * 8 / 10,
+           usageMinutes >= portion * 8 / 10,
+           usageMinutes < portion,
+           updated.streak > 0 {
+            sendNotification(
+                .streakRisk,
+                title: "Streak at risk",
+                body: "Stay under to keep your 🔥 \(updated.streak) streak.",
+                in: updated
+            )
         }
-    }
 
-    override func intervalWillEndWarning(for activity: DeviceActivityName) {
-        super.intervalWillEndWarning(for: activity)
-        logger.info("[intervalWillEndWarning] \(activity.rawValue)")
-
-        if scheduleName(activity) == ScheduleNames.windowWeekday || scheduleName(activity) == ScheduleNames.windowWeekend {
-            sendNotification(title: "Kitchen Closing Soon", body: "Your carb window closes in 5 minutes.")
+        // Plate's empty.
+        if usageMinutes == portion {
+            sendNotification(
+                .portionEmpty,
+                title: "Plate's empty",
+                body: "Back tomorrow 🍽️",
+                category: NotificationCategoryID.label,
+                route: .report,
+                in: updated
+            )
         }
     }
 
     override func eventWillReachThresholdWarning(_ event: DeviceActivityEvent.Name, activity: DeviceActivityName) {
         super.eventWillReachThresholdWarning(event, activity: activity)
-        logger.info("[eventWillReachThresholdWarning] \(event.rawValue)")
 
         guard scheduleName(activity) == ScheduleNames.windowWeekday || scheduleName(activity) == ScheduleNames.windowWeekend,
-              let usageMinutes = parseUsageMinutes(from: event.rawValue),
-              let portion = store.load().profile?.portionMinutes,
-              usageMinutes == portion else { return }
+              let usageMinutes = parseUsageMinutes(from: event.rawValue) else { return }
 
-        sendNotification(title: "Last Bites", body: "About 5 minutes of carbs left.")
+        let state = store.load()
+        if usageMinutes == state.profile?.portionMinutes {
+            sendNotification(
+                .portionLast5,
+                title: "Last bites",
+                body: "About 5 minutes of carbs left.",
+                in: state
+            )
+        }
+    }
+
+    // MARK: - Cheat ending
+
+    /// Schedule the "cheat ends in 2 min" notification from the extension too,
+    /// so shield-started cheat meals are covered even if the app never runs.
+    private func scheduleCheatEnding(state: SharedState) {
+        guard let cheat = state.cheat, cheat.endsAt > Date() else { return }
+        guard state.isNotificationEnabled(.cheatEnding) else { return }
+
+        let content = UNMutableNotificationContent()
+        content.title = "Cheat meal ends in 2 min"
+        content.body = "Carbs go back on the shelf."
+        content.sound = .default
+
+        let fireDate = cheat.endsAt.addingTimeInterval(-120)
+        guard fireDate > Date() else { return }
+
+        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: fireDate)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        // Same identifier the app uses, so the two never double-fire.
+        let identifier = "diet.cheat.ending.\(Int(cheat.endsAt.timeIntervalSince1970))"
+
+        UNUserNotificationCenter.current().add(
+            UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+        )
     }
 }

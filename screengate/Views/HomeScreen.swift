@@ -4,6 +4,7 @@ import SwiftUI
 /// Kitchen (home) | Report | Pantry | Settings
 struct HomeScreen: View {
     @Environment(DietManager.self) private var dietManager
+    @Environment(EntitlementManager.self) private var entitlements
     @State private var selectedTab = 0
     private let appTheme = AppTheme.shared
 
@@ -45,6 +46,17 @@ struct HomeScreen: View {
                     .tag(3)
             }
             .tint(appTheme.colors.primary)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .dietNotificationRoute)) { note in
+            guard let raw = note.userInfo?["route"] as? String,
+                  let route = NotificationRoute(rawValue: raw) else { return }
+            if route == .report {
+                if entitlements.isPremium {
+                    selectedTab = 1
+                } else {
+                    entitlements.presentPaywall(.weeklyReport)
+                }
+            }
         }
     }
 }

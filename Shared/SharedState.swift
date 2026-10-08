@@ -104,6 +104,8 @@ struct SharedState: Codable {
     var isPremium: Bool
     var shieldPending: ShieldPending?
     var onboarding: OnboardingAnswers?
+    /// Per-notification toggles, keyed by `NotificationID.rawValue`. Missing = default.
+    var notifications: [String: Bool]?
 
     static func empty(_ date: Date = Date()) -> SharedState {
         SharedState(
@@ -127,6 +129,18 @@ struct SharedState: Codable {
 
     func selection(for group: FoodGroup) -> FamilyActivitySelection {
         selections[group.rawValue] ?? FamilyActivitySelection()
+    }
+
+    // MARK: Notification toggles
+
+    func isNotificationEnabled(_ id: NotificationID) -> Bool {
+        notifications?[id.rawValue] ?? id.defaultEnabled
+    }
+
+    mutating func setNotification(_ id: NotificationID, enabled: Bool) {
+        var prefs = notifications ?? [:]
+        prefs[id.rawValue] = enabled
+        notifications = prefs
     }
 
     mutating func setSelection(_ selection: FamilyActivitySelection, for group: FoodGroup) {

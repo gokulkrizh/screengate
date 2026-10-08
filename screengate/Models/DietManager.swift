@@ -115,6 +115,14 @@ final class DietManager {
 
     // MARK: - Setup
 
+    /// Update a notification toggle (Settings → Notifications).
+    func setNotification(_ id: NotificationID, enabled: Bool) {
+        var state = store.load()
+        state.setNotification(id, enabled: enabled)
+        sharedState = persist(state)
+        NotificationScheduler.shared.rebuild(state: sharedState)
+    }
+
     /// Persist quiz answers (used by the hook insight + plan suggestion).
     func saveOnboardingAnswers(_ answers: OnboardingAnswers) {
         var state = store.load()
@@ -151,6 +159,7 @@ final class DietManager {
 
         refreshSchedules()
         syncStores()
+        refreshNotifications()
     }
 
     /// Deactivate the diet and remove all restrictions.
@@ -165,6 +174,7 @@ final class DietManager {
         state.cheat = nil
         state.fast = nil
         sharedState = persist(state)
+        refreshNotifications()
     }
 
     /// Update the profile (window, portion, night fast, cheats).
@@ -178,6 +188,7 @@ final class DietManager {
 
         refreshSchedules()
         syncStores()
+        refreshNotifications()
     }
 
     // MARK: - Cheat meal
@@ -200,6 +211,7 @@ final class DietManager {
 
         registerCheatSchedule(until: endsAt)
         syncStores()
+        refreshNotifications()
     }
 
     /// End the cheat meal early.
@@ -210,6 +222,7 @@ final class DietManager {
         state.cheat = nil
         sharedState = persist(state)
         syncStores()
+        refreshNotifications()
     }
 
     // MARK: - Fast Now
@@ -325,6 +338,12 @@ final class DietManager {
         lastSeenRevision = incoming.revision
         refreshSchedules()
         syncStores()
+        refreshNotifications()
+    }
+
+    /// Rebuild the rolling notification plan.
+    private func refreshNotifications() {
+        NotificationScheduler.shared.rebuild(state: sharedState)
     }
 
     // MARK: - Darwin notification

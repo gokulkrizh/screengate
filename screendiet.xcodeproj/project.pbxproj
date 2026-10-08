@@ -89,6 +89,7 @@
 				DietRules.swift,
 				Entitlement.swift,
 				FoodGroup.swift,
+				NotificationPlan.swift,
 				SharedState.swift,
 				SharedStore.swift,
 			);
@@ -102,6 +103,7 @@
 				DietRules.swift,
 				Entitlement.swift,
 				FoodGroup.swift,
+				NotificationPlan.swift,
 				SharedState.swift,
 			);
 			target = 551538B02F08CD91008DABB6 /* ScreenDietTests */;
@@ -113,6 +115,7 @@
 				DietProfile.swift,
 				DietRules.swift,
 				FoodGroup.swift,
+				NotificationPlan.swift,
 				ReportContexts.swift,
 				SharedState.swift,
 				SharedStore.swift,
@@ -156,6 +159,7 @@
 				DietRules.swift,
 				Entitlement.swift,
 				FoodGroup.swift,
+				NotificationPlan.swift,
 				ReportContexts.swift,
 				ScheduleNames.swift,
 				SharedState.swift,
@@ -173,6 +177,7 @@
 				DietRules.swift,
 				Entitlement.swift,
 				FoodGroup.swift,
+				NotificationPlan.swift,
 				ScheduleNames.swift,
 				SharedState.swift,
 				SharedStore.swift,

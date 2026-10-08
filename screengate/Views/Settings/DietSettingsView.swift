@@ -6,6 +6,7 @@ struct DietSettingsView: View {
     @State private var showAdjustDiet = false
     @State private var showCheatMeal = false
     @State private var showResetConfirm = false
+    @State private var showNotifications = false
     private let appTheme = AppTheme.shared
 
     var body: some View {
@@ -85,6 +86,13 @@ struct DietSettingsView: View {
                     .padding(.vertical, appTheme.spacing.small)
                 }
 
+                // Notifications
+                settingsSection(title: "REMINDERS") {
+                    settingsRow(icon: "bell.fill", title: "Notifications", value: "") {
+                        showNotifications = true
+                    }
+                }
+
                 // App
                 settingsSection(title: "APP") {
                     settingsRow(icon: "arrow.counterclockwise", title: "Reset Diet", value: "") {
@@ -117,6 +125,10 @@ struct DietSettingsView: View {
         }
         .sheet(isPresented: $showCheatMeal) {
             cheatMealSheet
+        }
+        .sheet(isPresented: $showNotifications) {
+            NotificationSettingsView()
+                .environment(dietManager)
         }
     }
 
