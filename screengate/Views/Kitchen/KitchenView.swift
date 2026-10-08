@@ -102,9 +102,11 @@ struct KitchenView: View {
         return HStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.system(size: 12))
+                .symbolEffect(.bounce, value: state)
             Text(label)
                 .font(appTheme.fonts.labelSmall)
                 .tracking(0.5)
+                .contentTransition(.numericText())
         }
         .foregroundColor(color)
         .padding(.horizontal, 10)
@@ -129,6 +131,7 @@ struct KitchenView: View {
                         .stroke(Color(red: 0.4, green: 0.4, blue: 0.8), style: StrokeStyle(lineWidth: 8, lineCap: .round))
                         .frame(width: 160, height: 160)
                         .rotationEffect(.degrees(-90))
+                        .animation(.easeInOut(duration: 0.6), value: dietManager.fastingProgress)
 
                     VStack(spacing: 4) {
                         Image(systemName: "moon.fill")
@@ -237,6 +240,11 @@ struct KitchenView: View {
             HStack(spacing: appTheme.spacing.medium) {
                 statCard(title: "Remaining", value: "\(dietManager.carbsRemainingMinutes)m", icon: "timer", color: appTheme.colors.primary)
                 statCard(title: "Cheats Left", value: "\(dietManager.cheatsRemaining)", icon: "ticket", color: appTheme.colors.warning)
+            }
+
+            // Fast Now — slide to start a one-hour focus fast.
+            SlideToFastControl(title: "Slide to Fast Now (1h)") {
+                dietManager.startFast(minutes: 60)
             }
 
             proteinCard
@@ -423,6 +431,8 @@ struct KitchenView: View {
             Image(systemName: "flame.fill")
                 .font(.system(size: 28))
                 .foregroundColor(appTheme.colors.warning)
+                .scaleEffect(1 + min(Double(dietManager.fastStreak), 30) / 60)
+                .symbolEffect(.bounce, value: dietManager.fastStreak)
         }
         .padding(appTheme.spacing.medium)
         .background(appTheme.colors.surface)
@@ -531,11 +541,13 @@ struct KitchenView: View {
                     Text(portion > 0 ? "\(used)m / \(portion)m" : "\(used)m")
                         .font(appTheme.fonts.titleSmall)
                         .foregroundColor(color)
+                        .contentTransition(.numericText())
                 }
             }
 
             ProgressView(value: progress)
                 .tint(color)
+                .animation(.easeInOut(duration: 0.5), value: progress)
         }
     }
 

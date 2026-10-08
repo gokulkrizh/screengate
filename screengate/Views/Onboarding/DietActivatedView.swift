@@ -6,15 +6,23 @@ struct DietActivatedView: View {
     @ObservedObject var data: OnboardingData
     @Environment(DietManager.self) private var dietManager
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isActivated = false
     @State private var showCheckmark = false
     @State private var pulse = false
+    @State private var showConfetti = false
     @State private var activationError: String?
     private let appTheme = AppTheme.shared
 
     var body: some View {
         ZStack {
             appTheme.colors.background.ignoresSafeArea()
+
+            if showConfetti && !reduceMotion {
+                ConfettiView()
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+            }
 
             VStack(spacing: appTheme.spacing.large) {
                 Spacer()
@@ -150,10 +158,37 @@ struct DietActivatedView: View {
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                 showCheckmark = true
+                if !reduceMotion {
+                    showConfetti = true
+                }
             }
         } catch {
             activationError = error.localizedDescription
             print("Failed to activate diet: \(error)")
         }
+    }
+}
+
+// MARK: - Confetti (A10)
+
+private struct ConfettiView: View {
+    @State private var fall = false
+    private let colors: [Color] = [.green, .yellow, .white, .orange, .purple]
+
+    var body: some View {
+        GeometryReader { geo in
+            ForEach(0..<32, id: \.self) { index in
+                let seed = Double((index * 73) % 100) / 100.0
+                let x = seed * geo.size.width
+                let delay = Double((index * 37) % 18) / 100.0
+
+                Circle()
+                    .fill(colors[index % colors.count].opacity(0.9))
+                    .frame(width: 5 + CGFloat(index % 3) * 3)
+                    .position(x: x, y: fall ? geo.size.height + 40 : -30)
+                    .animation(.easeIn(duration: 1.4).delay(delay), value: fall)
+            }
+        }
+        .onAppear { fall = true }
     }
 }

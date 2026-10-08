@@ -202,17 +202,12 @@ struct DietSettingsView: View {
 
             VStack(spacing: appTheme.spacing.medium) {
                 if dietManager.cheatsRemaining > 0 {
-                    Button(action: {
+                    HoldToConfirmButton(
+                        title: "Hold to use (\(DietRules.cheatMealMinutes) min)",
+                        tint: appTheme.colors.warning
+                    ) {
                         try? dietManager.useCheatMeal()
                         showCheatMeal = false
-                    }) {
-                        Text("Use Cheat Meal (\(DietRules.cheatMealMinutes) min)")
-                            .font(appTheme.fonts.titleMedium)
-                            .foregroundColor(appTheme.colors.background)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(appTheme.colors.warning)
-                            .cornerRadius(appTheme.spacing.cornerRadiusLarge)
                     }
                 } else {
                     Button(action: {
