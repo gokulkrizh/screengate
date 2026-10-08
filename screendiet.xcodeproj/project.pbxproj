@@ -15,6 +15,8 @@
 		557B52522EB659BD00E46D58 /* ShieldActionExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 557B52492EB659BD00E46D58 /* ShieldActionExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		557B53222EBA635800E46D58 /* DeviceActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 557B53212EBA635800E46D58 /* DeviceActivity.framework */; };
 		557B532A2EBA635800E46D58 /* DeviceActivityMonitorExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 557B53202EBA635800E46D58 /* DeviceActivityMonitorExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		551538CA2F08CD91008DABB6 /* NutritionReportExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 551538C12F08CD91008DABB6 /* NutritionReportExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		551538CD2F08CD91008DABB6 /* DeviceActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 557B53212EBA635800E46D58 /* DeviceActivity.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,6 +41,13 @@
 			remoteGlobalIDString = 557B531F2EBA635800E46D58;
 			remoteInfo = DeviceActivityMonitorExtension;
 		};
+		551538CC2F08CD91008DABB6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 557B51652EB633C500E46D58 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 551538C02F08CD91008DABB6;
+			remoteInfo = NutritionReportExtension;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -49,6 +58,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				557B532A2EBA635800E46D58 /* DeviceActivityMonitorExtension.appex in Embed Foundation Extensions */,
+				551538CA2F08CD91008DABB6 /* NutritionReportExtension.appex in Embed Foundation Extensions */,
 				557B523F2EB6598000E46D58 /* ShieldConfigurationExtension.appex in Embed Foundation Extensions */,
 				557B52522EB659BD00E46D58 /* ShieldActionExtension.appex in Embed Foundation Extensions */,
 			);
@@ -60,6 +70,7 @@
 /* Begin PBXFileReference section */
 		551538DE2F08CD91008DABB6 /* screendiet-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "screendiet-Info.plist"; sourceTree = "<group>"; };
 		551538B12F08CD91008DABB6 /* ScreenDietTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ScreenDietTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		551538C12F08CD91008DABB6 /* NutritionReportExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NutritionReportExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		557B516D2EB633C500E46D58 /* screendiet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = screendiet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		557B52322EB6598000E46D58 /* ShieldConfigurationExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShieldConfigurationExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		557B52342EB6598000E46D58 /* ManagedSettings.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ManagedSettings.framework; path = System/Library/Frameworks/ManagedSettings.framework; sourceTree = SDKROOT; };
@@ -95,6 +106,26 @@
 			);
 			target = 551538B02F08CD91008DABB6 /* ScreenDietTests */;
 		};
+		551538C32F08CD91008DABB6 /* Exceptions for "Shared" folder in "NutritionReportExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				DebugConfig.swift,
+				DietProfile.swift,
+				DietRules.swift,
+				FoodGroup.swift,
+				ReportContexts.swift,
+				SharedState.swift,
+				SharedStore.swift,
+			);
+			target = 551538C02F08CD91008DABB6 /* NutritionReportExtension */;
+		};
+		551538CE2F08CD91008DABB6 /* Exceptions for "NutritionReportExtension" folder in "NutritionReportExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 551538C02F08CD91008DABB6 /* NutritionReportExtension */;
+		};
 		557B52432EB6598000E46D58 /* Exceptions for "ShieldConfigurationExtension" folder in "ShieldConfigurationExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -125,6 +156,7 @@
 				DietRules.swift,
 				Entitlement.swift,
 				FoodGroup.swift,
+				ReportContexts.swift,
 				ScheduleNames.swift,
 				SharedState.swift,
 				SharedStore.swift,
@@ -204,6 +236,7 @@
 				557B53742EBA693F00E46D58 /* Exceptions for "Shared" folder in "screendiet" target */,
 				551538A02F08CD91008DABB6 /* Exceptions for "Shared" folder in "ShieldConfigurationExtension" target */,
 				551538B32F08CD91008DABB6 /* Exceptions for "Shared" folder in "ScreenDietTests" target */,
+				551538C32F08CD91008DABB6 /* Exceptions for "Shared" folder in "NutritionReportExtension" target */,
 				557B53752EBA693F00E46D58 /* Exceptions for "Shared" folder in "ShieldActionExtension" target */,
 			);
 			path = Shared;
@@ -212,6 +245,14 @@
 		551538B22F08CD91008DABB6 /* ScreenDietTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = ScreenDietTests;
+			sourceTree = "<group>";
+		};
+		551538C22F08CD91008DABB6 /* NutritionReportExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				551538CE2F08CD91008DABB6 /* Exceptions for "NutritionReportExtension" folder in "NutritionReportExtension" target */,
+			);
+			path = NutritionReportExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -257,6 +298,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		551538C52F08CD91008DABB6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				551538CD2F08CD91008DABB6 /* DeviceActivity.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -270,6 +319,7 @@
 				557B524B2EB659BD00E46D58 /* ShieldActionExtension */,
 				557B53232EBA635800E46D58 /* DeviceActivityMonitorExtension */,
 				551538B22F08CD91008DABB6 /* ScreenDietTests */,
+				551538C22F08CD91008DABB6 /* NutritionReportExtension */,
 				557B52332EB6598000E46D58 /* Frameworks */,
 				557B516E2EB633C500E46D58 /* Products */,
 			);
@@ -283,6 +333,7 @@
 				557B52492EB659BD00E46D58 /* ShieldActionExtension.appex */,
 				557B53202EBA635800E46D58 /* DeviceActivityMonitorExtension.appex */,
 				551538B12F08CD91008DABB6 /* ScreenDietTests.xctest */,
+				551538C12F08CD91008DABB6 /* NutritionReportExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -315,6 +366,7 @@
 				557B523E2EB6598000E46D58 /* PBXTargetDependency */,
 				557B52512EB659BD00E46D58 /* PBXTargetDependency */,
 				557B53292EBA635800E46D58 /* PBXTargetDependency */,
+				551538CB2F08CD91008DABB6 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				557B516F2EB633C500E46D58 /* screengate */,
@@ -416,6 +468,28 @@
 			productReference = 551538B12F08CD91008DABB6 /* ScreenDietTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		551538C02F08CD91008DABB6 /* NutritionReportExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 551538C72F08CD91008DABB6 /* Build configuration list for PBXNativeTarget "NutritionReportExtension" */;
+			buildPhases = (
+				551538C42F08CD91008DABB6 /* Sources */,
+				551538C52F08CD91008DABB6 /* Frameworks */,
+				551538C62F08CD91008DABB6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				551538C22F08CD91008DABB6 /* NutritionReportExtension */,
+			);
+			name = NutritionReportExtension;
+			packageProductDependencies = (
+			);
+			productName = NutritionReportExtension;
+			productReference = 551538C12F08CD91008DABB6 /* NutritionReportExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -441,6 +515,9 @@
 					551538B02F08CD91008DABB6 = {
 						CreatedOnToolsVersion = 26.0.1;
 					};
+					551538C02F08CD91008DABB6 = {
+						CreatedOnToolsVersion = 26.0.1;
+					};
 				};
 			};
 			buildConfigurationList = 557B51682EB633C500E46D58 /* Build configuration list for PBXProject "screendiet" */;
@@ -464,6 +541,7 @@
 				557B52312EB6598000E46D58 /* ShieldConfigurationExtension */,
 				557B52482EB659BD00E46D58 /* ShieldActionExtension */,
 				557B531F2EBA635800E46D58 /* DeviceActivityMonitorExtension */,
+				551538C02F08CD91008DABB6 /* NutritionReportExtension */,
 				551538B02F08CD91008DABB6 /* ScreenDietTests */,
 			);
 		};
@@ -499,6 +577,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		551538B62F08CD91008DABB6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		551538C62F08CD91008DABB6 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -543,6 +628,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		551538C42F08CD91008DABB6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -560,6 +652,11 @@
 			isa = PBXTargetDependency;
 			target = 557B531F2EBA635800E46D58 /* DeviceActivityMonitorExtension */;
 			targetProxy = 557B53282EBA635800E46D58 /* PBXContainerItemProxy */;
+		};
+		551538CB2F08CD91008DABB6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 551538C02F08CD91008DABB6 /* NutritionReportExtension */;
+			targetProxy = 551538CC2F08CD91008DABB6 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -927,6 +1024,64 @@
 			};
 			name = Release;
 		};
+		551538C82F08CD91008DABB6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = NutritionReportExtension/NutritionReportExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3DCZZ33R7Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NutritionReportExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = NutritionReportExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gia.screendiet.NutritionReportExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		551538C92F08CD91008DABB6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = NutritionReportExtension/NutritionReportExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3DCZZ33R7Y;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NutritionReportExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = NutritionReportExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.gia.screendiet.NutritionReportExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		551538B82F08CD91008DABB6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1012,6 +1167,15 @@
 			buildConfigurations = (
 				551538B82F08CD91008DABB6 /* Debug */,
 				551538B92F08CD91008DABB6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		551538C72F08CD91008DABB6 /* Build configuration list for PBXNativeTarget "NutritionReportExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				551538C82F08CD91008DABB6 /* Debug */,
+				551538C92F08CD91008DABB6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

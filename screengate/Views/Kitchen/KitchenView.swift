@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import DeviceActivity
 
 struct KitchenView: View {
     @Environment(DietManager.self) private var dietManager
@@ -31,8 +32,17 @@ struct KitchenView: View {
                     inactiveContent
                 }
 
-                // Today's nutrition breakdown
+                // Today's nutrition breakdown (approximate live counters)
                 nutritionBreakdown
+
+                // Exact numbers from the system (NutritionReportExtension)
+                if showsTodayReport {
+                    DeviceActivityReport(
+                        DeviceActivityReport.Context(ReportContexts.today),
+                        filter: ReportFilters.today(state: dietManager.sharedState)
+                    )
+                    .frame(height: 210)
+                }
 
                 Spacer(minLength: 80)
             }
@@ -48,6 +58,11 @@ struct KitchenView: View {
     }
 
     // MARK: - Header
+
+    private var showsTodayReport: Bool {
+        dietManager.dietProfile?.isActive == true &&
+        ReportFilters.junkSelection(state: dietManager.sharedState).hasAnyTokens
+    }
 
     private var header: some View {
         HStack {
