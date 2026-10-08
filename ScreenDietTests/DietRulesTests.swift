@@ -29,6 +29,18 @@ final class DietRulesTests: XCTestCase {
         DayCounters(dateKey: "2026-01-15", carbMinutes: carbMinutes, cheatsUsedToday: 0, portionHit: portionHit)
     }
 
+    // MARK: - Clock normalization
+
+    /// Older builds of the window dial could save midnight as 24:00, which made
+    /// `Calendar.date(bySettingHour:)` return nil and crashed notification scheduling.
+    func testNormalizingClockFoldsHour24ToMidnight() {
+        let profile = activeProfile(window: (11, 30, 24, 0), night: (24, 0, 11, 30)).normalizingClock()
+        XCTAssertEqual(profile.eatingWindow.startHour, 11)
+        XCTAssertEqual(profile.eatingWindow.endHour, 0)
+        XCTAssertEqual(profile.nightFast.startHour, 0)
+        XCTAssertEqual(profile.nightFast.endHour, 11)
+    }
+
     // MARK: - Thresholds
 
     func testPortionStep() {

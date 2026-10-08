@@ -157,7 +157,8 @@ struct WindowDialView: View {
 
     private func updateDrag(location: CGPoint, center: CGPoint) {
         let desired = minutes(at: location, center: center)
-        let snapped = (desired / Double(snap)).rounded() * Double(snap)
+        // Rounding near the top of the dial can produce 1440 (= 24:00); wrap it to 0.
+        let snapped = wrap((desired / Double(snap)).rounded() * Double(snap))
 
         if dragging == nil {
             dragging = nearestHandle(to: desired)

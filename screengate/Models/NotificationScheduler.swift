@@ -22,10 +22,11 @@ final class NotificationScheduler {
         for offset in 0..<7 {
             guard let day = calendar.date(byAdding: .day, value: offset, to: calendar.startOfDay(for: now)) else { continue }
 
-            let open = calendar.date(bySettingHour: profile.eatingWindow.startHour, minute: profile.eatingWindow.startMinute, second: 0, of: day)!
-            var close = calendar.date(bySettingHour: profile.eatingWindow.endHour, minute: profile.eatingWindow.endMinute, second: 0, of: day)!
+            guard let open = calendar.date(bySettingHour: profile.eatingWindow.startHour, minute: profile.eatingWindow.startMinute, second: 0, of: day),
+                  var close = calendar.date(bySettingHour: profile.eatingWindow.endHour, minute: profile.eatingWindow.endMinute, second: 0, of: day)
+            else { continue }
             if close <= open {
-                close = calendar.date(byAdding: .day, value: 1, to: close)!
+                close = calendar.date(byAdding: .day, value: 1, to: close) ?? close
             }
 
             let portion = profile.portionMinutes
@@ -35,8 +36,8 @@ final class NotificationScheduler {
 
             // Night Fast soon (premium). The morning recap is sent by the monitor
             // extension when the window opens.
-            if profile.nightFast.isEnabled {
-                let nightStart = calendar.date(bySettingHour: profile.nightFast.startHour, minute: profile.nightFast.startMinute, second: 0, of: day)!
+            if profile.nightFast.isEnabled,
+               let nightStart = calendar.date(bySettingHour: profile.nightFast.startHour, minute: profile.nightFast.startMinute, second: 0, of: day) {
                 add(
                     &requests,
                     id: .nightSoon,
@@ -51,8 +52,8 @@ final class NotificationScheduler {
             }
 
             // Sunday check-in at 18:00.
-            if calendar.component(.weekday, from: day) == 1 {
-                let six = calendar.date(bySettingHour: 18, minute: 0, second: 0, of: day)!
+            if calendar.component(.weekday, from: day) == 1,
+               let six = calendar.date(bySettingHour: 18, minute: 0, second: 0, of: day) {
                 add(
                     &requests,
                     id: .sundayCheckin,

@@ -248,3 +248,18 @@ struct DietProfile: Codable, Equatable {
 
     var nightFastTimeRange: String { nightFast.timeRangeString }
 }
+
+// MARK: - Clock normalization
+
+extension DietProfile {
+    /// Folds out-of-range clock values (e.g. 24:00 saved by older builds of the
+    /// window dial) back into 0–23 so date math never sees an invalid hour.
+    func normalizingClock() -> DietProfile {
+        var copy = self
+        copy.eatingWindow.startHour %= 24
+        copy.eatingWindow.endHour %= 24
+        copy.nightFast.startHour %= 24
+        copy.nightFast.endHour %= 24
+        return copy
+    }
+}

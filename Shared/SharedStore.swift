@@ -42,7 +42,10 @@ final class SharedStore {
     // MARK: - Load
 
     func load() -> SharedState {
-        if let state = readFromDisk() { return state }
+        if var state = readFromDisk() {
+            state.profile = state.profile?.normalizingClock()
+            return state
+        }
 
         if let migrated = Self.migrateLegacyState(defaults: legacyDefaults) {
             didMigrateLegacyState = true
