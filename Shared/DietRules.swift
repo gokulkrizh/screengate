@@ -229,6 +229,19 @@ enum DietRules {
         state.cheat = nil
     }
 
+    // MARK: Loosening (24 h cooldown)
+
+    /// Is this change looser than the current profile? Tightening is instant;
+    /// loosening waits out the cooldown.
+    static func isLoosening(from current: DietProfile, to next: DietProfile) -> Bool {
+        if next.portionMinutes > current.portionMinutes { return true }
+        if next.cheatsPerWeek > current.cheatsPerWeek { return true }
+        if current.nightFast.isEnabled && !next.nightFast.isEnabled { return true }
+        if next.eatingWindow.durationMinutes > current.eatingWindow.durationMinutes { return true }
+        if current.plan == .detox && next.plan != .detox { return true }
+        return false
+    }
+
     // MARK: Time helpers
 
     /// Convert minutes-from-midnight into hour/minute components.

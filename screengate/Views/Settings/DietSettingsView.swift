@@ -7,6 +7,7 @@ struct DietSettingsView: View {
     @State private var showCheatMeal = false
     @State private var showResetConfirm = false
     @State private var showNotifications = false
+    @State private var showStrictConfirm = false
     private let appTheme = AppTheme.shared
 
     var body: some View {
@@ -20,6 +21,26 @@ struct DietSettingsView: View {
                     Spacer()
                 }
                 .padding(.top, appTheme.spacing.medium)
+
+                // Queued loosening change (24 h cooldown)
+                if let pending = dietManager.sharedState.pendingProfile {
+                    HStack(spacing: appTheme.spacing.medium) {
+                        Image(systemName: "clock.arrow.circlepath")
+                            .foregroundColor(appTheme.colors.warning)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Change queued")
+                                .font(appTheme.fonts.titleSmall)
+                                .foregroundColor(appTheme.colors.text)
+                            Text("Takes effect \(pending.applyAt.formatted(date: .abbreviated, time: .shortened))")
+                                .font(appTheme.fonts.bodySmall)
+                                .foregroundColor(appTheme.colors.textSecondary)
+                        }
+                        Spacer()
+                    }
+                    .padding(appTheme.spacing.medium)
+                    .background(appTheme.colors.surface)
+                    .cornerRadius(appTheme.spacing.cornerRadiusMedium)
+                }
 
                 // My Prescription
                 settingsSection(title: "MY PRESCRIPTION") {
@@ -69,6 +90,18 @@ struct DietSettingsView: View {
                     }
                 }
 
+                // Strict mode
+                settingsSection(title: "STRICT MODE") {
+                    settingsRow(icon: "lock.shield.fill", title: "Strict Mode",
+                                value: dietManager.sharedState.strictMode == true ? "ON" : "OFF") {
+                        if entitlements.isPremium {
+                            showStrictConfirm = true
+                        } else {
+                            entitlements.presentPaywall(.featureStrictMode)
+                        }
+                    }
+                }
+
                 // Emergency
                 settingsSection(title: "EMERGENCY") {
                     Button(action: {
@@ -101,6 +134,9 @@ struct DietSettingsView: View {
                     settingsRow(icon: "arrow.clockwise", title: "Reset Onboarding", value: "") {
                         OnboardingData.resetOnboarding()
                     }
+                    settingsRow(icon: "arrow.clockwise", title: "Restore Purchases", value: "") {
+                        Task { await entitlements.restorePurchases() }
+                    }
                     settingsRow(icon: "info.circle", title: "Version", value: "1.0")
                     #if DEBUG
                     settingsRow(icon: "wrench.and.screwdriver", title: "Premium (debug)",
@@ -109,6 +145,12 @@ struct DietSettingsView: View {
                     }
                     #endif
                 }
+
+                Text("Your diet never leaves your phone.")
+                    .font(appTheme.fonts.labelSmall)
+                    .foregroundColor(appTheme.colors.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, appTheme.spacing.medium)
 
                 Spacer(minLength: 80)
             }
@@ -129,6 +171,21 @@ struct DietSettingsView: View {
         .sheet(isPresented: $showNotifications) {
             NotificationSettingsView()
                 .environment(dietManager)
+        }
+        .sheet(isPresented: $showAdjustDiet) {
+            if let profile = dietManager.dietProfile {
+                AdjustDietView(profile: profile)
+                    .environment(dietManager)
+                    .environment(entitlements)
+            }
+        }
+        .alert("Enable Strict Mode?", isPresented: $showStrictConfirm) {
+            Button("Cancel", role: .cancel) { }
+            Button("Enable", role: .destructive) {
+                dietManager.setStrictMode(true)
+            }
+        } message: {
+            Text("You won't be able to delete ScreenDiet or change the clock until you turn it off.")
         }
     }
 

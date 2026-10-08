@@ -56,6 +56,12 @@ struct FastSession: Codable, Equatable {
     var source: Source
 }
 
+/// A profile change that goes through the 24 h loosening cooldown.
+struct PendingProfile: Codable, Equatable {
+    var profile: DietProfile
+    var applyAt: Date
+}
+
 /// 2-tap cheat confirmation from a shield. Scoped to the shielded item and valid
 /// for a short TTL so a stray tap can't lift restrictions.
 struct ShieldPending: Codable, Equatable {
@@ -106,6 +112,10 @@ struct SharedState: Codable {
     var onboarding: OnboardingAnswers?
     /// Per-notification toggles, keyed by `NotificationID.rawValue`. Missing = default.
     var notifications: [String: Bool]?
+    /// Premium strict mode (deny app removal, require automatic date & time).
+    var strictMode: Bool?
+    /// A loosening change waiting out the 24 h cooldown.
+    var pendingProfile: PendingProfile?
 
     static func empty(_ date: Date = Date()) -> SharedState {
         SharedState(

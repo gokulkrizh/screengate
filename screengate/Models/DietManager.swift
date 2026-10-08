@@ -156,6 +156,7 @@ final class DietManager {
         state.cheat = nil
         state.fast = nil
         state.streak = 0
+        state.pendingProfile = nil
         sharedState = persist(state)
 
         refreshSchedules()
@@ -174,9 +175,64 @@ final class DietManager {
         state.profile?.isActive = false
         state.cheat = nil
         state.fast = nil
+        state.pendingProfile = nil
+        state.strictMode = false
         sharedState = persist(state)
+        deviceActivityManager.clearStrictMode()
         refreshNotifications()
         FastActivityStarter.endAll()
+    }
+
+    /// Toggle premium strict mode (deny app removal + automatic date & time).
+    func setStrictMode(_ enabled: Bool) {
+        guard isPremium || !enabled else { return }
+
+        var state = store.load()
+        state.strictMode = enabled
+        sharedState = persist(state)
+
+        if enabled {
+            deviceActivityManager.applyStrictMode()
+        } else {
+            deviceActivityManager.clearStrictMode()
+        }
+    }
+
+    /// Apply a profile change. Loosening changes wait out a 24 h cooldown;
+    /// tightening applies immediately. Returns true when the change was queued.
+    @discardableResult
+    func requestProfileUpdate(_ profile: DietProfile) -> Bool {
+        guard let current = sharedState.profile else {
+            try? updateDietProfile(profile)
+            return false
+        }
+
+        if DietRules.isLoosening(from: current, to: profile) {
+            var state = store.load()
+            state.pendingProfile = PendingProfile(
+                profile: profile,
+                applyAt: Date().addingTimeInterval(24 * 60 * 60)
+            )
+            sharedState = persist(state)
+            return true
+        }
+
+        try? updateDietProfile(profile)
+        return false
+    }
+
+    /// Apply a due pending profile change (checked on foreground).
+    func applyDuePendingChanges() {
+        guard let pending = sharedState.pendingProfile, pending.applyAt <= Date() else { return }
+
+        var state = store.load()
+        state.pendingProfile = nil
+        state.profile = pending.profile
+        sharedState = persist(state)
+
+        refreshSchedules()
+        syncStores()
+        refreshNotifications()
     }
 
     /// Update the profile (window, portion, night fast, cheats).
@@ -343,6 +399,10 @@ final class DietManager {
         if incoming.counters.dateKey != dayKey { incoming = store.save(incoming) }
         sharedState = incoming
         lastSeenRevision = incoming.revision
+
+        // A queued loosening change may be due.
+        applyDuePendingChanges()
+
         refreshSchedules()
         syncStores()
         refreshNotifications()

@@ -56,6 +56,17 @@ final class DeviceActivityManager {
         ManagedSettingsStore(named: .legacy).clearAllSettings()
     }
 
+    // MARK: - Strict mode (premium)
+
+    func applyStrictMode() {
+        strictStore.application.denyAppRemoval = true
+        strictStore.dateAndTime.requireAutomaticDateAndTime = true
+    }
+
+    func clearStrictMode() {
+        strictStore.clearAllSettings()
+    }
+
     /// Compute the desired blocks from shared state and apply them.
     func reconcile(state: SharedState, at now: Date = Date()) {
         let plan = DietRules.storePlan(

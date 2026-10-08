@@ -156,8 +156,12 @@ final class EntitlementManager {
                 profile.plan = .lean
             }
             state.profile = profile
-            store.save(state)
         }
+        state.strictMode = false
+        state.pendingProfile = nil
+        store.save(state)
+        DeviceActivityManager().clearStrictMode()
+
         showDowngradeNotice = true
         UserDefaults.standard.set(true, forKey: Self.downgradeNoticeKey)
     }
