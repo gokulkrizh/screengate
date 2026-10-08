@@ -43,10 +43,13 @@ xcodebuild -project screendiet.xcodeproj -scheme screengate -configuration Relea
 
 | Target | Product | Role |
 |---|---|---|
-| `screendiet` | `screengate.app` | Main SwiftUI app (onboarding, kitchen, report, pantry, settings) |
-| `ShieldConfigurationExtension` | `.appex` | Shield look & feel (`ShieldConfigurationDataSource`) |
-| `ShieldActionExtension` | `.appex` | Shield button handling (cheat meal, emergency access) |
-| `DeviceActivityMonitorExtension` | `.appex` | Background interval/threshold callbacks; applies shields |
+| `screendiet` | `screengate.app` | Main SwiftUI app (onboarding, kitchen, report, pantry, settings, intents) |
+| `ShieldConfigurationExtension` | `.appex` | Five state-driven shield designs (`ShieldConfigurationDataSource`) |
+| `ShieldActionExtension` | `.appex` | 2-tap cheat meal, token-scoped pending confirmation |
+| `DeviceActivityMonitorExtension` | `.appex` | Interval/threshold callbacks; applies stores; usage notifications |
+| `NutritionReportExtension` | `.appex` | DeviceActivityReport scenes: hook insight, today, label, grade |
+| `ScreenDietWidgets` | `.appex` | Widgets, Live Activity, Control, interactive Fast Now |
+| `ScreenDietTests` | `.xctest` | Unit tests for pure rules (DietRules, Entitlement, ShieldPending) |
 
 ### Xcode synchronized folders (important)
 
@@ -100,7 +103,7 @@ same named `ManagedSettingsStore`s from it. No timers, no scattered UserDefaults
 - Darwin `stateChanged` is only for the main app to refresh its observable state; extensions re-read the
   file on every callback and ignore their own writes via `writerID` + `revision`.
 
-## v1 Target Architecture (in progress)
+## v1 Architecture (integrated — see V1_DEVICE_CHECKLIST.md for device/launch items)
 
 ```
 App Group: group.com.gia.screendiet — SharedState.json + Darwin notification stateChanged
@@ -109,18 +112,20 @@ Main app · Monitor ext · ShieldConfig ext · ShieldAction ext · NutritionRepo
 
 - **3 food groups**: 🍩 Carbs (portion-limited), 🥑 Fats (blocked only during fasts), 🥩 Protein (unlimited).
 - **4 named ManagedSettingsStores**: `carbs`, `night`, `fast`, `strict` — blocks stack, nothing overwrites.
-- **Schedules**: `diet.window.weekday/weekend`, `diet.night`, `diet.cheat`, `diet.fast`, `diet.daily.rollover`.
-- **New targets**: `NutritionReportExtension` (DeviceActivityReport, exact numbers + weekly grade),
-  `ScreenDietWidgets` (WidgetKit widgets, Live Activity, Controls), `ScreenDietTests` (first tests, for
-  pure `DietRules`).
-- **Paywall**: SuperwallKit package is linked but unused; v1 adds `Entitlement.swift` gates first, Superwall
-  wiring second (needs App Store Connect products + Superwall dashboard placements).
-- **Docs**: build one phase at a time and keep `concept/v1-integration-plan.md` as the checklist.
+- **Schedules**: `diet.window.weekday`, `diet.night`, `diet.cheat`, `diet.fast`, `diet.daily.rollover`.
+- **Shields**: 5 designs + 2-tap cheat (`ShieldPending`, 20 s TTL, token-scoped).
+- **Report**: hook insight / today / label / weekly grade computed only in the extension.
+- **Widgets**: Kitchen Status, Plate, Streak, Fast Now (intents), Live Activity (`FastActivityAttributes`),
+  Control Center, App Shortcuts, focus filter.
+- **Money**: entitlement plumbing + placements are wired with a seam; Superwall needs the API key +
+  ASC products (single TODO in `EntitlementManager`), then purchases go live.
+- **Still manual**: key revocation, FC distribution entitlement, ASC products, physical-device matrix.
 
 ## Product Source Docs
 
 | Path | Purpose |
 |---|---|
+| `V1_DEVICE_CHECKLIST.md` | Device matrix, manual prerequisites, known deviations |
 | `concept/v1-integration-plan.md` | v1 integration plan (phases, decisions, test matrix) |
 | `concept/complete-app-flows.md` | Full user flows |
 | `concept/ui-tab-screens.md` | Tab screen specs |

@@ -17,8 +17,9 @@
 ## Current targets
 
 `screendiet` (app) + `ShieldConfigurationExtension` + `ShieldActionExtension` +
-`DeviceActivityMonitorExtension` + `ScreenDietTests` (unit tests for `DietRules`). Later phases add
-`NutritionReportExtension` (DeviceActivityReport) and `ScreenDietWidgets` (WidgetKit/Live Activity/Controls).
+`DeviceActivityMonitorExtension` + `NutritionReportExtension` (DeviceActivityReport) +
+`ScreenDietWidgets` (WidgetKit/Live Activity/Controls) + `ScreenDietTests` (unit tests for `DietRules`).
+Device and launch prerequisites live in `V1_DEVICE_CHECKLIST.md`.
 
 ## Build
 
