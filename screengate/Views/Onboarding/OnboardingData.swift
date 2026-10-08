@@ -4,12 +4,20 @@ import Combine
 class OnboardingData: ObservableObject {
     @Published var currentScreen = 0
 
-    // Diet setup data
+    // Quiz answers (step 3)
+    @Published var quizDailyHours: Int?
+    @Published var quizWorstTime: String?
+    @Published var quizGoal: String?
+
+    // Diet setup
     @Published var selectedPlan: DietPlan?
     @Published var windowStartHour: Int = 12
-    @Published var windowEndHour: Int = 18
-    @Published var dailyCarbLimitMinutes: Int = DebugConfig.defaultPortionMinutes
+    @Published var windowStartMinute: Int = 0
+    @Published var windowEndHour: Int = 20
+    @Published var windowEndMinute: Int = 0
     @Published var nightLockHour: Int = 21
+    @Published var nightLockMinute: Int = 0
+    @Published var dailyCarbLimitMinutes: Int = DebugConfig.defaultPortionMinutes
 
     // Track completion
     @Published var isOnboardingComplete: Bool {
@@ -20,11 +28,13 @@ class OnboardingData: ObservableObject {
         }
     }
 
-    private let onboardingCompletionKey = "isOnboardingCompleted"
+    private static let onboardingCompletionKey = "isOnboardingCompleted"
 
     init() {
-        self.isOnboardingComplete = UserDefaults.standard.bool(forKey: onboardingCompletionKey)
+        self.isOnboardingComplete = UserDefaults.standard.bool(forKey: Self.onboardingCompletionKey)
     }
+
+    // MARK: - Navigation
 
     func nextScreen() {
         currentScreen += 1
@@ -40,19 +50,39 @@ class OnboardingData: ObservableObject {
         currentScreen = screen
     }
 
+    // MARK: - Quiz
+
+    var quizAnswers: OnboardingAnswers {
+        OnboardingAnswers(
+            dailyHours: quizDailyHours,
+            worstTime: quizWorstTime,
+            goal: quizGoal
+        )
+    }
+
+    /// Suggested plan from the quiz (user can still edit it).
+    var suggestedPlan: DietPlan {
+        if quizGoal == "reset" { return .detox }
+        if quizGoal == "focus" { return .keto }
+        if let hours = quizDailyHours, hours >= 6 { return .keto }
+        return .lean
+    }
+
+    // MARK: - Completion
+
     func completeOnboarding() {
         isOnboardingComplete = true
     }
 
     private func saveOnboardingCompletion() {
-        UserDefaults.standard.set(true, forKey: onboardingCompletionKey)
+        UserDefaults.standard.set(true, forKey: Self.onboardingCompletionKey)
     }
 
     static func hasCompletedOnboarding() -> Bool {
-        return UserDefaults.standard.bool(forKey: "isOnboardingCompleted")
+        return UserDefaults.standard.bool(forKey: onboardingCompletionKey)
     }
 
     static func resetOnboarding() {
-        UserDefaults.standard.set(false, forKey: "isOnboardingCompleted")
+        UserDefaults.standard.set(false, forKey: onboardingCompletionKey)
     }
 }

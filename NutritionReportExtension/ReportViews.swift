@@ -219,33 +219,26 @@ struct WeeklyGradeReportView: View {
 // MARK: - Hook Insight (onboarding)
 
 struct HookInsightReportView: View {
-    let snapshot: ReportSnapshot
+    let content: HookInsightContent
+
+    private var snapshot: ReportSnapshot { content.snapshot }
+
+    /// Real data is only trusted after an hour of measured junk.
+    private var hasEnoughData: Bool { snapshot.carbSeconds >= 3600 }
 
     var body: some View {
         VStack(spacing: 14) {
-            Text("LAST WEEK")
+            Text(hasEnoughData ? "LAST WEEK" : "ROUGH ESTIMATE")
                 .font(.system(size: 12, weight: .bold))
                 .foregroundStyle(ReportTheme.secondary)
                 .tracking(1.5)
 
-            if snapshot.isEmpty {
-                emptyState
+            if hasEnoughData {
+                realInsight
+            } else if let estimate = content.estimatedDailyMinutes {
+                estimateInsight(dailyMinutes: estimate)
             } else {
-                Text(reportDuration(snapshot.carbSeconds))
-                    .font(.system(size: 48, weight: .heavy, design: .rounded))
-                    .foregroundStyle(ReportTheme.warning)
-                Text("of junk (carbs) apps")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(ReportTheme.text)
-
-                Text("That's ≈ \(yearlyDays) days a year.")
-                    .font(.system(size: 17, weight: .bold))
-                    .foregroundStyle(ReportTheme.text)
-                    .padding(.top, 4)
-
-                Text("\(Int((snapshot.junkShare * 100).rounded()))% of your screen time was junk.")
-                    .font(.system(size: 13))
-                    .foregroundStyle(ReportTheme.secondary)
+                emptyState
             }
         }
         .frame(maxWidth: .infinity)
@@ -254,8 +247,49 @@ struct HookInsightReportView: View {
         .clipShape(RoundedRectangle(cornerRadius: 18))
     }
 
-    private var yearlyDays: Int {
-        let weeklyHours = snapshot.carbSeconds / 3600
+    private var realInsight: some View {
+        Group {
+            Text(reportDuration(snapshot.carbSeconds))
+                .font(.system(size: 48, weight: .heavy, design: .rounded))
+                .foregroundStyle(ReportTheme.warning)
+            Text("of junk (carbs) apps")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(ReportTheme.text)
+
+            Text("That's ≈ \(yearlyDays(weeklyCarbSeconds: snapshot.carbSeconds)) days a year.")
+                .font(.system(size: 17, weight: .bold))
+                .foregroundStyle(ReportTheme.text)
+                .padding(.top, 4)
+
+            Text("\(Int((snapshot.junkShare * 100).rounded()))% of your screen time was junk.")
+                .font(.system(size: 13))
+                .foregroundStyle(ReportTheme.secondary)
+        }
+    }
+
+    private func estimateInsight(dailyMinutes: Int) -> some View {
+        let weeklySeconds = Double(dailyMinutes) * 60 * 7
+        return Group {
+            Text("≈ \(dailyMinutes) min a day")
+                .font(.system(size: 42, weight: .heavy, design: .rounded))
+                .foregroundStyle(ReportTheme.warning)
+            Text("on junk, according to you")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(ReportTheme.text)
+
+            Text("That's ≈ \(yearlyDays(weeklyCarbSeconds: weeklySeconds)) days a year.")
+                .font(.system(size: 17, weight: .bold))
+                .foregroundStyle(ReportTheme.text)
+                .padding(.top, 4)
+
+            Text("We'll show your real numbers once there's a day of data.")
+                .font(.system(size: 13))
+                .foregroundStyle(ReportTheme.secondary)
+        }
+    }
+
+    private func yearlyDays(weeklyCarbSeconds: Double) -> Int {
+        let weeklyHours = weeklyCarbSeconds / 3600
         return Int((weeklyHours * 52 / 24).rounded())
     }
 }

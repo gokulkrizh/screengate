@@ -115,6 +115,13 @@ final class DietManager {
 
     // MARK: - Setup
 
+    /// Persist quiz answers (used by the hook insight + plan suggestion).
+    func saveOnboardingAnswers(_ answers: OnboardingAnswers) {
+        var state = store.load()
+        state.onboarding = answers
+        sharedState = persist(state)
+    }
+
     func setFoodGroupSelection(_ selection: FamilyActivitySelection, for group: FoodGroup) {
         var state = store.load()
         state.setSelection(selection, for: group)

@@ -24,11 +24,13 @@ struct NutritionReportExtension: DeviceActivityReportExtension {
 
 struct HookInsightScene: DeviceActivityReportScene {
     let context: DeviceActivityReport.Context = .init(ReportContexts.hookInsight)
-    let content: (ReportSnapshot) -> HookInsightReportView = { HookInsightReportView(snapshot: $0) }
+    let content: (HookInsightContent) -> HookInsightReportView = { HookInsightReportView(content: $0) }
 
-    func makeConfiguration(representing data: DeviceActivityResults<DeviceActivityData>) async -> ReportSnapshot {
+    func makeConfiguration(representing data: DeviceActivityResults<DeviceActivityData>) async -> HookInsightContent {
         let state = SharedStore.shared.load()
-        return await ReportComputer.compute(data: data, state: state, collectApps: false)
+        let snapshot = await ReportComputer.compute(data: data, state: state, collectApps: false)
+        let estimate = state.onboarding?.dailyHours.map { $0 * 60 }
+        return HookInsightContent(snapshot: snapshot, estimatedDailyMinutes: estimate)
     }
 }
 

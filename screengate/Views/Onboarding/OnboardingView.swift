@@ -1,5 +1,7 @@
 import SwiftUI
 
+/// v1 onboarding: hook → quiz → permission → carbs → insight → fats → plan →
+/// window dial → notifications → paywall → activation.
 struct OnboardingView: View {
     @StateObject private var data = OnboardingData()
     @Environment(\.dismiss) var dismiss
@@ -14,20 +16,27 @@ struct OnboardingView: View {
                 Group {
                     switch data.currentScreen {
                     case 0:
-                        PermissionsView(data: data)
+                        HookAView(data: data)
                     case 1:
-                        FoodGroupSelectionView(data: data)
-                            .environment(dietManager)
+                        QuizView(data: data)
                     case 2:
-                        DietSelectionView(data: data)
+                        PermissionsView(data: data)
                     case 3:
-                        EatingWindowSetupView(data: data)
+                        GroupPickerView(data: data, group: .carbs)
                     case 4:
-                        DietActivatedView(data: data)
-                            .environment(dietManager)
+                        HookBView(data: data)
+                    case 5:
+                        GroupPickerView(data: data, group: .fats, isSkippable: true)
+                    case 6:
+                        PlanSuggestionView(data: data)
+                    case 7:
+                        WindowDialView(data: data)
+                    case 8:
+                        NotificationPromptView(data: data)
+                    case 9:
+                        PaywallView(data: data)
                     default:
                         DietActivatedView(data: data)
-                            .environment(dietManager)
                     }
                 }
                 .transition(.opacity)

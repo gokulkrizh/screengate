@@ -45,6 +45,12 @@ struct ReportSnapshot: Hashable {
     var isEmpty: Bool { totalSeconds == 0 && pickups == 0 }
 }
 
+/// Hook B configuration: real snapshot plus the quiz estimate fallback.
+struct HookInsightContent: Hashable {
+    let snapshot: ReportSnapshot
+    let estimatedDailyMinutes: Int?
+}
+
 struct AppUsage: Hashable, Identifiable {
     let token: ApplicationToken?
     let name: String
