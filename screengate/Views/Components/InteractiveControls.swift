@@ -52,6 +52,11 @@ struct HoldToConfirmButton: View {
             }
         })
         .sensoryFeedback(.increase, trigger: tick)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityHint("Double tap to confirm")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction { onConfirm() }
     }
 
     private func reset() {
@@ -65,7 +70,7 @@ struct HoldToConfirmButton: View {
 /// Slide-to-start control for Fast Now.
 struct SlideToFastControl: View {
     let title: String
-    var tint: Color = .green
+    var tint: Color = AppTheme.shared.colors.primary
     var onSlide: () -> Void
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -127,5 +132,9 @@ struct SlideToFastControl: View {
             }
         }
         .frame(height: knobSize + 8)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction { guard !done else { return }; done = true; onSlide() }
     }
 }

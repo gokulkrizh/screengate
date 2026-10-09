@@ -5,6 +5,7 @@ class OnboardingData: ObservableObject {
     @Published var currentScreen = 0
 
     // Quiz answers (step 3)
+    @Published var intention: String?
     @Published var quizDailyHours: Int?
     @Published var quizWorstTime: String?
     @Published var quizGoal: String?
@@ -30,8 +31,15 @@ class OnboardingData: ObservableObject {
 
     private static let onboardingCompletionKey = "isOnboardingCompleted"
 
-    init() {
-        self.isOnboardingComplete = UserDefaults.standard.bool(forKey: Self.onboardingCompletionKey)
+    init(initialScreen: Int = 0) {
+        self.isOnboardingComplete = false
+        self.currentScreen = min(18, max(0, initialScreen))
+        #if DEBUG
+        if DesignReviewView.launchRoute != nil {
+            quizDailyHours = 4; quizWorstTime = "evening"; quizGoal = "cutdown"
+            intention = "Reading"; selectedPlan = .lean; dailyCarbLimitMinutes = 45
+        }
+        #endif
     }
 
     // MARK: - Navigation
@@ -56,7 +64,8 @@ class OnboardingData: ObservableObject {
         OnboardingAnswers(
             dailyHours: quizDailyHours,
             worstTime: quizWorstTime,
-            goal: quizGoal
+            goal: quizGoal,
+            intention: intention
         )
     }
 

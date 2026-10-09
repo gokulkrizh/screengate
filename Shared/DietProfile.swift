@@ -137,6 +137,14 @@ struct EatingWindow: Codable, Equatable {
         return (24 * 60 - current) + end
     }
 
+    /// Minutes until the next scheduled opening, including tomorrow if today's
+    /// opening has already passed. Used only to choose a focus-fast duration.
+    func minutesUntilNextOpen(at date: Date = Date(), calendar: Calendar = .current) -> Int {
+        let current = calendar.component(.hour, from: date) * 60 + calendar.component(.minute, from: date)
+        let difference = (startHour * 60 + startMinute - current + 1440) % 1440
+        return difference == 0 ? 1440 : difference
+    }
+
     /// Minutes until the window opens (0 if already open).
     func minutesUntilOpen(at date: Date = Date(), calendar: Calendar = .current) -> Int {
         guard !isOpen(at: date, calendar: calendar) else { return 0 }

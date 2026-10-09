@@ -88,6 +88,7 @@ struct OnboardingAnswers: Codable, Equatable {
     var dailyHours: Int?
     var worstTime: String?
     var goal: String?
+    var intention: String? = nil
 }
 
 // MARK: - Shared state

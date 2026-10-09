@@ -1,127 +1,40 @@
 import SwiftUI
 
-/// Quiz — three decisions, stored in SharedState for the hook + plan suggestion.
 struct QuizView: View {
+    enum Question { case goal, hours, time }
     @ObservedObject var data: OnboardingData
+    var question: Question = .goal
     @Environment(DietManager.self) private var dietManager
-    private let appTheme = AppTheme.shared
-
-    private let hourOptions: [(label: String, value: Int)] = [
-        ("1-2 h", 2), ("3-4 h", 4), ("5-6 h", 6), ("6+ h", 7),
-    ]
-    private let timeOptions: [(label: String, value: String)] = [
-        ("Morning scroll", "morning"),
-        ("Afternoon slump", "afternoon"),
-        ("Evening couch", "evening"),
-        ("Late night", "latelight"),
-    ]
-    private let goalOptions: [(label: String, title: String, value: String, icon: String)] = [
-        ("Cut down", "Eat less junk, keep social apps", "cutdown", "scissors"),
-        ("Deep focus", "Create more, consume less", "focus", "target"),
-        ("Full reset", "Block junk completely for a while", "reset", "arrow.counterclockwise"),
-    ]
-
+    private var title: String {
+        switch question { case .goal: return "What feels right\nfor you?"; case .hours: return "How full is your\ndigital plate?"; case .time: return "When does scrolling\npull you in?" }
+    }
+    private var detail: String {
+        switch question { case .goal: return "Start with a direction. Your plan can evolve with you."; case .hours: return "Think about your most tempting apps. A rough estimate is enough."; case .time: return "We’ll suggest a routine around the moments that feel hardest." }
+    }
+    private var options: [(String, String, String, String)] {
+        switch question {
+        case .goal: return [("scissors", "A little less scrolling", "Keep the connection, lose the excess", "cutdown"), ("target", "More focused days", "Create more, consume less", "focus"), ("arrow.counterclockwise", "A fresh reset", "Put tempting apps on pause", "reset")]
+        case .hours: return [("clock", "1–2 hours", "A few small pockets of scrolling", "2"), ("clock", "3–4 hours", "It adds up through the day", "4"), ("clock", "5–6 hours", "A substantial part of my day", "6"), ("clock", "More than 6 hours", "I’m ready for a different rhythm", "7")]
+        case .time: return [("sunrise.fill", "First thing in the morning", "Before the day has really started", "morning"), ("sun.max.fill", "The afternoon slump", "A break becomes a long scroll", "afternoon"), ("sofa.fill", "Evenings on the couch", "My go-to way to unwind", "evening"), ("moon.stars.fill", "Late into the night", "One more video before sleep", "latelight")]
+        }
+    }
+    private var answer: String? {
+        switch question { case .goal: return data.quizGoal; case .hours: return data.quizDailyHours.map(String.init); case .time: return data.quizWorstTime }
+    }
     var body: some View {
-        ZStack {
-            appTheme.colors.background.ignoresSafeArea()
-
-            ScrollView {
-                VStack(alignment: .leading, spacing: appTheme.spacing.large) {
-                    VStack(alignment: .leading, spacing: appTheme.spacing.small) {
-                        Text("60-SECOND CHECKUP")
-                            .font(appTheme.fonts.labelSmall)
-                            .foregroundColor(appTheme.colors.primary)
-                            .tracking(1.5)
-                        Text("Let's size your plate.")
-                            .font(appTheme.fonts.headlineLarge)
-                            .foregroundColor(appTheme.colors.text)
-                    }
-                    .padding(.top, appTheme.spacing.extraLarge)
-
-                    question("How many hours a day on junk?") {
-                        ForEach(hourOptions, id: \.value) { option in
-                            RadioOptionCard(
-                                icon: "clock",
-                                iconColor: nil,
-                                iconBackgroundColor: nil,
-                                title: option.label,
-                                subtitle: "",
-                                isSelected: data.quizDailyHours == option.value
-                            ) {
-                                data.quizDailyHours = option.value
-                            }
-                        }
-                    }
-
-                    question("When is it worst?") {
-                        ForEach(timeOptions, id: \.value) { option in
-                            RadioOptionCard(
-                                icon: "clock.badge.exclamationmark",
-                                iconColor: nil,
-                                iconBackgroundColor: nil,
-                                title: option.label,
-                                subtitle: "",
-                                isSelected: data.quizWorstTime == option.value
-                            ) {
-                                data.quizWorstTime = option.value
-                            }
-                        }
-                    }
-
-                    question("What's the goal?") {
-                        ForEach(goalOptions, id: \.value) { option in
-                            RadioOptionCard(
-                                icon: option.icon,
-                                iconColor: nil,
-                                iconBackgroundColor: nil,
-                                title: option.label,
-                                subtitle: option.title,
-                                isSelected: data.quizGoal == option.value
-                            ) {
-                                data.quizGoal = option.value
-                            }
-                        }
-                    }
-
-                    Spacer(minLength: appTheme.spacing.large)
-                }
-                .padding(.horizontal, appTheme.spacing.large)
+        DietPage {
+            DietHeading(eyebrow: "A quick check-in", title: title, detail: detail)
+            ForEach(Array(options.enumerated()), id: \.offset) { index, item in
+                DietChoice(icon: item.0, title: item.1, detail: item.2, selected: answer == item.3) {
+                    switch question { case .goal: data.quizGoal = item.3; case .hours: data.quizDailyHours = Int(item.3); case .time: data.quizWorstTime = item.3 }
+                }.editorialEntrance(delay: Double(index) * 0.06)
+            }
+            Text("Your answers are a starting point, not a diagnosis.").font(.caption).foregroundStyle(AppTheme.shared.colors.textSecondary)
+        } footer: {
+            PrimaryButton(title: "Continue", icon: "arrow.right", isDisabled: answer == nil) {
+                dietManager.saveOnboardingAnswers(data.quizAnswers)
+                data.nextScreen()
             }
         }
-        .safeAreaInset(edge: .bottom) {
-            Button(action: saveAndContinue) {
-                Text("Continue")
-                    .font(appTheme.fonts.titleMedium)
-                    .foregroundColor(isComplete ? appTheme.colors.background : appTheme.colors.textSecondary)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(isComplete ? appTheme.colors.primary : appTheme.colors.surface)
-                    .cornerRadius(appTheme.spacing.cornerRadiusLarge)
-            }
-            .disabled(!isComplete)
-            .padding(.horizontal, appTheme.spacing.large)
-            .padding(.bottom, appTheme.spacing.medium)
-            .background(appTheme.colors.background.opacity(0.95))
-        }
-    }
-
-    private var isComplete: Bool {
-        data.quizDailyHours != nil && data.quizWorstTime != nil && data.quizGoal != nil
-    }
-
-    private func question<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: appTheme.spacing.small) {
-            Text(title)
-                .font(appTheme.fonts.titleMedium)
-                .foregroundColor(appTheme.colors.text)
-            content()
-        }
-    }
-
-    private func saveAndContinue() {
-        // Persist quiz answers immediately so the hook (Hook B) and the report
-        // extension can use them (including the "new phone" fallback).
-        dietManager.saveOnboardingAnswers(data.quizAnswers)
-        data.nextScreen()
     }
 }

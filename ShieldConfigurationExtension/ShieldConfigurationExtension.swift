@@ -19,13 +19,22 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
 
     // MARK: - Theme
 
-    private let backgroundColor = UIColor(red: 0.06, green: 0.06, blue: 0.08, alpha: 1.0) // #0F1014
-    private let primaryGreen = UIColor(red: 0.0, green: 1.0, blue: 0.39, alpha: 1.0)       // #00FF63
-    private let warningYellow = UIColor(red: 1.0, green: 0.8, blue: 0.0, alpha: 1.0)
+    private let backgroundColor = UIColor(red: 0.045, green: 0.085, blue: 0.07, alpha: 1.0) // #0F1014
+    private let primaryGreen = UIColor(red: 0.70, green: 0.86, blue: 0.55, alpha: 1.0)       // #00FF63
+    private let warningYellow = UIColor(red: 0.96, green: 0.71, blue: 0.46, alpha: 1)
     private let errorRed = UIColor.systemRed
-    private let nightPurple = UIColor.systemPurple
-    private let textWhite = UIColor.white
+    private let nightPurple = UIColor(red: 0.73, green: 0.65, blue: 0.88, alpha: 1)
+    private let textWhite = UIColor(red: 0.97, green: 0.95, blue: 0.88, alpha: 1)
     private let textSecondary = UIColor.white.withAlphaComponent(0.6)
+
+    private func artwork(_ name: String, symbol: String, tint: UIColor) -> UIImage? {
+        guard let image = UIImage(named: name) else { return UIImage(systemName: symbol)?.withTintColor(tint, renderingMode: .alwaysOriginal) }
+        let size = CGSize(width: 96, height: 96)
+        return UIGraphicsImageRenderer(size: size).image { _ in
+            UIBezierPath(roundedRect: CGRect(origin: .zero, size: size), cornerRadius: 22).addClip()
+            image.draw(in: CGRect(origin: .zero, size: size))
+        }.withRenderingMode(.alwaysOriginal)
+    }
 
     // MARK: - Context
 
@@ -126,13 +135,13 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         return ShieldConfiguration(
             backgroundBlurStyle: .systemMaterialDark,
             backgroundColor: backgroundColor,
-            icon: UIImage(systemName: "moon.fill")?.withTintColor(warningYellow, renderingMode: .alwaysOriginal),
-            title: .init(text: "KITCHEN CLOSED", color: warningYellow),
+            icon: artwork("NightGarden", symbol: "moon.fill", tint: warningYellow),
+            title: .init(text: "A little breathing room.", color: warningYellow),
             subtitle: .init(
                 text: "\(context.displayItem) is off the menu. Opens at \(openAt)\(countdownLabel(minutes)).",
                 color: textSecondary
             ),
-            primaryButtonLabel: .init(text: "Close", color: backgroundColor),
+            primaryButtonLabel: .init(text: "Back to life", color: backgroundColor),
             primaryButtonBackgroundColor: warningYellow,
             secondaryButtonLabel: cheatLabel(context)
         )
@@ -145,10 +154,10 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         return ShieldConfiguration(
             backgroundBlurStyle: .systemMaterialDark,
             backgroundColor: backgroundColor,
-            icon: UIImage(systemName: "takeoutbag.and.cup.and.straw.fill")?.withTintColor(errorRed, renderingMode: .alwaysOriginal),
-            title: .init(text: "PLATE'S EMPTY", color: errorRed),
+            icon: artwork("FreshStart", symbol: "takeoutbag.and.cup.and.straw.fill", tint: errorRed),
+            title: .init(text: "Your plate is full.", color: errorRed),
             subtitle: .init(text: "\(portion) min of carbs used. \(context.displayItem) is back at \(openAt).", color: textSecondary),
-            primaryButtonLabel: .init(text: "Close", color: backgroundColor),
+            primaryButtonLabel: .init(text: "Back to life", color: backgroundColor),
             primaryButtonBackgroundColor: errorRed,
             secondaryButtonLabel: cheatLabel(context)
         )
@@ -160,10 +169,10 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         return ShieldConfiguration(
             backgroundBlurStyle: .systemMaterialDark,
             backgroundColor: backgroundColor,
-            icon: UIImage(systemName: "moon.zzz.fill")?.withTintColor(nightPurple, renderingMode: .alwaysOriginal),
-            title: .init(text: "NIGHT FAST", color: nightPurple),
+            icon: artwork("NightGarden", symbol: "moon.zzz.fill", tint: nightPurple),
+            title: .init(text: "Let the night be yours.", color: nightPurple),
             subtitle: .init(text: "\(context.displayItem) is asleep until \(end). Protein is always available.", color: textSecondary),
-            primaryButtonLabel: .init(text: "Close", color: textWhite),
+            primaryButtonLabel: .init(text: "Back to life", color: textWhite),
             primaryButtonBackgroundColor: nightPurple,
             secondaryButtonLabel: nil
         )
@@ -178,10 +187,10 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         return ShieldConfiguration(
             backgroundBlurStyle: .systemMaterialDark,
             backgroundColor: backgroundColor,
-            icon: UIImage(systemName: "bolt.fill")?.withTintColor(primaryGreen, renderingMode: .alwaysOriginal),
-            title: .init(text: "FOCUS FAST", color: primaryGreen),
+            icon: artwork("FocusGarden", symbol: "bolt.fill", tint: primaryGreen),
+            title: .init(text: "Room to focus.", color: primaryGreen),
             subtitle: .init(text: "\(context.displayItem) is blocked until \(end).", color: textSecondary),
-            primaryButtonLabel: .init(text: "Close", color: backgroundColor),
+            primaryButtonLabel: .init(text: "Back to life", color: backgroundColor),
             primaryButtonBackgroundColor: primaryGreen,
             secondaryButtonLabel: nil
         )
@@ -200,10 +209,10 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         return ShieldConfiguration(
             backgroundBlurStyle: .systemMaterialDark,
             backgroundColor: backgroundColor,
-            icon: UIImage(systemName: "ticket.fill")?.withTintColor(textSecondary, renderingMode: .alwaysOriginal),
-            title: .init(text: "NO CHEATS LEFT", color: textSecondary),
+            icon: artwork("DigitalGarden", symbol: "ticket.fill", tint: textSecondary),
+            title: .init(text: "Back to your rhythm.", color: textSecondary),
             subtitle: .init(text: subtitle, color: textSecondary),
-            primaryButtonLabel: .init(text: "Close", color: backgroundColor),
+            primaryButtonLabel: .init(text: "Back to life", color: backgroundColor),
             primaryButtonBackgroundColor: textSecondary,
             secondaryButtonLabel: nil
         )
@@ -215,7 +224,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         return ShieldConfiguration(
             backgroundBlurStyle: .systemMaterialDark,
             backgroundColor: backgroundColor,
-            icon: UIImage(systemName: "ticket.fill")?.withTintColor(warningYellow, renderingMode: .alwaysOriginal),
+            icon: artwork("DigitalGarden", symbol: "ticket.fill", tint: warningYellow),
             title: .init(text: "USE A CHEAT MEAL?", color: warningYellow),
             subtitle: .init(
                 text: "\(remaining) left this week. Unlocks \(context.displayItem) for \(DietRules.cheatMealMinutes) min. Tap Confirm within 20 s.",
@@ -223,7 +232,7 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
             ),
             primaryButtonLabel: .init(text: "Cancel", color: textWhite),
             primaryButtonBackgroundColor: backgroundColor,
-            secondaryButtonLabel: .init(text: "Confirm", color: backgroundColor)
+            secondaryButtonLabel: .init(text: "Confirm", color: warningYellow)
         )
     }
 

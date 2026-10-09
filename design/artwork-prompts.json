@@ -1,0 +1,25 @@
+{
+  "generator": "Built-in image generation",
+  "assets": [
+    {
+      "asset": "LifeReclaimed",
+      "prompt": "Use case: illustration-story. Asset type: native iOS app illustration named LifeReclaimed. A warm, tactile clay diorama for a digital wellness app: a cream open book, a tiny terracotta coffee cup, a leafy plant and a glowing apricot sun arranged in a quiet miniature reading nook. A sage phone rests face down to one side. Metaphor: making space for real life. Handcrafted matte ceramic texture, sculptural rounded shapes, forest green backdrop matching #0B1612, soft studio lighting, centered square composition with breathing room. No text, logos, watermarks or UI. Same art direction as a sage clay smartphone on a cream dinner plate."
+    },
+    {
+      "asset": "NightGarden",
+      "prompt": "Use case: illustration-story. Asset type: native iOS app illustration named NightGarden. A serene tactile clay diorama for a digital wellness app: a sage smartphone sleeping inside a small cream ceramic crescent moon, tiny lavender clouds and warm cream stars, leafy sprigs. Metaphor: apps have a bedtime, quiet evenings. Handcrafted matte ceramic texture, sculptural rounded shapes, forest green backdrop matching #0B1612, soft studio lighting, centered square composition with breathing room. No text, logos, watermarks or UI. Same art direction as a sage clay smartphone on a cream dinner plate."
+    },
+    {
+      "asset": "FocusGarden",
+      "prompt": "Use case: illustration-story. Asset type: native iOS app illustration named FocusGarden. A premium tactile clay diorama for a digital wellness app: a sage smartphone tucked behind a cream hourglass with apricot sand, a miniature leafy plant, a pencil and small lavender stones. Metaphor: protected attention and focused creation. Handcrafted matte ceramic texture, sculptural rounded shapes, forest green backdrop matching #0B1612, soft studio lighting, centered square composition with breathing room. No text, logos, watermarks or UI. Same art direction as a sage clay smartphone on a cream dinner plate."
+    },
+    {
+      "asset": "BalancedPantry",
+      "prompt": "Use case: illustration-story. Asset type: native iOS app illustration named BalancedPantry. A premium tactile clay illustration for a digital wellness app: three small cream ceramic bowls arranged as a balanced pantry, one with a pink donut, one with an avocado half, one with a sprouting sage plant and pencil representing productive creativity. Elegant clear silhouette, no phone. Handcrafted matte ceramic texture, sculptural rounded shapes, forest green backdrop matching #0B1612, soft studio lighting, centered square composition with breathing room. No text, logos, watermarks or UI. Same art direction as a sage clay smartphone on a cream dinner plate."
+    },
+    {
+      "asset": "FreshStart",
+      "prompt": "Use case: illustration-story. Asset type: native iOS app illustration named FreshStart. A joyful premium tactile clay illustration for a digital wellness app: a small sage sprout growing out of a cream ceramic plate, surrounded by apricot sun rays and a few lavender stars. Metaphor: a fresh start and sustainable personal progress. Handcrafted matte ceramic texture, sculptural rounded shapes, forest green backdrop matching #0B1612, soft studio lighting, centered square composition with breathing room. No text, logos, watermarks or UI. Same art direction as a sage clay smartphone on a cream dinner plate."
+    }
+  ]
+}

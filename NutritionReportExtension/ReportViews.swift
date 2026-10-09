@@ -1,349 +1,227 @@
-//
-//  ReportViews.swift
-//  NutritionReportExtension
-//
-//  Self-contained views rendered by the system inside the report context.
-//  No app theme/fonts here — only what ships in the extension.
-//
-
 import SwiftUI
 import FamilyControls
 
 enum ReportTheme {
-    static let background = Color(red: 0.06, green: 0.06, blue: 0.08)
-    static let surface = Color(red: 0.11, green: 0.12, blue: 0.14)
-    static let primary = Color(red: 0.0, green: 1.0, blue: 0.39)
-    static let warning = Color(red: 1.0, green: 0.8, blue: 0.0)
-    static let error = Color(red: 1.0, green: 0.27, blue: 0.23)
-    static let purple = Color(red: 0.61, green: 0.36, blue: 1.0)
-    static let text = Color(red: 0.96, green: 0.96, blue: 0.96)
-    static let secondary = Color.white.opacity(0.6)
+    static let background = Color(red: 0.045, green: 0.085, blue: 0.07)
+    static let surface = Color(red: 0.08, green: 0.13, blue: 0.11)
+    static let primary = Color(red: 0.70, green: 0.86, blue: 0.55)
+    static let warning = Color(red: 0.96, green: 0.71, blue: 0.46)
+    static let purple = Color(red: 0.73, green: 0.65, blue: 0.88)
+    static let text = Color(red: 0.97, green: 0.95, blue: 0.88)
+    static let secondary = Color(red: 0.65, green: 0.72, blue: 0.67)
 }
-
 func reportDuration(_ seconds: Double) -> String {
     let minutes = Int((seconds / 60).rounded())
-    if minutes >= 60 {
-        return "\(minutes / 60)h \(minutes % 60)m"
-    }
-    return "\(minutes)m"
+    return minutes >= 60 ? "\(minutes / 60)h \(minutes % 60)m" : "\(minutes)m"
 }
-
-// MARK: - Nutrition Label (Report tab)
+private struct ReportEntrance: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) var reduceMotion
+    @State private var visible = false
+    func body(content: Content) -> some View {
+        content.opacity(visible ? 1 : 0).offset(y: reduceMotion || visible ? 0 : 12)
+            .onAppear { withAnimation(.easeOut(duration: reduceMotion ? 0.15 : 0.6)) { visible = true } }
+    }
+}
+private extension View {
+    func reportCard() -> some View {
+        padding(20).frame(maxWidth: .infinity, alignment: .leading).background(ReportTheme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .overlay(RoundedRectangle(cornerRadius: 24).stroke(ReportTheme.primary.opacity(0.12)))
+    }
+}
 
 struct NutritionLabelReportView: View {
     let snapshot: ReportSnapshot
-
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            header("NUTRITION LABEL", subtitle: "LAST 7 DAYS")
-
-            if snapshot.isEmpty {
-                emptyState
-            } else {
-                proportionBar
-                splitRows
-                HStack(spacing: 12) {
-                    statCard(icon: "moon.fill", tint: ReportTheme.purple,
-                             value: reportDuration(snapshot.lateNightSeconds), label: "late night")
-                    statCard(icon: "hand.tap.fill", tint: ReportTheme.primary,
-                             value: "\(Int(snapshot.averagePickupsPerDay.rounded()))", label: "pickups/day")
+        VStack(spacing: 20) {
+            if snapshot.isEmpty { ReportEmptyState() }
+            else {
+                VStack(spacing: 18) {
+                    reportHeader("YOUR DIGITAL NUTRITION", "Measured by Screen Time · Last 7 days")
+                    NutritionDonut(snapshot: snapshot)
+                    splitRow("Carbs", icon: "birthday.cake.fill", seconds: snapshot.carbSeconds, total: snapshot.totalSeconds, tint: ReportTheme.warning)
+                    splitRow("Fats", icon: "leaf.fill", seconds: snapshot.fatSeconds, total: snapshot.totalSeconds, tint: ReportTheme.purple)
+                    splitRow("Protein & other", icon: "pencil.and.outline", seconds: snapshot.otherSeconds, total: snapshot.totalSeconds, tint: ReportTheme.primary)
+                    Text("Protein & other includes activity outside your Carbs and Fats selections.").font(.caption2).foregroundStyle(ReportTheme.secondary)
+                }.reportCard()
+                DailyActivityChart(snapshot: snapshot).reportCard()
+                HStack(alignment: .top, spacing: 12) {
+                    ReportMetric(icon: "moon.stars.fill", value: reportDuration(snapshot.lateNightSeconds), label: "10 pm – 6 am", tint: ReportTheme.purple)
+                    ReportMetric(icon: "hand.tap.fill", value: "\(Int(snapshot.averagePickupsPerDay.rounded()))", label: "pickups / observed day", tint: ReportTheme.primary)
                 }
-                if !snapshot.topJunkApps.isEmpty {
-                    topApps
-                }
-            }
-        }
-        .padding(20)
-        .background(ReportTheme.background)
-    }
-
-    private var splitRows: some View {
-        VStack(spacing: 8) {
-            splitRow(emoji: "🍩", name: "CARBS", seconds: snapshot.carbSeconds, tint: ReportTheme.warning)
-            splitRow(emoji: "🥑", name: "FATS", seconds: snapshot.fatSeconds, tint: ReportTheme.purple)
-            splitRow(emoji: "🥩", name: "PROTEIN + OTHER", seconds: snapshot.otherSeconds, tint: ReportTheme.primary)
-        }
-    }
-
-    private var proportionBar: some View {
-        GeometryReader { geo in
-            let width = max(geo.size.width - 4, 1)
-            HStack(spacing: 2) {
-                Rectangle().fill(ReportTheme.warning).frame(width: width * snapshot.carbShare)
-                Rectangle().fill(ReportTheme.purple).frame(width: width * fatShare)
-                Rectangle().fill(ReportTheme.primary)
-            }
-            .clipShape(Capsule())
-        }
-        .frame(height: 10)
-    }
-
-    private var fatShare: Double {
-        snapshot.totalSeconds > 0 ? snapshot.fatSeconds / snapshot.totalSeconds : 0
-    }
-
-    private var topApps: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("TOP JUNK APPS")
-                .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(ReportTheme.secondary)
-                .tracking(1.0)
-
-            ForEach(snapshot.topJunkApps) { usage in
-                HStack(spacing: 10) {
-                    if let token = usage.token {
-                        Label(token)
-                            .labelStyle(.iconOnly)
-                            .frame(width: 24, height: 24)
-                    } else {
-                        RoundedRectangle(cornerRadius: 6)
-                            .fill(ReportTheme.surface)
-                            .frame(width: 24, height: 24)
+                VStack(alignment: .leading, spacing: 16) {
+                    reportHeader("THE APPS YOU REACH FOR", "Top Carbs · Ranked by measured time")
+                    if snapshot.topJunkApps.isEmpty { Text("No Carbs app activity was available for this period.").font(.caption).foregroundStyle(ReportTheme.secondary) }
+                    ForEach(Array(snapshot.topJunkApps.enumerated()), id: \.element.id) { index, usage in
+                        VStack(spacing: 10) {
+                            HStack(spacing: 12) {
+                                Text(String(format: "%02d", index + 1)).font(.caption.monospacedDigit()).foregroundStyle(ReportTheme.secondary)
+                                if let token = usage.token { Label(token).labelStyle(.iconOnly).frame(width: 32, height: 32) }
+                                Text(usage.name).font(.subheadline.weight(.semibold)).foregroundStyle(ReportTheme.text).lineLimit(1)
+                                Spacer()
+                                Text(reportDuration(usage.seconds)).font(.subheadline.monospacedDigit()).foregroundStyle(ReportTheme.warning)
+                            }
+                            ProgressView(value: min(1, usage.seconds / max(1, snapshot.topJunkApps.first?.seconds ?? 1))).tint(ReportTheme.warning)
+                        }.accessibilityElement(children: .combine)
                     }
-
-                    Text(usage.name)
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(ReportTheme.text)
-                        .lineLimit(1)
-
-                    Spacer()
-
-                    Text(reportDuration(usage.seconds))
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(ReportTheme.warning)
-                }
+                }.reportCard()
+                Text("A little awareness can make your next choice easier.").font(.system(.subheadline, design: .serif)).foregroundStyle(ReportTheme.secondary).multilineTextAlignment(.center)
             }
-        }
-        .padding(14)
-        .background(ReportTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        }.modifier(ReportEntrance()).padding(.vertical, 4)
     }
 }
 
-// MARK: - Today (Kitchen card)
+private struct NutritionDonut: View {
+    let snapshot: ReportSnapshot
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var revealed = false
+    private var carbs: Double { min(1, max(0, snapshot.carbShare)) }
+    private var fats: Double { min(1, max(0, snapshot.fatSeconds / max(1, snapshot.totalSeconds))) }
+    var body: some View {
+        ZStack {
+            Circle().stroke(ReportTheme.primary, lineWidth: 18)
+            Circle().trim(from: 0, to: carbs).stroke(ReportTheme.warning, lineWidth: 18)
+            Circle().trim(from: carbs, to: min(1, carbs + fats)).stroke(ReportTheme.purple, lineWidth: 18)
+            VStack(spacing: 6) {
+                Text(reportDuration(snapshot.totalSeconds)).font(.system(.largeTitle, design: .rounded).bold()).lineLimit(1).minimumScaleFactor(0.5).foregroundStyle(ReportTheme.text)
+                Text("SCREEN TIME").font(.caption2.bold()).tracking(1.2).foregroundStyle(ReportTheme.secondary)
+            }.rotationEffect(.degrees(90))
+        }.rotationEffect(.degrees(-90)).frame(width: 190, height: 190).padding(12)
+            .opacity(revealed ? 1 : 0).scaleEffect(revealed || reduceMotion ? 1 : 0.92)
+            .onAppear { withAnimation(.easeOut(duration: reduceMotion ? 0.15 : 0.8)) { revealed = true } }
+            .accessibilityElement(children: .ignore).accessibilityLabel("Screen time \(reportDuration(snapshot.totalSeconds)). Carbs \(Int(carbs * 100)) percent. Fats \(Int(fats * 100)) percent.")
+    }
+}
+
+private struct DailyActivityChart: View {
+    let snapshot: ReportSnapshot
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var reveal = false
+    private var keys: [String] { (0..<7).compactMap { Calendar.current.date(byAdding: .day, value: $0 - 6, to: Date()) }.map { DayCounters.dateKey(from: $0) } }
+    private var maximum: Double { max(1, snapshot.totalSecondsByDay.values.max() ?? 1) }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            reportHeader("A WEEK OF ATTENTION", "Total activity · Carbs highlighted in apricot")
+            HStack(alignment: .bottom, spacing: 12) {
+                ForEach(keys, id: \.self) { key in
+                    let total = snapshot.totalSecondsByDay[key]
+                    let carbs = snapshot.carbSecondsByDay[key] ?? 0
+                    VStack(spacing: 10) {
+                        ZStack(alignment: .bottom) {
+                            RoundedRectangle(cornerRadius: 6).fill(ReportTheme.primary.opacity(0.3)).frame(height: reveal ? max(4, (total ?? 0) / maximum * 100) : 4)
+                            RoundedRectangle(cornerRadius: 6).fill(ReportTheme.warning).frame(height: reveal ? min(100, carbs / maximum * 100) : 0)
+                            if total == nil { Text("—").font(.caption).foregroundStyle(ReportTheme.secondary) }
+                        }.frame(height: 100, alignment: .bottom)
+                        Text(String(key.suffix(2))).font(.caption2.monospacedDigit()).foregroundStyle(ReportTheme.secondary)
+                    }.frame(maxWidth: .infinity)
+                        .accessibilityElement(children: .ignore).accessibilityLabel("\(key), \(total.map(reportDuration) ?? "no activity received"), Carbs \(reportDuration(carbs))")
+                }
+            }.onAppear { withAnimation(.easeOut(duration: reduceMotion ? 0.15 : 0.7)) { reveal = true } }
+            Text("Missing bars mean no activity was received for that day.").font(.caption2).foregroundStyle(ReportTheme.secondary)
+        }
+    }
+}
 
 struct TodayReportView: View {
     let snapshot: ReportSnapshot
-
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            header("TODAY'S PLATE", subtitle: "FROM THE SYSTEM")
-
-            if snapshot.isEmpty {
-                emptyState
-            } else {
-                splitRow(emoji: "🍩", name: "CARBS", seconds: snapshot.carbSeconds, tint: ReportTheme.warning)
-                splitRow(emoji: "🥑", name: "FATS", seconds: snapshot.fatSeconds, tint: ReportTheme.purple)
-                splitRow(emoji: "🥩", name: "PROTEIN + OTHER", seconds: snapshot.otherSeconds, tint: ReportTheme.primary)
-
+        VStack(alignment: .leading, spacing: 16) {
+            reportHeader("TODAY, FROM SCREEN TIME", "Measured activity · Your on-device report")
+            if snapshot.isEmpty { ReportEmptyState(compact: true) }
+            else {
+                splitRow("Carbs", icon: "birthday.cake.fill", seconds: snapshot.carbSeconds, total: snapshot.totalSeconds, tint: ReportTheme.warning)
+                splitRow("Fats", icon: "leaf.fill", seconds: snapshot.fatSeconds, total: snapshot.totalSeconds, tint: ReportTheme.purple)
+                splitRow("Protein & other", icon: "pencil.and.outline", seconds: snapshot.otherSeconds, total: snapshot.totalSeconds, tint: ReportTheme.primary)
                 HStack(spacing: 12) {
-                    statCard(icon: "hand.tap.fill", tint: ReportTheme.primary,
-                             value: "\(snapshot.pickups)", label: "pickups")
-                    statCard(icon: "sunrise.fill", tint: ReportTheme.warning,
-                             value: snapshot.firstPickup.map { Self.timeFormatter.string(from: $0) } ?? "—",
-                             label: "first pickup")
+                    ReportMetric(icon: "hand.tap", value: "\(snapshot.pickups)", label: "pickups", tint: ReportTheme.primary)
+                    ReportMetric(icon: "sunrise", value: snapshot.firstPickup.map { $0.formatted(date: .omitted, time: .shortened) } ?? "—", label: "first pickup", tint: ReportTheme.warning)
                 }
             }
-        }
-        .padding(16)
-        .background(ReportTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        }.reportCard().modifier(ReportEntrance())
     }
-
-    private static let timeFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter
-    }()
 }
-
-// MARK: - Weekly Grade
 
 struct WeeklyGradeReportView: View {
     let snapshot: ReportSnapshot
     let grade: String
-
-    var body: some View {
-        HStack(spacing: 18) {
-            ZStack {
-                Circle()
-                    .stroke(ReportTheme.surface, lineWidth: 8)
-                    .frame(width: 92, height: 92)
-                Text(grade)
-                    .font(.system(size: 44, weight: .heavy, design: .rounded))
-                    .foregroundStyle(color)
-            }
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text("WEEKLY GRADE")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(ReportTheme.secondary)
-                    .tracking(1.0)
-                Text(description)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(ReportTheme.text)
-                if !snapshot.isEmpty {
-                    Text("\(reportDuration(snapshot.carbSeconds)) of carbs · \(Int((snapshot.carbShare * 100).rounded()))% of screen time")
-                        .font(.system(size: 12))
-                        .foregroundStyle(ReportTheme.secondary)
-                }
-            }
-
-            Spacer()
-        }
-        .padding(16)
-        .background(ReportTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-    }
-
-    private var color: Color {
-        switch grade {
-        case "A": return ReportTheme.primary
-        case "B": return ReportTheme.primary
-        case "C": return ReportTheme.warning
-        default: return ReportTheme.error
-        }
-    }
-
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var revealed = false
+    private var color: Color { grade == "A" || grade == "B" ? ReportTheme.primary : ReportTheme.warning }
     private var description: String {
-        switch grade {
-        case "A": return "Excellent week. Your diet is working."
-        case "B": return "Good week. Small adjustments left."
-        case "C": return "Moderate week. Watch the portions."
-        case "D": return "Rough week. Check late-night carbs."
-        default: return "Hard week. Let's reset on Monday."
-        }
+        switch grade { case "A": return "A nourishing week."; case "B": return "A little balance is taking shape."; case "C": return "A few habits to notice."; case "D", "F": return "A fresh start is always available."; default: return "Your story is still taking shape." }
+    }
+    var body: some View {
+        HStack(spacing: 24) {
+            ZStack {
+                Circle().stroke(ReportTheme.primary.opacity(0.12), lineWidth: 8)
+                Circle().trim(from: 0, to: revealed && !snapshot.isEmpty ? 1 : 0).stroke(color, style: StrokeStyle(lineWidth: 8, lineCap: .round)).rotationEffect(.degrees(-90))
+                Text(snapshot.isEmpty ? "—" : grade).font(.system(size: 44, weight: .bold, design: .serif)).foregroundStyle(color)
+                    .rotation3DEffect(.degrees(revealed || reduceMotion ? 0 : 90), axis: (x: 0, y: 1, z: 0))
+            }.frame(width: 90, height: 90)
+            VStack(alignment: .leading, spacing: 10) {
+                Text("THIS WEEK’S GRADE").font(.caption2.bold()).tracking(1.3).foregroundStyle(ReportTheme.primary)
+                Text(description).font(.system(.title3, design: .serif).weight(.semibold)).foregroundStyle(ReportTheme.text)
+                Text(snapshot.isEmpty ? "We need measured activity before a grade can appear." : "A guide based on portions, Carbs share, nighttime use and pickups. Not a judgment.").font(.caption).foregroundStyle(ReportTheme.secondary)
+            }
+        }.reportCard().onAppear { withAnimation(.easeOut(duration: reduceMotion ? 0.15 : 0.85)) { revealed = true } }
     }
 }
-
-// MARK: - Hook Insight (onboarding)
 
 struct HookInsightReportView: View {
     let content: HookInsightContent
-
-    private var snapshot: ReportSnapshot { content.snapshot }
-
-    /// Real data is only trusted after an hour of measured junk.
-    private var hasEnoughData: Bool { snapshot.carbSeconds >= 3600 }
-
+    private var enough: Bool { content.snapshot.carbSeconds >= 3600 }
+    private var weekly: Double { enough ? content.snapshot.carbSeconds : Double(content.estimatedDailyMinutes ?? 0) * 60 * 7 }
     var body: some View {
-        VStack(spacing: 14) {
-            Text(hasEnoughData ? "LAST WEEK" : "ROUGH ESTIMATE")
-                .font(.system(size: 12, weight: .bold))
-                .foregroundStyle(ReportTheme.secondary)
-                .tracking(1.5)
-
-            if hasEnoughData {
-                realInsight
-            } else if let estimate = content.estimatedDailyMinutes {
-                estimateInsight(dailyMinutes: estimate)
-            } else {
-                emptyState
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(20)
-        .background(ReportTheme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: 18))
-    }
-
-    private var realInsight: some View {
-        Group {
-            Text(reportDuration(snapshot.carbSeconds))
-                .font(.system(size: 48, weight: .heavy, design: .rounded))
-                .foregroundStyle(ReportTheme.warning)
-            Text("of junk (carbs) apps")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(ReportTheme.text)
-
-            Text("That's ≈ \(yearlyDays(weeklyCarbSeconds: snapshot.carbSeconds)) days a year.")
-                .font(.system(size: 17, weight: .bold))
-                .foregroundStyle(ReportTheme.text)
-                .padding(.top, 4)
-
-            Text("\(Int((snapshot.junkShare * 100).rounded()))% of your screen time was junk.")
-                .font(.system(size: 13))
-                .foregroundStyle(ReportTheme.secondary)
-        }
-    }
-
-    private func estimateInsight(dailyMinutes: Int) -> some View {
-        let weeklySeconds = Double(dailyMinutes) * 60 * 7
-        return Group {
-            Text("≈ \(dailyMinutes) min a day")
-                .font(.system(size: 42, weight: .heavy, design: .rounded))
-                .foregroundStyle(ReportTheme.warning)
-            Text("on junk, according to you")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(ReportTheme.text)
-
-            Text("That's ≈ \(yearlyDays(weeklyCarbSeconds: weeklySeconds)) days a year.")
-                .font(.system(size: 17, weight: .bold))
-                .foregroundStyle(ReportTheme.text)
-                .padding(.top, 4)
-
-            Text("We'll show your real numbers once there's a day of data.")
-                .font(.system(size: 13))
-                .foregroundStyle(ReportTheme.secondary)
-        }
-    }
-
-    private func yearlyDays(weeklyCarbSeconds: Double) -> Int {
-        let weeklyHours = weeklyCarbSeconds / 3600
-        return Int((weeklyHours * 52 / 24).rounded())
+        VStack(spacing: 18) {
+            Text(enough ? "LAST WEEK · MEASURED CARBS" : "YOUR ANSWERS · ROUGH ESTIMATE").font(.caption2.bold()).tracking(1.5).foregroundStyle(ReportTheme.primary)
+            if enough || content.estimatedDailyMinutes != nil {
+                Text(enough ? reportDuration(weekly) : "≈ \(content.estimatedDailyMinutes ?? 0)m / day").font(.system(.largeTitle, design: .rounded).bold()).foregroundStyle(ReportTheme.warning)
+                Text("Your selected Carbs add up.").font(.system(.title3, design: .serif)).foregroundStyle(ReportTheme.text)
+                Divider().overlay(ReportTheme.primary.opacity(0.15))
+                Text("At this pace, ≈ \(Int((weekly * 52 / 86400).rounded())) days a year.").font(.headline).foregroundStyle(ReportTheme.text)
+                Text("A projection if this pattern continued, not time we’ve already measured.").font(.caption).foregroundStyle(ReportTheme.secondary).multilineTextAlignment(.center)
+            } else { ReportEmptyState(compact: true) }
+        }.frame(maxWidth: .infinity).reportCard().modifier(ReportEntrance())
     }
 }
 
-// MARK: - Shared bits
-
-private func header(_ title: String, subtitle: String) -> some View {
-    VStack(alignment: .leading, spacing: 2) {
-        Text(title)
-            .font(.system(size: 16, weight: .heavy))
-            .foregroundStyle(ReportTheme.text)
-        Text(subtitle)
-            .font(.system(size: 11, weight: .bold))
-            .foregroundStyle(ReportTheme.secondary)
-            .tracking(1.2)
+private struct ReportMetric: View {
+    let icon: String
+    let value: String
+    let label: String
+    let tint: Color
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Image(systemName: icon).foregroundStyle(tint)
+            Text(value).font(.system(.title3, design: .rounded).bold()).foregroundStyle(ReportTheme.text)
+            Text(label).font(.caption2).foregroundStyle(ReportTheme.secondary)
+        }.frame(maxWidth: .infinity, alignment: .leading).padding(14).background(ReportTheme.background).clipShape(RoundedRectangle(cornerRadius: 16))
     }
 }
-
-private func splitRow(emoji: String, name: String, seconds: Double, tint: Color) -> some View {
-    HStack(spacing: 8) {
-        Text(emoji)
-        Text(name)
-            .font(.system(size: 12, weight: .bold))
-            .foregroundStyle(ReportTheme.secondary)
+private struct ReportEmptyState: View {
+    var compact = false
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "leaf.circle").font(.system(size: compact ? 32 : 52)).foregroundStyle(ReportTheme.primary)
+            Text("A story still growing.").font(.system(.title2, design: .serif)).foregroundStyle(ReportTheme.text)
+            Text("No activity was received for this period. Use your phone normally and return after Screen Time has recorded activity.").font(.caption).foregroundStyle(ReportTheme.secondary).multilineTextAlignment(.center)
+        }.frame(maxWidth: .infinity).padding(.vertical, compact ? 8 : 32)
+    }
+}
+private func reportHeader(_ title: String, _ detail: String) -> some View {
+    VStack(alignment: .leading, spacing: 6) {
+        Text(title).font(.caption2.bold()).tracking(1.5).foregroundStyle(ReportTheme.primary)
+        Text(detail).font(.caption).foregroundStyle(ReportTheme.secondary)
+    }.frame(maxWidth: .infinity, alignment: .leading)
+}
+private func splitRow(_ title: String, icon: String, seconds: Double, total: Double, tint: Color) -> some View {
+    HStack(spacing: 12) {
+        Image(systemName: icon).foregroundStyle(tint).frame(width: 22)
+        Text(title).font(.subheadline).foregroundStyle(ReportTheme.text)
         Spacer()
-        Text(reportDuration(seconds))
-            .font(.system(size: 14, weight: .bold))
-            .foregroundStyle(tint)
-    }
-}
-
-private func statCard(icon: String, tint: Color, value: String, label: String) -> some View {
-    VStack(alignment: .leading, spacing: 4) {
-        Image(systemName: icon)
-            .font(.system(size: 13, weight: .bold))
-            .foregroundStyle(tint)
-        Text(value)
-            .font(.system(size: 18, weight: .bold, design: .rounded))
-            .foregroundStyle(ReportTheme.text)
-        Text(label)
-            .font(.system(size: 11, weight: .semibold))
-            .foregroundStyle(ReportTheme.secondary)
-    }
-    .frame(maxWidth: .infinity, alignment: .leading)
-    .padding(12)
-    .background(ReportTheme.background)
-    .clipShape(RoundedRectangle(cornerRadius: 12))
-}
-
-private var emptyState: some View {
-    Text("No activity data yet. Use your phone for a full day and this report will fill in.")
-        .font(.system(size: 13))
-        .foregroundStyle(ReportTheme.secondary)
-        .multilineTextAlignment(.center)
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
+        VStack(alignment: .trailing, spacing: 3) {
+            Text(reportDuration(seconds)).font(.subheadline.bold()).foregroundStyle(tint)
+            Text("\(Int((seconds / max(1, total) * 100).rounded()))%").font(.caption2.monospacedDigit()).foregroundStyle(ReportTheme.secondary)
+        }
+    }.accessibilityElement(children: .combine)
 }

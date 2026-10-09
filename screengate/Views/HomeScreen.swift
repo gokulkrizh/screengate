@@ -47,6 +47,9 @@ struct HomeScreen: View {
             }
             .tint(appTheme.colors.primary)
         }
+        .onReceive(NotificationCenter.default.publisher(for: .screenDietTab)) { note in
+            if let tab = note.object as? Int { withAnimation { selectedTab = tab } }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .dietNotificationRoute)) { note in
             guard let raw = note.userInfo?["route"] as? String,
                   let route = NotificationRoute(rawValue: raw) else { return }

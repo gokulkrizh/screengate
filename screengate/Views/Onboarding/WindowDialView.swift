@@ -1,302 +1,121 @@
 import SwiftUI
 
-/// Interactive 24-hour dial: window start/end + night fast start.
-/// Arcs snap to 15 minutes and never overlap.
 struct WindowDialView: View {
     @ObservedObject var data: OnboardingData
-    private let appTheme = AppTheme.shared
-
-    // Minutes from midnight
-    @State private var startMinutes: Double = 12 * 60
-    @State private var endMinutes: Double = 20 * 60
-    @State private var nightMinutes: Double = 21 * 60
-
-    @State private var dragging: Handle?
-    @State private var snapTick = 0
-
-    private let snap = 15
-
-    private enum Handle: Equatable {
-        case start, end, night
-    }
-
+    @Environment(EntitlementManager.self) private var entitlements
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var start: Double = 720
+    @State private var end: Double = 1200
+    @State private var night: Double = 1260
+    @State private var dragging: Int?
+    @State private var tick = 0
+    @State private var rejected = 0
+    private var detox: Bool { data.selectedPlan == .detox }
     var body: some View {
-        ZStack {
-            appTheme.colors.background.ignoresSafeArea()
-
-            VStack(spacing: appTheme.spacing.large) {
-                VStack(spacing: appTheme.spacing.small) {
-                    Text("SET YOUR KITCHEN HOURS")
-                        .font(appTheme.fonts.labelSmall)
-                        .foregroundColor(appTheme.colors.primary)
-                        .tracking(1.5)
-                    Text("When does your kitchen open?")
-                        .font(appTheme.fonts.headlineLarge)
-                        .foregroundColor(appTheme.colors.text)
-                        .multilineTextAlignment(.center)
-                    Text("Drag the handles. Everything snaps to 15 minutes.")
-                        .font(appTheme.fonts.bodyMedium)
-                        .foregroundColor(appTheme.colors.textSecondary)
+        DietPage {
+            DietHeading(eyebrow: "Give your day a rhythm", title: detox ? "A little reset.\nA lot of possibility." : "Open with intention.\nClose with a little peace.", detail: detox ? "Your Detox plan keeps selected Carbs off the menu. Productive apps stay available." : "Drag the sun handles to set kitchen hours. Use the sliders below for precise times.")
+            if detox { DietArtwork(asset: "FreshStart", height: 240) }
+            else {
+                dial.frame(height: 310).editorialEntrance()
+                HStack(spacing: 12) {
+                    DietMetric(icon: "sunrise", value: time(start), label: "kitchen opens")
+                    DietMetric(icon: "sunset", value: time(end), label: "kitchen closes")
                 }
-                .padding(.top, appTheme.spacing.extraLarge)
-
-                dial
-                    .frame(height: 340)
-                    .padding(.horizontal, appTheme.spacing.large)
-
-                legend
-
-                portionControl
-                    .padding(.horizontal, appTheme.spacing.large)
-
-                Spacer()
-
-                Button(action: saveAndContinue) {
-                    Text("Looks right")
-                        .font(appTheme.fonts.titleMedium)
-                        .foregroundColor(appTheme.colors.background)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(appTheme.colors.primary)
-                        .cornerRadius(appTheme.spacing.cornerRadiusLarge)
-                }
-                .padding(.horizontal, appTheme.spacing.large)
-                .padding(.bottom, appTheme.spacing.extraLarge)
+                DisclosureGroup("Set precise times") {
+                    VStack(alignment: .leading, spacing: 18) {
+                        timeSlider("Opens", value: start, index: 0)
+                        timeSlider("Closes", value: end, index: 1)
+                        if entitlements.isPremium { timeSlider("Night Fast starts", value: night, index: 2) }
+                    }.padding(.top, 16)
+                }.font(.subheadline).foregroundStyle(AppTheme.shared.colors.text).tint(AppTheme.shared.colors.primary).dietCard()
+                VStack(alignment: .leading, spacing: 18) {
+                    HStack { Text("YOUR DAILY PORTION").font(.caption2.bold()).tracking(1.5); Spacer(); Image(systemName: "fork.knife") }.foregroundStyle(AppTheme.shared.colors.primary)
+                    Text("\(data.dailyCarbLimitMinutes) minutes").font(.system(.title, design: .rounded).bold()).foregroundStyle(AppTheme.shared.colors.text).contentTransition(.numericText())
+                    Slider(value: Binding(get: { Double(data.dailyCarbLimitMinutes) }, set: { data.dailyCarbLimitMinutes = Int($0) }), in: 15...180, step: 15).tint(AppTheme.shared.colors.primary).accessibilityLabel("Daily Carbs portion")
+                    Text("A satisfying portion for your most tempting apps. Start with something you can repeat.").font(.caption).foregroundStyle(AppTheme.shared.colors.textSecondary)
+                }.dietCard()
             }
-        }
-        .sensoryFeedback(.selection, trigger: snapTick)
-        .onAppear {
-            startMinutes = Double(data.windowStartHour * 60 + data.windowStartMinute)
-            endMinutes = Double(data.windowEndHour * 60 + data.windowEndMinute)
-            nightMinutes = Double(data.nightLockHour * 60 + data.nightLockMinute)
-        }
+            Button {
+                if !entitlements.isPremium { entitlements.presentPaywall(.featureNightFast) }
+            } label: {
+                DietFeatureRow(icon: entitlements.isPremium ? "moon.stars" : "lock.fill", title: entitlements.isPremium ? "Night Fast starts at \(time(night))" : "Give your apps a bedtime · Plus", detail: entitlements.isPremium ? "Carbs and Fats rest until \(time(start))." : "Night Fast can pause social apps alongside Carbs during your nightly routine.", tint: Color(red: 0.73, green: 0.65, blue: 0.88)).dietCard(tint: .purple)
+            }.buttonStyle(TactileButtonStyle())
+        } footer: {
+            PrimaryButton(title: "This feels right", icon: "arrow.right") {
+                data.windowStartHour = Int(start) / 60; data.windowStartMinute = Int(start) % 60
+                data.windowEndHour = Int(end) / 60; data.windowEndMinute = Int(end) % 60
+                data.nightLockHour = Int(night) / 60; data.nightLockMinute = Int(night) % 60
+                data.nextScreen()
+            }
+        }.sensoryFeedback(.selection, trigger: tick).sensoryFeedback(.warning, trigger: rejected)
+            .onAppear {
+                start = Double(data.windowStartHour * 60 + data.windowStartMinute); end = Double(data.windowEndHour * 60 + data.windowEndMinute); night = Double(data.nightLockHour * 60 + data.nightLockMinute)
+                if !detox && data.dailyCarbLimitMinutes < 15 { data.dailyCarbLimitMinutes = 15 }
+            }
     }
-
-    // MARK: - Dial
-
     private var dial: some View {
         GeometryReader { geo in
             let size = min(geo.size.width, geo.size.height)
-            let radius = size / 2 - 26
+            let radius = size / 2 - 32
             let center = CGPoint(x: geo.size.width / 2, y: geo.size.height / 2)
-
             ZStack {
-                // Guide ring
-                Circle()
-                    .stroke(appTheme.colors.surfaceVariant, lineWidth: 22)
-                    .frame(width: radius * 2, height: radius * 2)
-                    .position(center)
-
-                // Eating window arc
-                arcPath(center: center, radius: radius, from: startMinutes, to: endMinutes)
-                    .stroke(appTheme.colors.primary, style: StrokeStyle(lineWidth: 22, lineCap: .round))
-
-                // Night fast arc
-                arcPath(center: center, radius: radius, from: nightMinutes, to: startMinutes)
-                    .stroke(Color(red: 0.6, green: 0.3, blue: 0.8), style: StrokeStyle(lineWidth: 22, lineCap: .round))
-                    .opacity(0.85)
-
-                // Handles
-                handle(.start, at: startMinutes, center: center, radius: radius, color: appTheme.colors.primary)
-                handle(.end, at: endMinutes, center: center, radius: radius, color: appTheme.colors.primary)
-                handle(.night, at: nightMinutes, center: center, radius: radius, color: Color(red: 0.6, green: 0.3, blue: 0.8))
-
-                // Center summary
-                VStack(spacing: 4) {
-                    Text(timeString(startMinutes))
-                        .font(appTheme.fonts.headlineMedium)
-                        .foregroundColor(appTheme.colors.text)
-                    Text("to \(timeString(endMinutes))")
-                        .font(appTheme.fonts.titleSmall)
-                        .foregroundColor(appTheme.colors.primary)
-                    Text("fast \(durationString(nightMinutes, startMinutes))")
-                        .font(appTheme.fonts.labelSmall)
-                        .foregroundColor(appTheme.colors.textSecondary)
+                Circle().stroke(AppTheme.shared.colors.surfaceVariant, lineWidth: 16).frame(width: radius * 2, height: radius * 2).position(center)
+                arc(center, radius, start, end).stroke(AppTheme.shared.colors.primary, style: StrokeStyle(lineWidth: 16, lineCap: .round))
+                if entitlements.isPremium { arc(center, radius, night, start).stroke(Color(red: 0.73, green: 0.65, blue: 0.88), style: StrokeStyle(lineWidth: 16, lineCap: .round)) }
+                ForEach(0..<24) { hour in
+                    let angle = Double(hour) / 24 * 2 * Double.pi - Double.pi / 2
+                    Circle().fill(AppTheme.shared.colors.textSecondary.opacity(0.4)).frame(width: hour % 6 == 0 ? 4 : 2, height: hour % 6 == 0 ? 4 : 2)
+                        .position(x: center.x + (radius - 22) * cos(angle), y: center.y + (radius - 22) * sin(angle))
                 }
-            }
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in updateDrag(location: value.location, center: center) }
-                    .onEnded { _ in dragging = nil }
-            )
+                ForEach([0, 6, 12, 18], id: \.self) { hour in
+                    let angle = Double(hour) / 24 * 2 * Double.pi - Double.pi / 2
+                    Text(String(format: "%02d", hour)).font(.caption2.monospacedDigit()).foregroundStyle(AppTheme.shared.colors.textSecondary)
+                        .position(x: center.x + (radius + 25) * cos(angle), y: center.y + (radius + 25) * sin(angle))
+                }
+                VStack(spacing: 8) {
+                    Image(systemName: "sun.max.fill").font(.title2).foregroundStyle(AppTheme.shared.colors.primary)
+                    Text("\(Int(span(start, end)) / 60)h \(Int(span(start, end)) % 60)m").font(.system(.title, design: .rounded).bold()).foregroundStyle(AppTheme.shared.colors.text).contentTransition(.numericText())
+                    Text("KITCHEN HOURS").font(.caption2.bold()).tracking(1).foregroundStyle(AppTheme.shared.colors.textSecondary)
+                }.position(center)
+                dialHandle(0, value: start, center: center, radius: radius)
+                dialHandle(1, value: end, center: center, radius: radius)
+                if entitlements.isPremium { dialHandle(2, value: night, center: center, radius: radius) }
+            }.coordinateSpace(name: "dial").accessibilityElement(children: .ignore).accessibilityLabel("Kitchen hours from \(time(start)) to \(time(end)). Use precise time sliders below to edit.")
         }
     }
-
-    private func arcPath(center: CGPoint, radius: CGFloat, from: Double, to: Double) -> Path {
-        let startAngle = Angle.degrees(from / 1440 * 360)
-        let endAngle = Angle.degrees(to / 1440 * 360)
-        var path = Path()
-        path.addArc(
-            center: center,
-            radius: radius,
-            startAngle: startAngle,
-            endAngle: endAngle,
-            clockwise: false
-        )
-        return path
+    private func dialHandle(_ index: Int, value: Double, center: CGPoint, radius: Double) -> some View {
+        let angle = value / 1440 * 2 * Double.pi - Double.pi / 2
+        return Image(systemName: index == 0 ? "sunrise.fill" : index == 1 ? "sunset.fill" : "moon.fill")
+            .font(.caption.bold()).foregroundStyle(AppTheme.shared.colors.background).frame(width: 44, height: 44)
+            .background(index == 2 ? Color(red: 0.73, green: 0.65, blue: 0.88) : AppTheme.shared.colors.primary).clipShape(Circle())
+            .scaleEffect(dragging == index && !reduceMotion ? 1.1 : 1)
+            .position(x: center.x + radius * cos(angle), y: center.y + radius * sin(angle))
+            .gesture(DragGesture(minimumDistance: 0, coordinateSpace: .named("dial"))
+                .onChanged { value in
+                    dragging = index
+                    let degrees = atan2(value.location.y - center.y, value.location.x - center.x) * 180 / .pi + 90
+                    update(index, value: (degrees + 360).truncatingRemainder(dividingBy: 360) / 360 * 1440)
+                }.onEnded { _ in dragging = nil })
+            .animation(reduceMotion ? nil : .spring(response: 0.25), value: dragging)
     }
-
-    private func handle(_ which: Handle, at minutes: Double, center: CGPoint, radius: CGFloat, color: Color) -> some View {
-        let angle = Angle.degrees(minutes / 1440 * 360 - 90)
-        let point = CGPoint(
-            x: center.x + radius * cos(angle.radians),
-            y: center.y + radius * sin(angle.radians)
-        )
-        let isActive = dragging == which
-
-        return Circle()
-            .fill(appTheme.colors.background)
-            .overlay(Circle().stroke(color, lineWidth: 4))
-            .frame(width: isActive ? 34 : 28, height: isActive ? 34 : 28)
-            .position(point)
-            .animation(.spring(response: 0.2, dampingFraction: 0.7), value: isActive)
+    private func arc(_ center: CGPoint, _ radius: Double, _ from: Double, _ to: Double) -> Path {
+        var path = Path(); path.addArc(center: center, radius: radius, startAngle: .degrees(from / 1440 * 360 - 90), endAngle: .degrees((from + span(from, to)) / 1440 * 360 - 90), clockwise: false); return path
     }
-
-    // MARK: - Drag math
-
-    private func updateDrag(location: CGPoint, center: CGPoint) {
-        let desired = minutes(at: location, center: center)
-        // Rounding near the top of the dial can produce 1440 (= 24:00); wrap it to 0.
-        let snapped = wrap((desired / Double(snap)).rounded() * Double(snap))
-
-        if dragging == nil {
-            dragging = nearestHandle(to: desired)
-        }
-
-        switch dragging {
-        case .start:
-            startMinutes = clampStart(snapped)
-        case .end:
-            endMinutes = clampEnd(snapped)
-        case .night:
-            nightMinutes = clampNight(snapped)
-        case nil:
-            break
+    private func timeSlider(_ title: String, value: Double, index: Int) -> some View {
+        VStack(spacing: 10) {
+            HStack { Text(title); Spacer(); Text(time(value)).monospacedDigit() }
+            Slider(value: Binding(get: { index == 0 ? start : index == 1 ? end : night }, set: { update(index, value: $0) }), in: 0...1425, step: 15).accessibilityLabel(title)
         }
     }
-
-    private func minutes(at location: CGPoint, center: CGPoint) -> Double {
-        let dx = location.x - center.x
-        let dy = location.y - center.y
-        var deg = atan2(dy, dx) * 180 / .pi + 90
-        if deg < 0 { deg += 360 }
-        if deg >= 360 { deg -= 360 }
-        return deg / 360 * 1440
+    private func update(_ index: Int, value: Double) {
+        let value = ((value / 15).rounded() * 15).truncatingRemainder(dividingBy: 1440)
+        let a = index == 0 ? value : start; let b = index == 1 ? value : end; let c = index == 2 ? value : night
+        let valid = span(a, b) >= 15 && (!entitlements.isPremium || (span(b, c) >= 15 && span(c, a) >= 15 && span(a, b) + span(b, c) + span(c, a) == 1440))
+        guard valid else { rejected += 1; return }
+        if index == 0 && start != value { start = value; tick += 1 }
+        if index == 1 && end != value { end = value; tick += 1 }
+        if index == 2 && night != value { night = value; tick += 1 }
     }
-
-    private func nearestHandle(to desired: Double) -> Handle {
-        let candidates: [(Handle, Double)] = [
-            (.start, startMinutes), (.end, endMinutes), (.night, nightMinutes),
-        ]
-        return candidates.min { circularDistance($0.1, desired) < circularDistance($1.1, desired) }?.0 ?? .start
-    }
-
-    private func circularDistance(_ a: Double, _ b: Double) -> Double {
-        let diff = abs(a - b).truncatingRemainder(dividingBy: 1440)
-        return min(diff, 1440 - diff)
-    }
-
-    private func span(_ from: Double, _ to: Double) -> Double {
-        (to - from + 1440).truncatingRemainder(dividingBy: 1440)
-    }
-
-    private func clampStart(_ candidate: Double) -> Double {
-        var value = candidate
-        if span(value, endMinutes) < 15 { value = wrap(endMinutes - 15) }
-        if span(nightMinutes, value) < 15 { value = wrap(nightMinutes + 15) }
-        return notify(value, current: startMinutes)
-    }
-
-    private func clampEnd(_ candidate: Double) -> Double {
-        var value = candidate
-        if span(startMinutes, value) < 15 { value = wrap(startMinutes + 15) }
-        if span(value, nightMinutes) < 15 { value = wrap(nightMinutes - 15) }
-        return notify(value, current: endMinutes)
-    }
-
-    private func clampNight(_ candidate: Double) -> Double {
-        var value = candidate
-        if span(endMinutes, value) < 15 { value = wrap(endMinutes + 15) }
-        if span(value, startMinutes) < 15 { value = wrap(startMinutes - 15) }
-        return notify(value, current: nightMinutes)
-    }
-
-    private func notify(_ value: Double, current: Double) -> Double {
-        if value != current { snapTick += 1 }
-        return value
-    }
-
-    private func wrap(_ minutes: Double) -> Double {
-        (minutes + 1440).truncatingRemainder(dividingBy: 1440)
-    }
-
-    private func timeString(_ minutes: Double) -> String {
-        let total = Int(minutes) % 1440
-        return EatingWindow.formatTime(hour: total / 60, minute: total % 60)
-    }
-
-    private func durationString(_ from: Double, _ to: Double) -> String {
-        let minutes = Int(span(from, to))
-        return "\(minutes / 60)h \(minutes % 60)m"
-    }
-
-    // MARK: - Legend
-
-    private var legend: some View {
-        HStack(spacing: appTheme.spacing.large) {
-            legendItem(color: appTheme.colors.primary, text: "Kitchen \(timeString(startMinutes))–\(timeString(endMinutes))")
-            legendItem(color: Color(red: 0.6, green: 0.3, blue: 0.8), text: "Night Fast \(timeString(nightMinutes))–\(timeString(startMinutes))")
-        }
-        .padding(.horizontal, appTheme.spacing.large)
-    }
-
-    private func legendItem(color: Color, text: String) -> some View {
-        HStack(spacing: 6) {
-            Circle().fill(color).frame(width: 8, height: 8)
-            Text(text)
-                .font(appTheme.fonts.labelSmall)
-                .foregroundColor(appTheme.colors.textSecondary)
-        }
-    }
-
-    // MARK: - Portion
-
-    private var portionControl: some View {
-        VStack(alignment: .leading, spacing: appTheme.spacing.small) {
-            HStack {
-                Text("DAILY CARB PORTION")
-                    .font(appTheme.fonts.labelSmall)
-                    .foregroundColor(appTheme.colors.textSecondary)
-                    .tracking(1.0)
-                Spacer()
-                Text(data.dailyCarbLimitMinutes > 0 ? "\(data.dailyCarbLimitMinutes) min" : "No carbs")
-                    .font(appTheme.fonts.titleSmall)
-                    .foregroundColor(appTheme.colors.primary)
-            }
-
-            Slider(
-                value: Binding(
-                    get: { Double(data.dailyCarbLimitMinutes) },
-                    set: { data.dailyCarbLimitMinutes = Int($0 / 15) * 15 }
-                ),
-                in: 0...180,
-                step: 15
-            )
-            .tint(appTheme.colors.primary)
-        }
-        .padding(appTheme.spacing.medium)
-        .background(appTheme.colors.surface)
-        .cornerRadius(appTheme.spacing.cornerRadiusMedium)
-    }
-
-    private func saveAndContinue() {
-        data.windowStartHour = Int(startMinutes) / 60
-        data.windowStartMinute = Int(startMinutes) % 60
-        data.windowEndHour = Int(endMinutes) / 60
-        data.windowEndMinute = Int(endMinutes) % 60
-        data.nightLockHour = Int(nightMinutes) / 60
-        data.nightLockMinute = Int(nightMinutes) % 60
-        data.nextScreen()
-    }
+    private func span(_ from: Double, _ to: Double) -> Double { (to - from + 1440).truncatingRemainder(dividingBy: 1440) }
+    private func time(_ value: Double) -> String { EatingWindow.formatTime(hour: Int(value) / 60, minute: Int(value) % 60) }
 }

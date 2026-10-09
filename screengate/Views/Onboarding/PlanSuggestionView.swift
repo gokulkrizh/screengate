@@ -1,137 +1,31 @@
 import SwiftUI
 
-/// Plan suggestion — quiz-based, editable before activation.
 struct PlanSuggestionView: View {
     @ObservedObject var data: OnboardingData
     @Environment(EntitlementManager.self) private var entitlements
     @State private var selected: DietPlan?
-    private let appTheme = AppTheme.shared
-
     var body: some View {
-        ZStack {
-            appTheme.colors.background.ignoresSafeArea()
-
-            VStack(spacing: appTheme.spacing.large) {
-                VStack(spacing: appTheme.spacing.small) {
-                    Text("YOUR PRESCRIPTION")
-                        .font(appTheme.fonts.labelSmall)
-                        .foregroundColor(appTheme.colors.primary)
-                        .tracking(1.5)
-
-                    Text("We'd start you on \(suggested.displayName).")
-                        .font(appTheme.fonts.headlineLarge)
-                        .foregroundColor(appTheme.colors.text)
-                        .multilineTextAlignment(.center)
-
-                    Text("Based on your checkup. You can change plans anytime.")
-                        .font(appTheme.fonts.bodyMedium)
-                        .foregroundColor(appTheme.colors.textSecondary)
-                }
-                .padding(.top, appTheme.spacing.extraLarge)
-
-                ScrollView {
-                    VStack(spacing: appTheme.spacing.medium) {
-                        ForEach(DietPlan.allCases) { plan in
-                            planCard(plan)
-                        }
+        DietPage {
+            DietHeading(eyebrow: "Made around your answers", title: "Your kind\nof balance.", detail: "\(data.suggestedPlan.displayName.capitalized) is a starting suggestion. Choose what you can live with.")
+            ForEach(Array(DietPlan.allCases.enumerated()), id: \.element.id) { index, plan in
+                VStack(alignment: .leading, spacing: 8) {
+                    if plan == data.suggestedPlan { Text("SUGGESTED FOR YOU").font(.caption2.bold()).tracking(1.5).foregroundStyle(AppTheme.shared.colors.primary).padding(.leading, 16) }
+                    DietChoice(icon: plan == .lean ? "leaf.fill" : plan == .keto ? "target" : plan == .detox ? "arrow.counterclockwise" : "slider.horizontal.3", title: plan.displayName.capitalized + (entitlements.canUse(plan: plan) ? "" : " · Plus"), detail: plan.subtitle, selected: selected == plan) {
+                        if entitlements.canUse(plan: plan) { selected = plan }
+                        else { entitlements.presentPaywall(.featureCustomPlan) }
                     }
-                    .padding(.horizontal, appTheme.spacing.large)
-                }
-
-                Button(action: saveAndContinue) {
-                    Text("Continue")
-                        .font(appTheme.fonts.titleMedium)
-                        .foregroundColor(appTheme.colors.background)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(appTheme.colors.primary)
-                        .cornerRadius(appTheme.spacing.cornerRadiusLarge)
-                }
-                .padding(.horizontal, appTheme.spacing.large)
-                .padding(.bottom, appTheme.spacing.extraLarge)
+                }.editorialEntrance(delay: Double(index) * 0.07)
             }
-        }
-        .onAppear {
-            if selected == nil {
-                selected = data.suggestedPlan
+            DietFeatureRow(icon: "sparkles", title: "Consistency over intensity", detail: "A routine you repeat is more useful than one you abandon. Start gently.").dietCard()
+        } footer: {
+            PrimaryButton(title: "Set my daily rhythm", icon: "arrow.right", isDisabled: selected == nil) {
+                guard let selected else { return }
+                data.selectedPlan = selected
+                data.dailyCarbLimitMinutes = selected.defaultPortionMinutes
+                data.windowStartHour = selected.defaultWindowStartHour
+                data.windowEndHour = selected.defaultWindowEndHour
+                data.nextScreen()
             }
-        }
-    }
-
-    private var suggested: DietPlan { data.suggestedPlan }
-
-    private func planCard(_ plan: DietPlan) -> some View {
-        let isSelected = selected == plan
-        let isSuggested = suggested == plan
-        let isLocked = !entitlements.canUse(plan: plan)
-
-        return Button(action: { select(plan) }) {
-            VStack(alignment: .leading, spacing: appTheme.spacing.small) {
-                HStack {
-                    Text(plan.icon)
-                        .font(.system(size: 28))
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack(spacing: 6) {
-                            Text(plan.displayName)
-                                .font(appTheme.fonts.titleLarge)
-                                .foregroundColor(appTheme.colors.text)
-                            if isSuggested {
-                                Text("SUGGESTED")
-                                    .font(.system(size: 9, weight: .bold))
-                                    .foregroundColor(appTheme.colors.background)
-                                    .padding(.horizontal, 5)
-                                    .padding(.vertical, 2)
-                                    .background(appTheme.colors.primary)
-                                    .cornerRadius(4)
-                            }
-                        }
-                        Text(plan.subtitle)
-                            .font(appTheme.fonts.bodySmall)
-                            .foregroundColor(appTheme.colors.textSecondary)
-                    }
-
-                    Spacer()
-
-                    if isLocked {
-                        Image(systemName: "lock.fill")
-                            .font(.system(size: 16))
-                            .foregroundColor(appTheme.colors.warning)
-                    } else {
-                        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                            .font(.system(size: 22))
-                            .foregroundColor(isSelected ? appTheme.colors.primary : appTheme.colors.secondary.opacity(0.4))
-                    }
-                }
-
-                Text(plan.defaultPortionMinutes > 0
-                     ? "\(plan.defaultPortionMinutes) min of carbs a day"
-                     : "Carbs always blocked")
-                    .font(appTheme.fonts.labelSmall)
-                    .foregroundColor(appTheme.colors.textSecondary)
-            }
-            .padding(appTheme.spacing.medium)
-            .background(appTheme.colors.surface)
-            .cornerRadius(appTheme.spacing.cornerRadiusMedium)
-            .overlay(
-                RoundedRectangle(cornerRadius: appTheme.spacing.cornerRadiusMedium)
-                    .stroke(isSelected ? appTheme.colors.primary : Color.clear, lineWidth: 2)
-            )
-        }
-    }
-
-    private func select(_ plan: DietPlan) {
-        if entitlements.canUse(plan: plan) {
-            selected = plan
-        } else {
-            entitlements.presentPaywall(.featureCustomPlan)
-        }
-    }
-
-    private func saveAndContinue() {
-        guard let plan = selected else { return }
-        data.selectedPlan = plan
-        data.dailyCarbLimitMinutes = plan.defaultPortionMinutes
-        data.nextScreen()
+        }.onAppear { if selected == nil { selected = entitlements.canUse(plan: data.suggestedPlan) ? data.suggestedPlan : .lean } }
     }
 }

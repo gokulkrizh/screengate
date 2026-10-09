@@ -21,20 +21,18 @@ struct ScreenDietApp: App {
     var body: some Scene {
         WindowGroup {
             Group {
-                if hasCompletedOnboarding {
-                    HomeScreen()
-                        .environment(dietManager)
-                } else {
-                    NavigationStack {
-                        SplashView(onCompletion: {
-                            hasCompletedOnboarding = true
-                        })
-                    }
-                    .environment(dietManager)
-                }
+                #if DEBUG
+                if let route = DesignReviewView.launchRoute { DesignReviewView(route: route) }
+                else { appContent }
+                #else
+                appContent
+                #endif
             }
+            .buttonStyle(TactileButtonStyle())
+            .preferredColorScheme(.dark)
             .paywallPresenter()
             .environment(entitlementManager)
+            .environment(dietManager)
             .alert("You're back on the free plan", isPresented: Binding(
                 get: { entitlementManager.showDowngradeNotice },
                 set: { if !$0 { entitlementManager.acknowledgeDowngrade() } }
@@ -64,9 +62,27 @@ struct ScreenDietApp: App {
         }
     }
 
+    @ViewBuilder private var appContent: some View {
+        Group {
+                if hasCompletedOnboarding {
+                    HomeScreen()
+                        .environment(dietManager)
+                } else {
+                    NavigationStack {
+                        SplashView(onCompletion: {
+                            hasCompletedOnboarding = true
+                        })
+                    }
+                    .environment(dietManager)
+                }
+            }
+    }
+
     /// Handles widget deep links: `screengate://paywall?placement=feature_widgets`.
     private func handleDeepLink(_ url: URL) {
-        guard url.scheme == "screengate", url.host == "paywall" else { return }
+        guard url.scheme == "screengate" else { return }
+        if url.host == "kitchen" { NotificationCenter.default.post(name: .screenDietTab, object: 0); return }
+        guard url.host == "paywall" else { return }
         let placement = URLComponents(url: url, resolvingAgainstBaseURL: false)?
             .queryItems?
             .first(where: { $0.name == "placement" })?

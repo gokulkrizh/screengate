@@ -25,6 +25,7 @@ struct ReportSnapshot: Hashable {
     var topJunkApps: [AppUsage] = []
     /// Carb seconds per day key ("yyyy-MM-dd"), for day-based grading.
     var carbSecondsByDay: [String: Double] = [:]
+    var totalSecondsByDay: [String: Double] = [:]
 
     var otherSeconds: Double { max(0, totalSeconds - carbSeconds - fatSeconds) }
     var carbShare: Double { totalSeconds > 0 ? carbSeconds / totalSeconds : 0 }
@@ -77,6 +78,9 @@ enum ReportComputer {
 
         for await deviceData in data {
             for await segment in deviceData.activitySegments {
+                let dayKey = DayCounters.dateKey(from: segment.dateInterval.start)
+                snapshot.totalSecondsByDay[dayKey, default: 0] += segment.totalActivityDuration
+                snapshot.carbSecondsByDay[dayKey, default: 0] += 0
                 snapshot.totalSeconds += segment.totalActivityDuration
                 snapshot.pickups += segment.totalPickupsWithoutApplicationActivity
 
@@ -99,25 +103,28 @@ enum ReportComputer {
                     if isCarbCategory {
                         snapshot.carbSeconds += category.totalActivityDuration
                         addCarbSeconds(&snapshot, at: segment.dateInterval.start, seconds: category.totalActivityDuration)
-                        if collectApps {
-                            for await app in category.applications {
-                                record(app, into: &junkAppUsage)
-                            }
-                        }
                     } else if isFatCategory {
                         snapshot.fatSeconds += category.totalActivityDuration
-                    } else {
-                        for await app in category.applications {
-                            let activity = app
-                            let token = activity.application.token
-                            if token.map(buckets.carbApps.contains) ?? false {
-                                snapshot.carbSeconds += activity.totalActivityDuration
-                                addCarbSeconds(&snapshot, at: segment.dateInterval.start, seconds: activity.totalActivityDuration)
-                                if collectApps {
-                                    record(activity, into: &junkAppUsage)
-                                }
-                            } else if token.map(buckets.fatApps.contains) ?? false {
-                                snapshot.fatSeconds += activity.totalActivityDuration
+                    }
+                    for await app in category.applications {
+                        snapshot.pickups += app.numberOfPickups
+                        let isCarbApp = app.application.token.map(buckets.carbApps.contains) ?? false
+                        let isFatApp = app.application.token.map(buckets.fatApps.contains) ?? false
+                        if !isCarbCategory && !isFatCategory {
+                            if isCarbApp {
+                                snapshot.carbSeconds += app.totalActivityDuration
+                                addCarbSeconds(&snapshot, at: segment.dateInterval.start, seconds: app.totalActivityDuration)
+                            } else if isFatApp { snapshot.fatSeconds += app.totalActivityDuration }
+                        }
+                        if collectApps && (isCarbCategory || (!isFatCategory && isCarbApp)) { record(app, into: &junkAppUsage) }
+                    }
+                    if !isCarbCategory && !isFatCategory {
+                        for await domain in category.webDomains {
+                            if domain.webDomain.token.map(buckets.carbDomains.contains) ?? false {
+                                snapshot.carbSeconds += domain.totalActivityDuration
+                                addCarbSeconds(&snapshot, at: segment.dateInterval.start, seconds: domain.totalActivityDuration)
+                            } else if domain.webDomain.token.map(buckets.fatDomains.contains) ?? false {
+                                snapshot.fatSeconds += domain.totalActivityDuration
                             }
                         }
                     }
@@ -161,6 +168,8 @@ enum ReportComputer {
         let carbCategories: Set<ActivityCategoryToken>
         let fatApps: Set<ApplicationToken>
         let fatCategories: Set<ActivityCategoryToken>
+        let carbDomains: Set<WebDomainToken>
+        let fatDomains: Set<WebDomainToken>
 
         init(state: SharedState) {
             let carbs = state.selection(for: .carbs)
@@ -169,6 +178,8 @@ enum ReportComputer {
             carbCategories = carbs.categoryTokens
             fatApps = fats.applicationTokens
             fatCategories = fats.categoryTokens
+            carbDomains = carbs.webDomainTokens
+            fatDomains = fats.webDomainTokens
         }
     }
 }
@@ -179,6 +190,7 @@ enum NutritionGrade {
     /// score = 40·(1 − carbShare/target) + 25·(daysWithinPortion/7)
     ///       + 20·(1 − lateNightMin/120) + 15·(1 − pickups/150)
     static func calculate(snapshot: ReportSnapshot, portionMinutes: Int, windowMinutes: Int) -> String {
+        guard !snapshot.isEmpty else { return "—" }
         let targetShare: Double = {
             guard portionMinutes > 0, windowMinutes > 0 else { return 0.2 }
             return min(0.5, Double(portionMinutes) / Double(windowMinutes))

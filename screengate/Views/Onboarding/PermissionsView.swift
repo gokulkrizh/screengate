@@ -3,154 +3,45 @@ import FamilyControls
 
 struct PermissionsView: View {
     @ObservedObject var data: OnboardingData
-    @State private var authorizationStatus = AuthorizationCenter.shared.authorizationStatus
-    @State private var isRequesting = false
-    private let appTheme = AppTheme.shared
-
+    @State private var status = AuthorizationCenter.shared.authorizationStatus
+    @State private var requesting = false
+    @State private var errorMessage: String?
+    @Environment(\.scenePhase) private var scenePhase
     var body: some View {
-        ZStack {
-            appTheme.colors.background.ignoresSafeArea()
-
-            VStack(spacing: appTheme.spacing.large) {
-                Spacer()
-
-                // Icon
-                ZStack {
-                    Circle()
-                        .fill(appTheme.colors.primary.opacity(0.15))
-                        .frame(width: 120, height: 120)
-
-                    Image(systemName: "lock.shield.fill")
-                        .font(.system(size: 48))
-                        .foregroundColor(appTheme.colors.primary)
-                }
-
-                // Title
-                Text("Screen Time Access")
-                    .font(appTheme.fonts.headlineLarge)
-                    .foregroundColor(appTheme.colors.text)
-                    .multilineTextAlignment(.center)
-
-                // Description
-                Text("Screendiet needs Screen Time access to monitor your app usage and apply your diet plan. This data stays on your device.")
-                    .font(appTheme.fonts.bodyLarge)
-                    .foregroundColor(appTheme.colors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, appTheme.spacing.large)
-
-                Spacer()
-
-                // Permission cards
-                VStack(spacing: appTheme.spacing.medium) {
-                    permissionCard(
-                        icon: "eye.fill",
-                        title: "Monitor Usage",
-                        description: "Track which food groups you consume"
-                    )
-                    permissionCard(
-                        icon: "hand.raised.fill",
-                        title: "Apply Restrictions",
-                        description: "Block apps during fasting periods"
-                    )
-                    permissionCard(
-                        icon: "lock.fill",
-                        title: "On-Device Only",
-                        description: "Your data never leaves your phone"
-                    )
-                }
-                .padding(.horizontal, appTheme.spacing.large)
-
-                Spacer()
-
-                // Grant button
-                VStack(spacing: appTheme.spacing.medium) {
-                    if authorizationStatus == .approved {
-                        // Already granted - show continue
-                        Button(action: { data.nextScreen() }) {
-                            HStack {
-                                Image(systemName: "checkmark.circle.fill")
-                                Text("Access Granted - Continue")
-                            }
-                            .font(appTheme.fonts.titleMedium)
-                            .foregroundColor(appTheme.colors.background)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(appTheme.colors.primary)
-                            .cornerRadius(appTheme.spacing.cornerRadiusLarge)
-                        }
-                    } else {
-                        Button(action: requestAuthorization) {
-                            HStack {
-                                if isRequesting {
-                                    ProgressView()
-                                        .tint(appTheme.colors.background)
-                                } else {
-                                    Image(systemName: "lock.open.fill")
-                                    Text("Grant Access")
-                                }
-                            }
-                            .font(appTheme.fonts.titleMedium)
-                            .foregroundColor(appTheme.colors.background)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(appTheme.colors.primary)
-                            .cornerRadius(appTheme.spacing.cornerRadiusLarge)
-                        }
-                        .disabled(isRequesting)
-                    }
-                }
-                .padding(.horizontal, appTheme.spacing.large)
-                .padding(.bottom, appTheme.spacing.extraLarge)
+        DietPage {
+            DietArtwork(asset: "FocusGarden", height: 190)
+            DietHeading(eyebrow: "A little help from iOS", title: "Your boundaries.\nBacked by Screen Time.", detail: "Allow ScreenDiet to apply the routine you choose. You stay in control.", centered: true)
+            VStack(spacing: 20) {
+                DietFeatureRow(icon: "chart.bar.fill", title: "Understand your appetite", detail: "Screen Time supplies activity for your on-device reports.")
+                DietFeatureRow(icon: "hand.raised.fill", title: "Give your rules a little muscle", detail: "iOS can shield selected apps when your kitchen is closed or your portion is used.")
+                DietFeatureRow(icon: "lock.shield.fill", title: "Private by design", detail: "Your diet settings and usage reports are stored on your device.")
+            }.dietCard()
+            if let errorMessage {
+                DietFeatureRow(icon: "exclamationmark.circle", title: "Access wasn’t granted", detail: errorMessage, tint: AppTheme.shared.colors.warning).dietCard(tint: AppTheme.shared.colors.warning).transition(.opacity)
             }
-        }
-        .onAppear {
-            authorizationStatus = AuthorizationCenter.shared.authorizationStatus
-        }
+            if status == .denied {
+                Text("You can review Screen Time access in iOS Settings, then return here to continue.").font(.caption).foregroundStyle(AppTheme.shared.colors.textSecondary)
+                Button("Open Settings") { if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) } }.frame(minHeight: 44)
+            }
+        } footer: {
+            PrimaryButton(title: status == .approved ? "Access granted · Continue" : requesting ? "Waiting for iOS…" : "Allow Screen Time access", icon: status == .approved ? "checkmark" : "lock.open", isDisabled: requesting) {
+                if status == .approved { data.nextScreen() } else { request() }
+            }
+            Text("The next prompt comes from Apple.").font(.caption2).foregroundStyle(AppTheme.shared.colors.textSecondary)
+        }.onChange(of: scenePhase) { _, phase in if phase == .active { status = AuthorizationCenter.shared.authorizationStatus } }
     }
-
-    private func requestAuthorization() {
-        isRequesting = true
-        Task {
+    private func request() {
+        requesting = true; errorMessage = nil
+        Task { @MainActor in
+            defer { requesting = false }
             do {
                 try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
-                await MainActor.run {
-                    authorizationStatus = AuthorizationCenter.shared.authorizationStatus
-                    isRequesting = false
-                    if authorizationStatus == .approved {
-                        data.nextScreen()
-                    }
-                }
+                status = AuthorizationCenter.shared.authorizationStatus
+                if status == .approved { data.nextScreen() }
             } catch {
-                await MainActor.run {
-                    isRequesting = false
-                    print("Authorization failed: \(error)")
-                }
+                status = AuthorizationCenter.shared.authorizationStatus
+                errorMessage = "ScreenDiet needs this permission to apply your app boundaries. Try again when you’re ready."
             }
         }
-    }
-
-    private func permissionCard(icon: String, title: String, description: String) -> some View {
-        HStack(spacing: appTheme.spacing.medium) {
-            Image(systemName: icon)
-                .font(.system(size: 20))
-                .foregroundColor(appTheme.colors.primary)
-                .frame(width: 40, height: 40)
-                .background(appTheme.colors.primary.opacity(0.1))
-                .cornerRadius(appTheme.spacing.cornerRadiusSmall)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(appTheme.fonts.titleSmall)
-                    .foregroundColor(appTheme.colors.text)
-                Text(description)
-                    .font(appTheme.fonts.bodySmall)
-                    .foregroundColor(appTheme.colors.textSecondary)
-            }
-
-            Spacer()
-        }
-        .padding(appTheme.spacing.medium)
-        .background(appTheme.colors.surface)
-        .cornerRadius(appTheme.spacing.cornerRadiusMedium)
     }
 }

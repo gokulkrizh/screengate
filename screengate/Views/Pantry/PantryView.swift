@@ -2,178 +2,63 @@ import SwiftUI
 import FamilyControls
 
 struct PantryView: View {
-    @Environment(DietManager.self) private var dietManager
-    @State private var activePickerGroup: FoodGroup?
-    @State private var editingSelection = FamilyActivitySelection()
-    private let appTheme = AppTheme.shared
-
+    @Environment(DietManager.self) private var diet
+    @State private var group: FoodGroup?
+    @State private var editing = FamilyActivitySelection()
+    @State private var saved = false
     var body: some View {
         ScrollView {
-            VStack(spacing: appTheme.spacing.large) {
-                // Header
-                HStack {
-                    Text("Your Pantry")
-                        .font(appTheme.fonts.headlineLarge)
-                        .foregroundColor(appTheme.colors.text)
-                    Spacer()
+            VStack(spacing: 24) {
+                DietHeading(eyebrow: "Know your ingredients", title: "Your Pantry", detail: "The same phone. A more thoughtful mix.")
+                DietArtwork(asset: "BalancedPantry", height: 220)
+                ForEach(Array(FoodGroup.allCases.enumerated()), id: \.element.id) { index, item in
+                    pantryCard(item).editorialEntrance(delay: Double(index) * 0.08)
                 }
-                .padding(.top, appTheme.spacing.medium)
-
-                Text("Manage what apps belong to each food group")
-                    .font(appTheme.fonts.bodyMedium)
-                    .foregroundColor(appTheme.colors.textSecondary)
-
-                // Food group sections
-                ForEach(FoodGroup.allCases) { group in
-                    foodGroupSection(group: group)
-                }
-
-                Spacer(minLength: 80)
-            }
-            .padding(.horizontal, appTheme.spacing.large)
-        }
-        .background(appTheme.colors.background.ignoresSafeArea())
-        .familyActivityPicker(
-            isPresented: Binding(
-                get: { activePickerGroup != nil },
-                set: { if !$0 {
-                    if let group = activePickerGroup {
-                        dietManager.setFoodGroupSelection(editingSelection, for: group)
-                    }
-                    activePickerGroup = nil
-                }}
-            ),
-            selection: $editingSelection
-        )
+                if saved { Label("Your pantry is updated", systemImage: "checkmark.circle.fill").font(.caption).foregroundStyle(AppTheme.shared.colors.primary).transition(.opacity) }
+                DietFeatureRow(icon: "info.circle", title: "A useful distinction", detail: "Anything you don’t select is unrestricted. Each app should belong to one group. Categories can include many apps.").dietCard()
+            }.padding(24).frame(maxWidth: 600).frame(maxWidth: .infinity)
+        }.background(AppTheme.shared.colors.background.ignoresSafeArea())
+            .familyActivityPicker(isPresented: Binding(get: { group != nil }, set: { if !$0 {
+                if let group { diet.setFoodGroupSelection(editing, for: group); withAnimation { saved = true } }
+                group = nil
+            } }), selection: $editing)
+            .sensoryFeedback(.success, trigger: saved)
     }
-
-    private func foodGroupSection(group: FoodGroup) -> some View {
-        let selection = dietManager.foodGroupSelections[group]
-        let appCount = selection?.applicationTokens.count ?? 0
-        let categoryCount = selection?.categoryTokens.count ?? 0
-        let totalCount = appCount + categoryCount
-
-        return VStack(alignment: .leading, spacing: appTheme.spacing.medium) {
-            // Section header
+    private func pantryCard(_ item: FoodGroup) -> some View {
+        let selection = diet.foodGroupSelections[item] ?? FamilyActivitySelection()
+        let count = selection.applicationTokens.count + selection.categoryTokens.count + selection.webDomainTokens.count
+        let tint: Color = item == .carbs ? .orange : item == .fats ? Color(red: 0.73, green: 0.65, blue: 0.88) : AppTheme.shared.colors.primary
+        return VStack(alignment: .leading, spacing: 18) {
             HStack {
-                Text(group.emoji)
-                    .font(.system(size: 24))
-
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 6) {
-                        Text(group.displayName)
-                            .font(appTheme.fonts.titleMedium)
-                            .foregroundColor(appTheme.colors.text)
-
-                        if group.isUnlimited {
-                            Text("UNLIMITED")
-                                .font(.system(size: 9, weight: .bold))
-                                .foregroundColor(appTheme.colors.primary)
-                                .padding(.horizontal, 5)
-                                .padding(.vertical, 2)
-                                .background(appTheme.colors.primary.opacity(0.15))
-                                .cornerRadius(4)
-                        }
-                    }
-
-                    Text(group.subtitle)
-                        .font(appTheme.fonts.bodySmall)
-                        .foregroundColor(appTheme.colors.textSecondary)
+                Text(item.emoji).font(.largeTitle)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(item.displayName.capitalized).font(.system(.title2, design: .serif).weight(.semibold)).foregroundStyle(AppTheme.shared.colors.text)
+                    Text(item == .carbs ? "Consume · Portion with care" : item == .fats ? "Connect · Rest during fasts" : "Create · Always available").font(.caption).foregroundStyle(tint)
                 }
-
                 Spacer()
-
-                // Today's usage (carbs only; exact numbers live in the report)
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(todayMinutes(for: group))
-                        .font(appTheme.fonts.titleSmall)
-                        .foregroundColor(appTheme.colors.text)
-                    Text("today")
-                        .font(appTheme.fonts.labelSmall)
-                        .foregroundColor(appTheme.colors.textSecondary)
-                }
             }
-
-            // App count and edit button
+            Text(item == .carbs ? "The feeds, games and videos that pull you into one more minute." : item == .fats ? "The conversations you want to keep, with a little space during fasts." : "Tools that help you learn, make and bring ideas to life.").font(.subheadline).foregroundStyle(AppTheme.shared.colors.textSecondary)
+            SelectionTokenStrip(selection: selection)
             HStack {
-                Text("\(totalCount) apps/categories assigned")
-                    .font(appTheme.fonts.bodySmall)
-                    .foregroundColor(appTheme.colors.textSecondary)
-
+                Label(status(item), systemImage: item == .protein ? "checkmark.circle" : "circle.lefthalf.filled").font(.caption).foregroundStyle(tint)
                 Spacer()
-
-                Button(action: {
-                    editingSelection = selection ?? FamilyActivitySelection()
-                    activePickerGroup = group
-                }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "pencil")
-                            .font(.system(size: 12))
-                        Text("Edit")
-                            .font(appTheme.fonts.labelMedium)
-                    }
-                    .foregroundColor(appTheme.colors.primary)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(appTheme.colors.primary.opacity(0.1))
-                    .cornerRadius(appTheme.spacing.cornerRadiusSmall)
-                }
+                if item == .carbs { Text("≈ \(diet.todayLog.carbsMinutes)m today").font(.caption.monospacedDigit()).foregroundStyle(AppTheme.shared.colors.textSecondary) }
             }
-
-            // Status indicator
-            HStack(spacing: 6) {
-                Circle()
-                    .fill(statusColor(for: group))
-                    .frame(width: 8, height: 8)
-                Text(statusText(for: group))
-                    .font(appTheme.fonts.labelSmall)
-                    .foregroundColor(appTheme.colors.textSecondary)
-            }
-        }
-        .padding(appTheme.spacing.medium)
-        .background(appTheme.colors.surface)
-        .cornerRadius(appTheme.spacing.cornerRadiusMedium)
+            Button {
+                saved = false; editing = selection; group = item
+            } label: {
+                HStack { Text(count == 0 ? "Add ingredients" : "Edit \(count) selections"); Spacer(); Image(systemName: "plus") }
+                    .font(.subheadline.weight(.semibold)).foregroundStyle(tint).padding(14).background(tint.opacity(0.1)).clipShape(RoundedRectangle(cornerRadius: 14))
+            }.buttonStyle(TactileButtonStyle())
+        }.dietCard(tint: tint)
     }
-
-    private func todayMinutes(for group: FoodGroup) -> String {
-        switch group {
-        case .carbs: return "≈\(dietManager.todayLog.carbsMinutes)m"
-        case .fats, .protein: return "—"
-        }
-    }
-
-    private func statusColor(for group: FoodGroup) -> Color {
-        switch dietManager.currentDietState {
-        case .inactive:
-            return appTheme.colors.secondary
-        case .windowOpen:
-            return appTheme.colors.primary
-        case .portionHit, .fasting:
-            // Only carbs are blocked; fats and protein remain available.
-            return group == .carbs ? appTheme.colors.error : appTheme.colors.primary
-        case .nightFast, .fastNow:
-            // Carbs and fats are blocked during fasts.
-            return group == .protein ? appTheme.colors.primary : appTheme.colors.error
-        }
-    }
-
-    private func statusText(for group: FoodGroup) -> String {
-        switch dietManager.currentDietState {
-        case .inactive:
-            return "Inactive"
-        case .windowOpen:
-            if group == .carbs {
-                return "Open (\(dietManager.carbsRemainingMinutes)m remaining)"
-            }
-            return "Available"
-        case .portionHit:
-            return group == .carbs ? "Blocked (portion used)" : "Available"
-        case .fasting:
-            return group == .carbs ? "Blocked (fasting)" : "Available"
-        case .nightFast:
-            return group == .protein ? "Available" : "Blocked (Night Fast)"
-        case .fastNow:
-            return group == .protein ? "Available" : "Blocked (Fast Now)"
+    private func status(_ group: FoodGroup) -> String {
+        if group == .protein { return "Always available" }
+        switch diet.currentDietState {
+        case .inactive: return "No active routine"
+        case .nightFast, .fastNow: return "Resting during this fast"
+        case .portionHit, .fasting: return group == .carbs ? "Off the menu for now" : "Available"
+        case .windowOpen: return "Available"
         }
     }
 }

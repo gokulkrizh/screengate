@@ -14,65 +14,7 @@ struct RadioOptionCard: View {
     let action: () -> Void
     
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 12) {
-                // Icon background (only if colors provided)
-                if let iconColor = iconColor, let iconBackgroundColor = iconBackgroundColor {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(iconBackgroundColor.opacity(0.15))
-                        
-                        Image(systemName: icon)
-                            .font(.system(size: 24))
-                            .foregroundColor(iconColor)
-                    }
-                    .frame(width: 48, height: 48)
-                }
-                
-                // Content
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(appTheme.fonts.titleMedium)
-                        .fontWeight(.semibold)
-                        .foregroundColor(appTheme.colors.text)
-                    
-                    Text(subtitle)
-                        .font(appTheme.fonts.bodySmall)
-                        .foregroundColor(appTheme.colors.textSecondary)
-                        .multilineTextAlignment(.leading)
-                }
-                
-                Spacer()
-                
-                // Radio indicator
-                ZStack {
-                    Circle()
-                        .stroke(
-                            isSelected ? appTheme.colors.primary : Color.white.opacity(0.2),
-                            lineWidth: 2
-                        )
-                        .frame(width: 24, height: 24)
-                    
-                    if isSelected {
-                        Circle()
-                            .fill(appTheme.colors.primary)
-                            .frame(width: 12, height: 12)
-                    }
-                }
-            }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.white.opacity(isSelected ? 0.1 : 0.05))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(
-                                isSelected ? appTheme.colors.primary : Color.white.opacity(0.1),
-                                lineWidth: 1.5
-                            )
-                    )
-            )
-        }
+        DietChoice(icon: icon, title: title, detail: subtitle, selected: isSelected, tint: iconColor ?? appTheme.colors.primary, action: action)
     }
 }
 

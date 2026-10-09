@@ -63,8 +63,8 @@ struct FastLockScreenView: View {
 
     var body: some View {
         HStack(spacing: 16) {
-            Text(context.state.kind.emoji)
-                .font(.system(size: 40))
+            Image(context.state.kind == .nightFast ? "NightGarden" : context.state.kind == .fastNow ? "FocusGarden" : "DigitalGarden")
+                .resizable().scaledToFill().frame(width: 64, height: 64).clipped().clipShape(RoundedRectangle(cornerRadius: 18)).accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(context.state.kind.title)
@@ -90,16 +90,11 @@ struct FastLockScreenView: View {
 
             Spacer()
 
-            ZStack {
-                Circle()
-                    .stroke(WidgetTheme.surface, lineWidth: 6)
-                Circle()
-                    .trim(from: 0, to: progress)
-                    .stroke(WidgetTheme.primary, style: StrokeStyle(lineWidth: 6, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-            }
-            .frame(width: 44, height: 44)
+            ProgressView(timerInterval: context.state.startDate...context.state.endDate, countsDown: false) { EmptyView() } currentValueLabel: { EmptyView() }
+                .tint(WidgetTheme.primary).frame(width: 54)
+                .accessibilityLabel("Session progress")
         }
-        .padding(16)
+        .padding(20)
+        .widgetURL(URL(string: "screengate://kitchen"))
     }
 }

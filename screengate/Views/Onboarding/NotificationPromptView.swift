@@ -1,106 +1,38 @@
 import SwiftUI
 import UserNotifications
 
-/// Notification pre-prompt: shows a mock banner, then the system prompt.
 struct NotificationPromptView: View {
     @ObservedObject var data: OnboardingData
-    @State private var isRequesting = false
-    private let appTheme = AppTheme.shared
-
+    @State private var requesting = false
+    @State private var message: String?
     var body: some View {
-        ZStack {
-            appTheme.colors.background.ignoresSafeArea()
-
-            VStack(spacing: appTheme.spacing.large) {
-                VStack(spacing: appTheme.spacing.small) {
-                    Text("STAY ON PLAN")
-                        .font(appTheme.fonts.labelSmall)
-                        .foregroundColor(appTheme.colors.primary)
-                        .tracking(1.5)
-                    Text("A nudge when it matters.")
-                        .font(appTheme.fonts.headlineLarge)
-                        .foregroundColor(appTheme.colors.text)
-                        .multilineTextAlignment(.center)
-                }
-                .padding(.top, appTheme.spacing.extraLarge)
-
-                // Mock banner
-                HStack(spacing: appTheme.spacing.medium) {
-                    Text("🍳")
-                        .font(.system(size: 28))
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Kitchen opens in 10 min")
-                            .font(appTheme.fonts.titleSmall)
-                            .foregroundColor(appTheme.colors.text)
-                        Text("45 min on your plate today.")
-                            .font(appTheme.fonts.bodySmall)
-                            .foregroundColor(appTheme.colors.textSecondary)
-                    }
-                    Spacer()
-                }
-                .padding(appTheme.spacing.medium)
-                .background(appTheme.colors.surface)
-                .cornerRadius(appTheme.spacing.cornerRadiusMedium)
-                .padding(.horizontal, appTheme.spacing.large)
-
-                VStack(alignment: .leading, spacing: appTheme.spacing.small) {
-                    bullet("Kitchen opening & closing")
-                    bullet("Half your portion, last 5 minutes")
-                    bullet("Night Fast starting soon")
-                }
-                .padding(.horizontal, appTheme.spacing.large)
-
-                Spacer()
-
-                VStack(spacing: appTheme.spacing.medium) {
-                    Button(action: requestAuthorization) {
-                        HStack {
-                            if isRequesting {
-                                ProgressView().tint(appTheme.colors.background)
-                            } else {
-                                Image(systemName: "bell.badge.fill")
-                                Text("Turn on reminders")
-                            }
-                        }
-                        .font(appTheme.fonts.titleMedium)
-                        .foregroundColor(appTheme.colors.background)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(appTheme.colors.primary)
-                        .cornerRadius(appTheme.spacing.cornerRadiusLarge)
-                    }
-                    .disabled(isRequesting)
-
-                    Button("Not now") {
-                        data.nextScreen()
-                    }
-                    .font(appTheme.fonts.bodyMedium)
-                    .foregroundColor(appTheme.colors.textSecondary)
-                }
-                .padding(.horizontal, appTheme.spacing.large)
-                .padding(.bottom, appTheme.spacing.extraLarge)
+        DietPage {
+            DietArtwork(asset: "NightGarden", height: 210)
+            DietHeading(eyebrow: "A gentle nudge", title: "A reminder.\nThen back to life.", detail: "Helpful moments, without another feed to check.", centered: true)
+            VStack(alignment: .leading, spacing: 12) {
+                HStack { Label("SCREENDIET", systemImage: "leaf.fill").font(.caption2.bold()); Spacer(); Text("Preview").font(.caption2) }.foregroundStyle(AppTheme.shared.colors.primary)
+                Text("Your kitchen opens in 10 minutes").font(.headline).foregroundStyle(AppTheme.shared.colors.text)
+                Text("A fresh portion is on its way. Enjoy it with intention.").font(.caption).foregroundStyle(AppTheme.shared.colors.textSecondary)
+            }.dietCard().editorialEntrance(delay: 0.15)
+            VStack(spacing: 18) {
+                DietFeatureRow(icon: "sun.max", title: "Your daily rhythm", detail: "A heads-up when the kitchen opens and closes.")
+                DietFeatureRow(icon: "timer", title: "A little portion awareness", detail: "Know when you’re nearing your allowance.")
+                DietFeatureRow(icon: "moon", title: "A quieter evening", detail: "Night Fast reminders when that feature is enabled.")
             }
+            if let message { Text(message).font(.caption).foregroundStyle(AppTheme.shared.colors.warning) }
+        } footer: {
+            PrimaryButton(title: requesting ? "Waiting for iOS…" : "Enable gentle reminders", icon: "bell", isDisabled: requesting) { request() }
+            Button("Not now") { data.nextScreen() }.font(.caption).frame(minHeight: 44)
         }
     }
-
-    private func bullet(_ text: String) -> some View {
-        HStack(spacing: appTheme.spacing.small) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 14))
-                .foregroundColor(appTheme.colors.primary)
-            Text(text)
-                .font(appTheme.fonts.bodyMedium)
-                .foregroundColor(appTheme.colors.textSecondary)
-        }
-    }
-
-    private func requestAuthorization() {
-        isRequesting = true
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in
-            DispatchQueue.main.async {
-                isRequesting = false
+    private func request() {
+        requesting = true
+        Task { @MainActor in
+            defer { requesting = false }
+            do {
+                _ = try await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge])
                 data.nextScreen()
-            }
+            } catch { message = "Reminders couldn’t be enabled. You can try again or continue without them." }
         }
     }
 }
