@@ -11,3 +11,17 @@
 @media(max-width:680px){.review{position:relative}.review-controls{display:flex;position:absolute;right:16px;top:16px;margin:0}.review-controls #reset,.brand small{display:none}.review-controls button{padding:6px 8px;font-size:9px}}
 @media(max-height:740px){.scroll:has(#live-plate)>.plate-wrap{height:178px}.scroll:has(#live-plate) .plate{transform:rotate(-7deg) scale(.8)}.scroll:has(#live-plate) .tray{grid-template-rows:repeat(2,60px)}.scroll:has(#live-plate)>h2{font-size:25px}}
 @media(max-width:680px){body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}.review{flex-shrink:0}.preview{display:flex;align-items:stretch;flex:1;min-height:0}.phone{height:auto;flex:1;min-height:0;max-height:none}}
+.ingredient-reveal{animation:ingredientReveal .7s var(--bounce) both;animation-delay:var(--delay,0ms)}
+.connection-path{animation:connectionFlow 4s linear infinite}
+.clock-tick{animation:clockBreathe 4s ease-in-out infinite}
+@keyframes ingredientReveal{from{opacity:0;transform:translateY(-18px) rotate(-8deg) scale(.8)}to{opacity:1;transform:translateY(0) rotate(0) scale(1)}}
+@keyframes connectionFlow{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes clockBreathe{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+@media(prefers-reduced-motion:reduce){.ingredient-reveal,.connection-path,.clock-tick{animation:none!important}}
+.shutter-settle{animation:shutterSettle .8s var(--ease) both}.night-stars{animation:quietStars 5s ease-in-out infinite}.reminder-bell{animation:bellNudge 1.2s var(--ease) both}.notification-reveal{animation:enter .6s var(--ease) .2s both}.bell-ripple{animation:quietStars 3s ease-in-out infinite}.cloche-lift{animation:clocheLift 1s var(--ease) both}.served-ingredients{animation:enter .6s var(--ease) .3s both}.serve-sparkle{animation:quietStars 4s ease-in-out infinite}.sand-fall{animation:quietStars 2s ease-in-out infinite}.extra-pop{animation:enter .7s var(--bounce) both}.ticket-reveal{animation:ticketReveal .7s var(--ease) both;transform-origin:246px 122px}
+@keyframes shutterSettle{from{opacity:.6;transform:scaleY(.35)}to{opacity:1;transform:scaleY(1)}}
+@keyframes quietStars{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes bellNudge{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}55%{transform:rotate(5deg)}80%{transform:rotate(-2deg)}}
+@keyframes clocheLift{from{transform:translateY(48px);opacity:.8}to{transform:translateY(-9px);opacity:1}}
+@keyframes ticketReveal{from{opacity:0;transform:translateY(15px) rotate(4deg)}to{opacity:1;transform:translateY(0) rotate(0)}}
+@media(prefers-reduced-motion:reduce){.shutter-settle,.night-stars,.reminder-bell,.notification-reveal,.bell-ripple,.cloche-lift,.served-ingredients,.serve-sparkle,.sand-fall,.extra-pop,.ticket-reveal{animation:none!important}}
