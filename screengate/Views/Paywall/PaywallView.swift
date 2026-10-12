@@ -33,54 +33,82 @@ struct PaywallView: View {
         guard trialEligible, let offer = selected?.subscription?.introductoryOffer, offer.paymentMode == .freeTrial else { return nil }
         return offer
     }
+    private let theme = KitchenTheme.lamp
+    private let benefits: [(KitchenFoodGroup, String, String, String)] = [
+        (.protein, "moon", "Let your evenings breathe", "Night Fast puts selected Carbs and Fats to bed."),
+        (.carbs, "chart.pie", "See the bigger picture", "Measured activity, weekly trends, top apps and your grade."),
+        (.fats, "slider.horizontal.3", "Find your kind of balance", "All plans, Strict Mode and more flexible extra servings."),
+        (.protein, "rectangle.stack", "Keep your routine close", "Widgets put your kitchen and portion on your Home Screen."),
+    ]
+
     var body: some View {
-        DietPage {
+        OnboardingPage {
             HStack {
-                Label("ScreenDiet Plus", systemImage: "sparkles").font(.headline).foregroundStyle(AppTheme.shared.colors.primary)
+                Label("ScreenDiet Plus", systemImage: "sparkles").font(KitchenFont.label(15)).foregroundStyle(theme.lamp)
                 Spacer()
-                Button(action: onFinished) { Image(systemName: "xmark").frame(width: 44, height: 44).background(AppTheme.shared.colors.surface).clipShape(Circle()) }.accessibilityLabel("Continue with Free")
-            }
-            DietArtwork(asset: artwork, height: 220).editorialEntrance()
-            DietHeading(eyebrow: "Your attention is worth nurturing", title: title, detail: "A little more support for focused days, quieter evenings and a rhythm that feels like yours.", centered: true).editorialEntrance(delay: 0.1)
-            VStack(spacing: 20) {
-                DietFeatureRow(icon: "moon.stars.fill", title: "Let your evenings breathe", detail: "Night Fast puts selected Carbs and Fats to bed.", tint: .purple)
-                DietFeatureRow(icon: "chart.pie.fill", title: "See the bigger picture", detail: "Measured activity, weekly trends, top apps and your grade.")
-                DietFeatureRow(icon: "slider.horizontal.3", title: "Find your kind of balance", detail: "All plans, strict mode and more flexible cheat meals.", tint: .orange)
-                DietFeatureRow(icon: "rectangle.stack.fill", title: "Keep your routine close", detail: "Widgets put your kitchen and portion on your Home Screen.")
-            }.dietCard().editorialEntrance(delay: 0.2)
-            if loading { ProgressView("Finding available memberships…").tint(AppTheme.shared.colors.primary).padding() }
+                Button(action: onFinished) {
+                    Image(systemName: "xmark").font(.system(size: 14, weight: .bold)).foregroundStyle(theme.text)
+                        .frame(width: 44, height: 44).background(theme.surface, in: Circle()).overlay(Circle().stroke(theme.line, lineWidth: 1))
+                }.accessibilityLabel("Continue with Free")
+            }.rise(0)
+            OnboardingArtwork(asset: artwork, height: 220).rise(1)
+            VStack(alignment: .leading, spacing: 10) {
+                OnboardingEyebrow(text: "Your attention is worth nurturing")
+                OnboardingTitle(first: title.components(separatedBy: "\n").first ?? title, second: title.components(separatedBy: "\n").dropFirst().first)
+                OnboardingBody(text: "A little more support for focused days, quieter evenings and a rhythm that feels like yours.")
+            }.rise(2)
+            VStack(spacing: 0) {
+                ForEach(Array(benefits.enumerated()), id: \.offset) { i, b in
+                    HStack(spacing: 12) {
+                        Image(systemName: b.1).font(.system(size: 14, weight: .semibold)).foregroundStyle(theme.color(for: b.0))
+                            .frame(width: 30, height: 30).background(theme.soft(b.0), in: RoundedRectangle(cornerRadius: 10))
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(b.2).font(KitchenFont.body(14).weight(.bold))
+                            Text(b.3).font(KitchenFont.body(12)).foregroundStyle(theme.muted)
+                        }
+                        Spacer(minLength: 0)
+                    }.padding(.vertical, 10)
+                    if i < benefits.count - 1 { theme.line.frame(height: 1) }
+                }
+            }.padding(.horizontal, 16).padding(.vertical, 4).kitchenCard(theme).rise(3)
+            if loading { ProgressView("Finding available memberships…").tint(theme.lamp).padding() }
             else if products.isEmpty {
-                DietFeatureRow(icon: "leaf.fill", title: "Plus is coming soon", detail: "Memberships aren’t available from the App Store right now. Your free routine is ready to use.").dietCard()
-                Button("Check again") { Task { await loadProducts() } }.frame(minHeight: 44)
+                VStack(spacing: 4) {
+                    Text("Plus is coming soon").font(KitchenFont.body(15).weight(.bold))
+                    Text("Memberships aren’t available from the App Store right now. Your free routine is ready to use.").font(KitchenFont.body(13)).foregroundStyle(theme.muted)
+                    KitchenSecondaryButton(title: "Check again") { Task { await loadProducts() } }
+                }.padding(16).kitchenCard(theme)
             } else {
-                VStack(spacing: 12) {
+                VStack(spacing: 8) {
                     ForEach(products, id: \.id) { product in
-                        DietChoice(icon: product.type == .nonConsumable ? "infinity" : "calendar", title: planName(product), detail: disclosure(product), selected: selectedID == product.id) { selectedID = product.id }
+                        KitchenChoiceCard(title: planName(product), detail: disclosure(product), systemImage: product.type == .nonConsumable ? "infinity" : "calendar", isSelected: selectedID == product.id) { selectedID = product.id }
                     }
                 }
                 if let trial {
-                    VStack(alignment: .leading, spacing: 18) {
-                        DietFeatureRow(icon: "sparkles", title: "Today · Your \(period(trial.period)) trial begins", detail: "Explore the full routine and weekly reports.")
-                        DietFeatureRow(icon: "calendar", title: "After the trial · Membership continues", detail: selected.map(disclosure) ?? "")
-                        DietFeatureRow(icon: "gearshape", title: "You’re in control", detail: "Manage or cancel through your Apple subscriptions before renewal.")
-                    }.dietCard()
+                    Text("Your \(period(trial.period)) trial begins today. After it, membership continues at \(selected.map(disclosure) ?? ""). Manage or cancel in your Apple subscriptions before renewal.")
+                        .font(KitchenFont.label(12)).foregroundStyle(theme.muted)
                 }
-                Text(selected?.subscription == nil ? "A one-time purchase for this membership." : "Subscriptions renew automatically unless canceled. Manage or cancel in your Apple Account settings.").font(.caption).foregroundStyle(AppTheme.shared.colors.textSecondary)
+                Text(selected?.subscription == nil ? "A one-time purchase for this membership." : "Subscriptions renew automatically unless canceled. Manage or cancel in your Apple Account settings.")
+                    .font(KitchenFont.label(11)).foregroundStyle(theme.faint)
             }
             HStack(spacing: 24) {
                 Button("Restore purchases", action: restore).disabled(busy).frame(minHeight: 44)
                 Link("Terms", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!).frame(minHeight: 44)
-            }.font(.caption).foregroundStyle(AppTheme.shared.colors.textSecondary)
-            Button("How your data is used") { message = "Your diet profile and selections are stored in the app’s on-device shared container. Screen Time usage reports are rendered by Apple’s report extension. Purchases are processed by the App Store." }.font(.caption).frame(minHeight: 44)
+                Button("Privacy") { message = "Your diet profile and selections are stored in the app’s on-device shared container. Screen Time usage reports are rendered by Apple’s report extension. Purchases are processed by the App Store." }.frame(minHeight: 44)
+            }.font(KitchenFont.label(12)).foregroundStyle(theme.faint).frame(maxWidth: .infinity)
         } footer: {
             if let selected {
-                PrimaryButton(title: busy ? "Please wait…" : trial.map { "Start \(period($0.period)) free" } ?? "Continue with Plus", icon: "arrow.right", isDisabled: busy) { purchase(selected) }
-                Text(trial != nil ? "Then \(disclosure(selected))" : disclosure(selected)).font(.caption2).foregroundStyle(AppTheme.shared.colors.textSecondary).multilineTextAlignment(.center)
+                KitchenPrimaryButton(title: busy ? "Please wait…" : trial.map { "Start \(period($0.period)) free" } ?? "Continue with Plus", systemImage: "arrow.right", isEnabled: !busy) { purchase(selected) }
             }
-            Button("Continue with Free", action: onFinished).font(.subheadline).frame(minHeight: 44)
-        }.foregroundStyle(AppTheme.shared.colors.text).task { await loadProducts() }
-            .task(id: selectedID) { trialEligible = await selected?.subscription?.isEligibleForIntroOffer ?? false }
-            .alert("Membership", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) { Button("OK") { message = nil } } message: { Text(message ?? "") }
+            KitchenSecondaryButton(title: "Continue with Free", action: onFinished)
+        }
+        .environment(\.kitchenTheme, theme)
+        .foregroundStyle(theme.text)
+        .kitchenBackground(theme)
+        .preferredColorScheme(.dark)
+        .task { await loadProducts() }
+        .task(id: selectedID) { trialEligible = await selected?.subscription?.isEligibleForIntroOffer ?? false }
+        .alert("Membership", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) { Button("OK") { message = nil } } message: { Text(message ?? "") }
     }
     @MainActor private func loadProducts() async {
         loading = true

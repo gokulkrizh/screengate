@@ -15,6 +15,11 @@ final class DietManager {
     /// The single source of truth (read-only for views).
     private(set) var sharedState: SharedState
 
+    #if DEBUG
+    /// Design review only: shows a sample state without persisting it.
+    func debugApply(_ state: SharedState) { sharedState = state }
+    #endif
+
     @ObservationIgnored
     private let store = SharedStore.shared
     @ObservationIgnored

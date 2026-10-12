@@ -2,7 +2,8 @@ import Foundation
 import Combine
 
 class OnboardingData: ObservableObject {
-    @Published var currentScreen = 0
+    /// Step number, 1…19 (see `OnboardingStep`).
+    @Published var currentScreen = 1
 
     // Quiz answers (step 3)
     @Published var intention: String?
@@ -16,8 +17,10 @@ class OnboardingData: ObservableObject {
     @Published var windowStartMinute: Int = 0
     @Published var windowEndHour: Int = 20
     @Published var windowEndMinute: Int = 0
-    @Published var nightLockHour: Int = 21
+    @Published var nightLockHour: Int = 22
     @Published var nightLockMinute: Int = 0
+    @Published var nightFastEnabled: Bool = true   // Night Fast step toggle (becomes real with Plus)
+    @Published var remindersEnabled: Bool = false
     @Published var dailyCarbLimitMinutes: Int = DebugConfig.defaultPortionMinutes
 
     // Track completion
@@ -31,9 +34,9 @@ class OnboardingData: ObservableObject {
 
     private static let onboardingCompletionKey = "isOnboardingCompleted"
 
-    init(initialScreen: Int = 0) {
+    init(initialScreen: Int = 1) {
         self.isOnboardingComplete = false
-        self.currentScreen = min(18, max(0, initialScreen))
+        self.currentScreen = min(19, max(1, initialScreen))
         #if DEBUG
         if DesignReviewView.launchRoute != nil {
             quizDailyHours = 4; quizWorstTime = "evening"; quizGoal = "cutdown"
@@ -45,11 +48,11 @@ class OnboardingData: ObservableObject {
     // MARK: - Navigation
 
     func nextScreen() {
-        currentScreen += 1
+        currentScreen = min(19, currentScreen + 1)
     }
 
     func previousScreen() {
-        if currentScreen > 0 {
+        if currentScreen > 1 {
             currentScreen -= 1
         }
     }

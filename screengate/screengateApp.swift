@@ -29,7 +29,6 @@ struct ScreenDietApp: App {
                 #endif
             }
             .buttonStyle(TactileButtonStyle())
-            .preferredColorScheme(.dark)
             .paywallPresenter()
             .environment(entitlementManager)
             .environment(dietManager)

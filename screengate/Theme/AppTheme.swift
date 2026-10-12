@@ -29,10 +29,10 @@ struct AppTheme {
 
 // MARK: - Color Theme
 struct ColorTheme {
-    // Primary Colors (Neon Green)
-    let primary = Color(red: 0.70, green: 0.86, blue: 0.55)
-    let primaryLight = Color(red: 0.82, green: 0.93, blue: 0.69)
-    let primaryDark = Color(red: 0.45, green: 0.65, blue: 0.35)
+    // Primary = Lamp accent (v2)
+    let primary = Color(hex: "F3D9A4")
+    let primaryLight = Color(hex: "F8E8C6")
+    let primaryDark = Color(hex: "B8862C")
     
     // Secondary Colors (Gray tones)
     let secondary = Color(red: 0.65, green: 0.72, blue: 0.67)
@@ -40,12 +40,12 @@ struct ColorTheme {
     let secondaryDark = Color(red: 0.35, green: 0.35, blue: 0.37)
     
     // Accent Colors (Neon Green variant)
-    let accent = Color(red: 0.70, green: 0.86, blue: 0.55)
-    let accentLight = Color(red: 0.82, green: 0.93, blue: 0.69)
-    let accentDark = Color(red: 0.45, green: 0.65, blue: 0.35)
+    let accent = Color(hex: "F3D9A4")
+    let accentLight = Color(hex: "F8E8C6")
+    let accentDark = Color(hex: "B8862C")
     
     // Success / Warning / Error
-    let success = Color(red: 0.70, green: 0.86, blue: 0.55)
+    let success = Color(hex: "B6D07E")
     let warning = Color(red: 1, green: 0.84, blue: 0)
     let error = Color(red: 1, green: 0.24, blue: 0.24)
     
@@ -72,22 +72,22 @@ struct ColorTheme {
         let isDark = true // Force dark mode by default
         
         if isDark {
-            // Dark Mode
-            self.background = Color(red: 0.045, green: 0.085, blue: 0.07)
-            self.surface = Color(red: 0.08, green: 0.13, blue: 0.11)
-            self.surfaceVariant = Color(red: 0.14, green: 0.20, blue: 0.17)
-            self.text = Color(red: 0.97, green: 0.95, blue: 0.88)
-            self.textSecondary = Color(red: 0.65, green: 0.72, blue: 0.67)
-            self.border = Color(red: 0.70, green: 0.86, blue: 0.55)
-            self.divider = Color(red: 0.14, green: 0.20, blue: 0.17)
-            self.checkboxUnchecked = Color(red: 0.14, green: 0.20, blue: 0.17)
-            self.checkboxChecked = Color(red: 0.70, green: 0.86, blue: 0.55)
-            self.radioButtonUnchecked = Color(red: 0.14, green: 0.20, blue: 0.17)
-            self.radioButtonSelected = Color(red: 0.70, green: 0.86, blue: 0.55)
-            self.sliderThumb = Color(red: 0.70, green: 0.86, blue: 0.55)
-            self.sliderTrack = Color(red: 0.14, green: 0.20, blue: 0.17)
-            self.toggleEnabled = Color(red: 0.70, green: 0.86, blue: 0.55)
-            self.toggleDisabled = Color(red: 0.14, green: 0.20, blue: 0.17)
+            // v2 Lamp palette (see KitchenTheme). Legacy screens pick this up until they are restyled.
+            self.background = Color(hex: "15120F")
+            self.surface = Color(hex: "221E1A")
+            self.surfaceVariant = Color(hex: "2D2823")
+            self.text = Color(hex: "F7F2E9")
+            self.textSecondary = Color(hex: "B5AC9F")
+            self.border = Color(hex: "F3D9A4")
+            self.divider = Color(hex: "2D2823")
+            self.checkboxUnchecked = Color(hex: "2D2823")
+            self.checkboxChecked = Color(hex: "F3D9A4")
+            self.radioButtonUnchecked = Color(hex: "2D2823")
+            self.radioButtonSelected = Color(hex: "F3D9A4")
+            self.sliderThumb = Color(hex: "F3D9A4")
+            self.sliderTrack = Color(hex: "2D2823")
+            self.toggleEnabled = Color(hex: "F3D9A4")
+            self.toggleDisabled = Color(hex: "2D2823")
         } else {
             // Light Mode
             self.background = Color(red: 0.98, green: 0.98, blue: 0.98)

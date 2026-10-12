@@ -2,10 +2,11 @@
 //  ShieldActionExtension.swift
 //  ShieldActionExtension
 //
-//  Two-tap cheat meal:
-//   1. Secondary button → write a pending confirmation (20 s TTL, token-scoped)
-//      and return `.defer` so the shield re-renders with "Confirm".
-//   2. Second tap within the TTL → start the `diet.cheat` schedule and unlock.
+//  Two-tap extra serving (formerly "cheat meal"):
+//   1. Secondary button ("Use an extra serving") → write a pending confirmation (20 s TTL,
+//      token-scoped) and return `.defer` so the shield re-renders as "Tap again to confirm".
+//   2. Primary button ("Yes, 15 minutes") within the TTL → start the `diet.cheat` schedule and
+//      unlock. Secondary ("Never mind") clears the pending confirmation.
 //
 //  Cheat meals are never offered during Night Fast / Fast Now, and only while
 //  weekly cheats remain for the current tier.
@@ -40,11 +41,22 @@ class ShieldActionExtension: ShieldActionDelegate {
     private func handle(_ action: ShieldAction, scope: String, completionHandler: @escaping (ShieldActionResponse) -> Void) {
         switch action {
         case .primaryButtonPressed:
-            cancelPendingConfirmation()
-            completionHandler(.close)
+            // Confirmation shield: the primary button is "Yes, 15 minutes".
+            if let pending = store.load().shieldPending, pending.isActive(), pending.scope == scope {
+                handleCheatMeal(scope: scope, completionHandler: completionHandler)
+            } else {
+                cancelPendingConfirmation()
+                completionHandler(.close)
+            }
 
         case .secondaryButtonPressed:
-            handleCheatMeal(scope: scope, completionHandler: completionHandler)
+            // Confirmation shield: the secondary button is "Never mind".
+            if let pending = store.load().shieldPending, pending.isActive(), pending.scope == scope {
+                cancelPendingConfirmation()
+                completionHandler(.close)
+            } else {
+                handleCheatMeal(scope: scope, completionHandler: completionHandler)
+            }
 
         @unknown default:
             completionHandler(.none)
@@ -87,8 +99,8 @@ class ShieldActionExtension: ShieldActionDelegate {
         let allowed = Entitlement.clampedCheats(profile.cheatsPerWeek, isPremium: state.isPremium)
         guard allowed - state.week.cheatsUsed > 0 else {
             sendNotification(
-                title: "No Cheat Meals Left",
-                body: "You've used all \(allowed) cheat meals this week."
+                title: "No Extra Servings Left",
+                body: "You've used all \(allowed) extra servings this week."
             )
             completionHandler(.none)
             return
@@ -126,7 +138,7 @@ class ShieldActionExtension: ShieldActionDelegate {
         manager.reconcile(state: saved)
 
         sendNotification(
-            title: "Cheat Meal",
+            title: "Extra Serving",
             body: "Carbs are open for \(minutes) minutes. Enjoy."
         )
         completionHandler(.close)

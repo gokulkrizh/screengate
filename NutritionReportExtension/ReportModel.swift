@@ -26,6 +26,8 @@ struct ReportSnapshot: Hashable {
     /// Carb seconds per day key ("yyyy-MM-dd"), for day-based grading.
     var carbSecondsByDay: [String: Double] = [:]
     var totalSecondsByDay: [String: Double] = [:]
+    /// Fat seconds per day key, for the stacked weekly chart.
+    var fatSecondsByDay: [String: Double] = [:]
 
     var otherSeconds: Double { max(0, totalSeconds - carbSeconds - fatSeconds) }
     var carbShare: Double { totalSeconds > 0 ? carbSeconds / totalSeconds : 0 }
@@ -105,6 +107,7 @@ enum ReportComputer {
                         addCarbSeconds(&snapshot, at: segment.dateInterval.start, seconds: category.totalActivityDuration)
                     } else if isFatCategory {
                         snapshot.fatSeconds += category.totalActivityDuration
+                        addFatSeconds(&snapshot, at: segment.dateInterval.start, seconds: category.totalActivityDuration)
                     }
                     for await app in category.applications {
                         snapshot.pickups += app.numberOfPickups
@@ -114,7 +117,10 @@ enum ReportComputer {
                             if isCarbApp {
                                 snapshot.carbSeconds += app.totalActivityDuration
                                 addCarbSeconds(&snapshot, at: segment.dateInterval.start, seconds: app.totalActivityDuration)
-                            } else if isFatApp { snapshot.fatSeconds += app.totalActivityDuration }
+                            } else if isFatApp {
+                                snapshot.fatSeconds += app.totalActivityDuration
+                                addFatSeconds(&snapshot, at: segment.dateInterval.start, seconds: app.totalActivityDuration)
+                            }
                         }
                         if collectApps && (isCarbCategory || (!isFatCategory && isCarbApp)) { record(app, into: &junkAppUsage) }
                     }
@@ -125,6 +131,7 @@ enum ReportComputer {
                                 addCarbSeconds(&snapshot, at: segment.dateInterval.start, seconds: domain.totalActivityDuration)
                             } else if domain.webDomain.token.map(buckets.fatDomains.contains) ?? false {
                                 snapshot.fatSeconds += domain.totalActivityDuration
+                                addFatSeconds(&snapshot, at: segment.dateInterval.start, seconds: domain.totalActivityDuration)
                             }
                         }
                     }
@@ -146,6 +153,10 @@ enum ReportComputer {
     private static func addCarbSeconds(_ snapshot: inout ReportSnapshot, at date: Date, seconds: Double) {
         let key = DayCounters.dateKey(from: date)
         snapshot.carbSecondsByDay[key, default: 0] += seconds
+    }
+
+    private static func addFatSeconds(_ snapshot: inout ReportSnapshot, at date: Date, seconds: Double) {
+        snapshot.fatSecondsByDay[DayCounters.dateKey(from: date), default: 0] += seconds
     }
 
     private static func record(_ activity: DeviceActivityData.ApplicationActivity, into usage: inout [String: AppUsage]) {

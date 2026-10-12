@@ -2,8 +2,8 @@
 //  ShieldConfigurationExtension.swift
 //  ShieldConfigurationExtension
 //
-//  Five state-driven shield designs (Kitchen Closed, Plate's Empty, Night Fast,
-//  Focus Fast, No Cheats Left) plus the 2-tap cheat confirmation re-render.
+//  Five state-driven shield designs (v2 spec §8: Kitchen closed, Portion served, Night Fast,
+//  Focus Fast, Extra serving tap 2 of 2).
 //
 //  Precedence: fast > night > portion hit > kitchen closed.
 //
@@ -17,22 +17,34 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
 
     private let store = SharedStore.shared
 
-    // MARK: - Theme
+    // MARK: - Theme (v2 spec §8; hex values from the v2 canvas)
 
-    private let backgroundColor = UIColor(red: 0.045, green: 0.085, blue: 0.07, alpha: 1.0) // #0F1014
-    private let primaryGreen = UIColor(red: 0.70, green: 0.86, blue: 0.55, alpha: 1.0)       // #00FF63
-    private let warningYellow = UIColor(red: 0.96, green: 0.71, blue: 0.46, alpha: 1)
-    private let errorRed = UIColor.systemRed
-    private let nightPurple = UIColor(red: 0.73, green: 0.65, blue: 0.88, alpha: 1)
-    private let textWhite = UIColor(red: 0.97, green: 0.95, blue: 0.88, alpha: 1)
-    private let textSecondary = UIColor.white.withAlphaComponent(0.6)
+    private struct Look {
+        let bg: UIColor, fg: UIColor, muted: UIColor, secondary: UIColor
+    }
+    private static func hex(_ v: UInt32) -> UIColor {
+        UIColor(red: CGFloat((v >> 16) & 0xFF) / 255, green: CGFloat((v >> 8) & 0xFF) / 255, blue: CGFloat(v & 0xFF) / 255, alpha: 1)
+    }
+    private let lamp = Look(bg: hex(0x15120F), fg: hex(0xF7F2E9), muted: hex(0xB5AC9F), secondary: hex(0xF3D9A4))
+    private let daylight = Look(bg: hex(0xF5EFE4), fg: hex(0x1F1A14), muted: hex(0x5F564A), secondary: hex(0x8A6420))
+    private let night = Look(bg: hex(0x0F1226), fg: hex(0xEEF0FA), muted: hex(0xABB0CC), secondary: hex(0xF3D9A4))
 
+    private let lampButton = hex(0xF3D9A4), lampButtonText = hex(0x1D1812)
+    private let inkButton = hex(0x1F1A14), inkButtonText = hex(0xF7F1E6)
+    private let nightButtonText = hex(0x151830)
+    private let proteinAmber = hex(0xEBA75A), proteinAmberText = hex(0x2A1A08)
+    private let carbsRose = hex(0xB83E5E), carbsRoseText = hex(0xFFF8F0)
+
+    /// Clay artwork from the extension's asset catalog, cropped to a circle (SF Symbol fallback).
     private func artwork(_ name: String, symbol: String, tint: UIColor) -> UIImage? {
         guard let image = UIImage(named: name) else { return UIImage(systemName: symbol)?.withTintColor(tint, renderingMode: .alwaysOriginal) }
         let size = CGSize(width: 96, height: 96)
         return UIGraphicsImageRenderer(size: size).image { _ in
-            UIBezierPath(roundedRect: CGRect(origin: .zero, size: size), cornerRadius: 22).addClip()
-            image.draw(in: CGRect(origin: .zero, size: size))
+            UIBezierPath(ovalIn: CGRect(origin: .zero, size: size)).addClip()
+            // Aspect-fill so the circle is never letterboxed.
+            let scale = max(size.width / image.size.width, size.height / image.size.height)
+            let w = image.size.width * scale, h = image.size.height * scale
+            image.draw(in: CGRect(x: (size.width - w) / 2, y: (size.height - h) / 2, width: w, height: h))
         }.withRenderingMode(.alwaysOriginal)
     }
 
@@ -104,136 +116,95 @@ class ShieldConfigurationExtension: ShieldConfigurationDataSource {
         case .fasting:
             return nightFastShield(context)
         case .plateEmpty:
-            return context.allowedCheats > 0 && context.cheatsRemaining == 0
-                ? noCheatsLeftShield(context, base: .plateEmpty)
-                : plateEmptyShield(context)
+            return portionServedShield(context)
         case .kitchenClosed:
-            return context.allowedCheats > 0 && context.cheatsRemaining == 0
-                ? noCheatsLeftShield(context, base: .kitchenClosed)
-                : kitchenClosedShield(context)
+            return kitchenClosedShield(context)
         case nil:
             return kitchenClosedShield(context)
         }
     }
 
-    private func cheatLabel(_ context: ShieldContext) -> ShieldConfiguration.Label? {
+    private func extraServingLabel(_ context: ShieldContext, _ look: Look) -> ShieldConfiguration.Label? {
         guard context.cheatOffered else { return nil }
-        return .init(text: "Cheat meal (\(context.cheatsRemaining) left)", color: warningYellow)
+        return .init(text: "Use an extra serving", color: look.secondary)
     }
 
-    private func countdownLabel(_ minutes: Int) -> String {
-        guard minutes > 0 else { return "" }
-        return " · \(minutes / 60)h \(minutes % 60)m"
+    private func timeString(_ date: Date) -> String {
+        let f = DateFormatter()
+        f.timeStyle = .short
+        f.dateStyle = .none
+        return f.string(from: date)
+    }
+
+    private func noExtraNote(_ context: ShieldContext) -> String {
+        context.allowedCheats > 0 && context.cheatsRemaining == 0 ? " No extra servings left this week." : ""
+    }
+
+    private func shield(_ look: Look, icon: UIImage?, title: String, subtitle: String,
+                        primary: String, primaryBg: UIColor, primaryText: UIColor,
+                        secondary: ShieldConfiguration.Label?) -> ShieldConfiguration {
+        ShieldConfiguration(
+            backgroundBlurStyle: nil,
+            backgroundColor: look.bg,
+            icon: icon,
+            title: .init(text: title, color: look.fg),
+            subtitle: .init(text: subtitle, color: look.muted),
+            primaryButtonLabel: .init(text: primary, color: primaryText),
+            primaryButtonBackgroundColor: primaryBg,
+            secondaryButtonLabel: secondary
+        )
     }
 
     // MARK: - Designs
 
     private func kitchenClosedShield(_ context: ShieldContext) -> ShieldConfiguration {
         let openAt = context.profile?.eatingWindow.startTimeString ?? "later"
-        let minutes = context.profile?.eatingWindow.minutesUntilOpen() ?? 0
-
-        return ShieldConfiguration(
-            backgroundBlurStyle: .systemMaterialDark,
-            backgroundColor: backgroundColor,
-            icon: artwork("NightGarden", symbol: "moon.fill", tint: warningYellow),
-            title: .init(text: "A little breathing room.", color: warningYellow),
-            subtitle: .init(
-                text: "\(context.displayItem) is off the menu. Opens at \(openAt)\(countdownLabel(minutes)).",
-                color: textSecondary
-            ),
-            primaryButtonLabel: .init(text: "Back to life", color: backgroundColor),
-            primaryButtonBackgroundColor: warningYellow,
-            secondaryButtonLabel: cheatLabel(context)
-        )
+        return shield(lamp, icon: artwork("NightGarden", symbol: "moon.fill", tint: lamp.secondary),
+                      title: "Kitchen\u{2019}s closed",
+                      subtitle: "\(context.displayItem) opens again at \(openAt). Your Protein apps are still on the table.\(noExtraNote(context))",
+                      primary: "Close app", primaryBg: lampButton, primaryText: lampButtonText,
+                      secondary: extraServingLabel(context, lamp))
     }
 
-    private func plateEmptyShield(_ context: ShieldContext) -> ShieldConfiguration {
+    private func portionServedShield(_ context: ShieldContext) -> ShieldConfiguration {
         let portion = context.profile?.portionMinutes ?? 0
-        let openAt = context.profile?.eatingWindow.startTimeString ?? "tomorrow"
-
-        return ShieldConfiguration(
-            backgroundBlurStyle: .systemMaterialDark,
-            backgroundColor: backgroundColor,
-            icon: artwork("FreshStart", symbol: "takeoutbag.and.cup.and.straw.fill", tint: errorRed),
-            title: .init(text: "Your plate is full.", color: errorRed),
-            subtitle: .init(text: "\(portion) min of carbs used. \(context.displayItem) is back at \(openAt).", color: textSecondary),
-            primaryButtonLabel: .init(text: "Back to life", color: backgroundColor),
-            primaryButtonBackgroundColor: errorRed,
-            secondaryButtonLabel: cheatLabel(context)
-        )
+        let openAt = context.profile?.eatingWindow.startTimeString ?? "the morning"
+        return shield(daylight, icon: artwork("FreshStart", symbol: "takeoutbag.and.cup.and.straw.fill", tint: daylight.secondary),
+                      title: "Today\u{2019}s portion is served",
+                      subtitle: "You\u{2019}ve enjoyed your \(portion) minutes of Carbs. A fresh portion arrives tomorrow at \(openAt).\(noExtraNote(context))",
+                      primary: "Close app", primaryBg: inkButton, primaryText: inkButtonText,
+                      secondary: extraServingLabel(context, daylight))
     }
 
     private func nightFastShield(_ context: ShieldContext) -> ShieldConfiguration {
         let end = context.profile?.nightFast.endTimeString ?? "the morning"
-
-        return ShieldConfiguration(
-            backgroundBlurStyle: .systemMaterialDark,
-            backgroundColor: backgroundColor,
-            icon: artwork("NightGarden", symbol: "moon.zzz.fill", tint: nightPurple),
-            title: .init(text: "Let the night be yours.", color: nightPurple),
-            subtitle: .init(text: "\(context.displayItem) is asleep until \(end). Protein is always available.", color: textSecondary),
-            primaryButtonLabel: .init(text: "Back to life", color: textWhite),
-            primaryButtonBackgroundColor: nightPurple,
-            secondaryButtonLabel: nil
-        )
+        return shield(night, icon: artwork("NightGarden", symbol: "moon.zzz.fill", tint: night.secondary),
+                      title: "The kitchen is resting",
+                      subtitle: "Night Fast until \(end). Sleep well. Protein apps are still open.",
+                      primary: "Goodnight", primaryBg: lampButton, primaryText: nightButtonText,
+                      secondary: nil)
     }
 
     private func focusFastShield(_ context: ShieldContext) -> ShieldConfiguration {
         let endsAt = context.state.fast?.endsAt ?? Date()
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        let end = formatter.string(from: endsAt)
-
-        return ShieldConfiguration(
-            backgroundBlurStyle: .systemMaterialDark,
-            backgroundColor: backgroundColor,
-            icon: artwork("FocusGarden", symbol: "bolt.fill", tint: primaryGreen),
-            title: .init(text: "Room to focus.", color: primaryGreen),
-            subtitle: .init(text: "\(context.displayItem) is blocked until \(end).", color: textSecondary),
-            primaryButtonLabel: .init(text: "Back to life", color: backgroundColor),
-            primaryButtonBackgroundColor: primaryGreen,
-            secondaryButtonLabel: nil
-        )
+        let left = max(1, Int((endsAt.timeIntervalSinceNow / 60).rounded(.up)))
+        let leftText = left >= 60 ? "\(left / 60) h \(left % 60) min" : "\(left) minute\(left == 1 ? "" : "s")"
+        return shield(lamp, icon: artwork("FocusGarden", symbol: "hourglass", tint: proteinAmber),
+                      title: "Something good is cooking",
+                      subtitle: "Focus Fast \u{B7} \(leftText) left. \(context.displayItem) will be back at \(timeString(endsAt)).",
+                      primary: "Back to focus", primaryBg: proteinAmber, primaryText: proteinAmberText,
+                      secondary: nil)
     }
 
-    private func noCheatsLeftShield(_ context: ShieldContext, base: ShieldKind) -> ShieldConfiguration {
-        let portion = context.profile?.portionMinutes ?? 0
-        let subtitle: String
-        switch base {
-        case .plateEmpty:
-            subtitle = "\(portion) min of carbs used — and all \(context.allowedCheats) cheat meals are spent this week."
-        default:
-            subtitle = "\(context.displayItem) stays blocked — all \(context.allowedCheats) cheat meals are spent this week."
-        }
-
-        return ShieldConfiguration(
-            backgroundBlurStyle: .systemMaterialDark,
-            backgroundColor: backgroundColor,
-            icon: artwork("DigitalGarden", symbol: "ticket.fill", tint: textSecondary),
-            title: .init(text: "Back to your rhythm.", color: textSecondary),
-            subtitle: .init(text: subtitle, color: textSecondary),
-            primaryButtonLabel: .init(text: "Back to life", color: backgroundColor),
-            primaryButtonBackgroundColor: textSecondary,
-            secondaryButtonLabel: nil
-        )
-    }
-
+    /// Tap 2 of 2. The primary button confirms; the secondary cancels (see ShieldActionExtension).
     private func confirmShield(_ context: ShieldContext) -> ShieldConfiguration {
+        let minutes = DietRules.cheatMealMinutes
         let remaining = context.cheatsRemaining
-
-        return ShieldConfiguration(
-            backgroundBlurStyle: .systemMaterialDark,
-            backgroundColor: backgroundColor,
-            icon: artwork("DigitalGarden", symbol: "ticket.fill", tint: warningYellow),
-            title: .init(text: "USE A CHEAT MEAL?", color: warningYellow),
-            subtitle: .init(
-                text: "\(remaining) left this week. Unlocks \(context.displayItem) for \(DietRules.cheatMealMinutes) min. Tap Confirm within 20 s.",
-                color: textSecondary
-            ),
-            primaryButtonLabel: .init(text: "Cancel", color: textWhite),
-            primaryButtonBackgroundColor: backgroundColor,
-            secondaryButtonLabel: .init(text: "Confirm", color: warningYellow)
-        )
+        return shield(daylight, icon: artwork("DigitalGarden", symbol: "plus.circle.fill", tint: carbsRose),
+                      title: "Tap again to confirm",
+                      subtitle: "Open \(context.displayItem) for \(minutes) minutes? This uses \(remaining == 1 ? "your 1 extra serving" : "1 of your \(remaining) extra servings") this week.",
+                      primary: "Yes, \(minutes) minutes", primaryBg: carbsRose, primaryText: carbsRoseText,
+                      secondary: .init(text: "Never mind", color: daylight.secondary))
     }
 
     // MARK: - ShieldConfigurationDataSource
