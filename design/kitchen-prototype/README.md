@@ -2,6 +2,10 @@
 
 An interactive design review before changing the SwiftUI app. All implementation lives in this directory; no iOS files were changed for this concept.
 
+## Charcoal theme
+
+The current prototype is styled after [Dottaa’s Personal Museum reference](https://x.com/HelloDottaa/status/2109594395729100898): charcoal backgrounds, neutral layered surfaces, bold Manrope headings, white and gray controls, and color concentrated in ceramic illustrations and app icons. `theme.css` contains the theme layer. Kitchen architecture is recolored through `kitchenPalette` while ingredient colors remain distinct. Current screenshots use the `charcoal-` prefix; earlier green screenshots are preserved as design history. All 25 routes were checked without browser errors, plus the 390×844 layout with no horizontal overflow and visible footer controls.
+
 ## Open
 
 Open `index.html` directly in a browser, or serve this directory:
