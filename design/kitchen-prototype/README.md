@@ -28,6 +28,10 @@ Use the screen navigator on desktop, or swipe its horizontal list on small scree
 
 Welcome uses the inviting kitchen counter. The kitchen story shows an overflowing app plate and always-open clock. Make room for life shows a cleared table with a book, cup, pencil and face-down phone. Connect Screen Time shows a secure phone linking app ingredients to three food-group bowls. Each has its own composition and appropriate motion. Night Fast uses a closing shutter and moon; reminders use a service bell and notification; activation lifts a cloche over the completed app meal; Focus Fast uses an hourglass and protected ingredients; extra servings use a side plate and a fifteen-minute ticket.
 
+## Ingredient guidance
+
+The introduction reveals Carbs, Fats and Protein one at a time. Each has a large app plate with a concise explanation overlay. Next moves the plate, app icons and title into a compact recap list using shared-element View Transitions, while the next group becomes the hero. After Protein, all three appear in a final list. Back reverses the sequence. Browsers without View Transitions and Reduce Motion use a direct update.
+
 ## Motion
 
 App icons spring onto plates, remaining tokens rearrange, removals shrink away, recipe cards reveal, chart bars grow, rings draw, selected choices respond and activation celebrates. The kitchen lamp sways gently and the cup gives off steam. Motion can be paused from the review controls, including mobile. OS Reduce Motion uses static transitions automatically.
