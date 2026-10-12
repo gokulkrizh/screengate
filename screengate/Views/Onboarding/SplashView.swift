@@ -37,9 +37,18 @@ struct SplashView: View {
         .environment(\.kitchenTheme, theme)
         .preferredColorScheme(.dark)
         .fullScreenCover(isPresented: $proceed) {
-            OnboardingView(onCompletion: onCompletion).paywallPresenter()
+            OnboardingView(initialScreen: Self.debugStartStep, onCompletion: onCompletion).paywallPresenter()
         }
         .task { await run() }
+    }
+
+    /// Debug only: `-onboarding-start N` opens onboarding at step N so the end of the real flow can be tested.
+    private static var debugStartStep: Int {
+        #if DEBUG
+        let args = ProcessInfo.processInfo.arguments
+        if let i = args.firstIndex(of: "-onboarding-start"), args.indices.contains(i + 1), let n = Int(args[i + 1]) { return n }
+        #endif
+        return 1
     }
 
     // MARK: Pieces

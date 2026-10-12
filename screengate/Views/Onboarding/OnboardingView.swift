@@ -34,7 +34,15 @@ struct OnboardingView: View {
         .foregroundStyle(theme.text)
         .kitchenBackground(theme)
         .preferredColorScheme(theme.colorScheme)
-        .onChange(of: data.isOnboardingComplete) { _, completed in if completed { onCompletion(); dismiss() } }
+        .onChange(of: data.isOnboardingComplete) { _, completed in
+            guard completed else { return }
+            // Dismiss the cover first: `onCompletion` can swap the app root, which would strand a cover that is still presented.
+            dismiss()
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(450))
+                onCompletion()
+            }
+        }
     }
 
     @ViewBuilder private var stepView: some View {
