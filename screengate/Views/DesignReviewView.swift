@@ -4,6 +4,7 @@ import SwiftUI
 /// Read-only visual review routes. Never persisted as a user's routine.
 struct DesignReviewView: View {
     let route: String
+    @State private var paywallClosed = false
     static var launchRoute: String? {
         let args = ProcessInfo.processInfo.arguments
         guard let index = args.firstIndex(of: "-design-review"), args.indices.contains(index + 1) else { return nil }
@@ -21,8 +22,13 @@ struct DesignReviewView: View {
                 case "tab-kitchen": HomeScreen(initialTab: .kitchen)
                 case "kitchen-open", "kitchen-closed", "kitchen-served", "kitchen-night", "kitchen-focus": KitchenStateReview(route: route)
                 case "report-guide": ReportGuide()
-                case "paywall": PaywallView(intention: "reading") { }
-                case "paywall-night": PaywallView(placement: .featureNightFast) { }
+                case "paywall", "paywall-night":
+                    if paywallClosed { HomeScreen(initialTab: .settings) }
+                    else {
+                        PaywallView(placement: route == "paywall-night" ? .featureNightFast : .onboardingComplete, intention: "reading") {
+                            paywallClosed = true
+                        }
+                    }
                 case "focus": FocusFastSheet()
                 case "cheat": CheatMealSheet()
                 case "strict": StrictModeSheet()

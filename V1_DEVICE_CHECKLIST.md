@@ -10,9 +10,8 @@
 - [ ] Decide on the **history purge** (`git filter-repo --path-glob '*.p8' --invert-paths` + force-push).
 - [ ] **App Store Connect**: subscription group "ScreenDiet Premium" with
       `screendiet.premium.yearly` ($29.99, 7-day trial), `.monthly` ($4.99), optional `.lifetime`.
-- [ ] **Superwall**: dashboard placements (`onboarding_complete`, `feature_night_fast`,
-      `feature_strict_mode`, `feature_custom_plan`, `feature_widgets`, `cheat_out`, `weekly_report`,
-      `day_3_trial_reminder`) + API key. Then replace the two TODOs in `EntitlementManager`.
+- [ ] **RevenueCat**: configure fresh store credentials, verify products, review/publish the paywall
+      draft and complete sandbox purchase/restore tests. See `REVENUECAT_SETUP.md`.
 - [ ] **Family Controls distribution entitlement** for all 6 targets:
       app, Device Activity Monitor, Shield Configuration, Shield Action, NutritionReport,
       ScreenDietWidgets. Request in Week 1 — Apple review can take weeks.

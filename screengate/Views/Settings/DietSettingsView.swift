@@ -4,6 +4,7 @@ import FamilyControls
 struct DietSettingsView: View {
     @Environment(DietManager.self) private var diet
     @Environment(EntitlementManager.self) private var entitlements
+    @Environment(\.openURL) private var openURL
     @State private var adjust = false
     @State private var cheat = false
     @State private var notifications = false
@@ -70,10 +71,13 @@ struct DietSettingsView: View {
                         guard !restoring else { return }; restoring = true
                         Task { @MainActor in
                             await entitlements.restorePurchases(); diet.reloadState(); restoring = false
-                            notice = entitlements.isPremium ? "Your Plus membership is active." : "No active membership was found for this Apple Account."
+                            notice = entitlements.restoreError ?? (entitlements.isPremium ? "Your Plus membership is active." : "No active membership was found for this Apple Account.")
                         }
                     }
-                    SettingsRow(symbol: "lock", group: .protein, title: "Your data", value: "On-device diet") { notice = "Your diet settings and app selections are saved in an on-device shared container. Usage reports are rendered through Screen Time. Purchases are processed by the App Store." }
+                    SettingsRow(symbol: "lock", group: .protein, title: "Your data", value: "On-device diet") { notice = "Your diet settings and app selections are saved in an on-device shared container. Usage reports are rendered through Screen Time. Apple and RevenueCat process purchase information to manage your membership." }
+                    SettingsRow(symbol: "hand.raised", group: .protein, title: "Privacy policy", value: "ScreenDiet") {
+                        openURL(URL(string: "https://gokulkrish.com/apps/screendiet/privacy/")!)
+                    }
                     SettingsRow(symbol: "info.circle", group: .fats, title: "App version", value: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")
                 }
                 section("A FRESH START", index: 6) {

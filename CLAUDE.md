@@ -93,7 +93,7 @@ same named `ManagedSettingsStore`s from it. No timers, no scattered UserDefaults
 | `ScheduleNames.swift` | `diet.window.weekday`, `diet.night`, `diet.cheat`, `diet.fast`, `diet.daily.rollover` |
 | `DeviceActivityManager.swift` | Store reconciliation, schedule registration, selection union helpers |
 | `DebugConfig.swift` | Debug-only short durations; release defaults 45/90/30 min |
-| `Entitlement.swift` | Free/premium gates (stubbed until Phase 5 wires Superwall) |
+| `Entitlement.swift` | Free/premium gates using the RevenueCat entitlement cached in shared state |
 
 ### Extension behavior
 - **Monitor extension**: interval callbacks reconcile stores; `usage-N` thresholds update
@@ -117,8 +117,8 @@ Main app · Monitor ext · ShieldConfig ext · ShieldAction ext · NutritionRepo
 - **Report**: hook insight / today / label / weekly grade computed only in the extension.
 - **Widgets**: Kitchen Status, Plate, Streak, Fast Now (intents), Live Activity (`FastActivityAttributes`),
   Control Center, App Shortcuts, focus filter.
-- **Money**: entitlement plumbing + placements are wired with a seam; Superwall needs the API key +
-  ASC products (single TODO in `EntitlementManager`), then purchases go live.
+- **Money**: RevenueCat + RevenueCatUI handle entitlements, purchases, restores and paywall placements.
+  See `REVENUECAT_SETUP.md` for dashboard IDs and remaining store/publishing verification.
 - **Still manual**: key revocation, FC distribution entitlement, ASC products, physical-device matrix.
 
 ## Product Source Docs

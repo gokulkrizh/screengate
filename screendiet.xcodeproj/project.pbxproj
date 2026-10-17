@@ -18,6 +18,8 @@
 		557B52522EB659BD00E46D58 /* ShieldActionExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 557B52492EB659BD00E46D58 /* ShieldActionExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		557B53222EBA635800E46D58 /* DeviceActivity.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 557B53212EBA635800E46D58 /* DeviceActivity.framework */; };
 		557B532A2EBA635800E46D58 /* DeviceActivityMonitorExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 557B53202EBA635800E46D58 /* DeviceActivityMonitorExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		7EBAAA1F2662BF177BA0A7F2 /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 9F6ED9A392BF16FC7AA3B6F9 /* RevenueCatUI */; };
+		80AA5E8CEC8CCC238D64704F /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 369D41C3C811AD78CA89BA56 /* RevenueCat */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -101,7 +103,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		551538A02F08CD91008DABB6 /* Exceptions for "Shared" folder in "ShieldConfigurationExtension" target */ = {
+		551538A02F08CD91008DABB6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				DebugConfig.swift,
@@ -115,7 +117,7 @@
 			);
 			target = 557B52312EB6598000E46D58 /* ShieldConfigurationExtension */;
 		};
-		551538B32F08CD91008DABB6 /* Exceptions for "Shared" folder in "ScreenDietTests" target */ = {
+		551538B32F08CD91008DABB6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				DebugConfig.swift,
@@ -128,7 +130,7 @@
 			);
 			target = 551538B02F08CD91008DABB6 /* ScreenDietTests */;
 		};
-		551538C32F08CD91008DABB6 /* Exceptions for "Shared" folder in "NutritionReportExtension" target */ = {
+		551538C32F08CD91008DABB6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				DebugConfig.swift,
@@ -142,42 +144,42 @@
 			);
 			target = 551538C02F08CD91008DABB6 /* NutritionReportExtension */;
 		};
-		551538CE2F08CD91008DABB6 /* Exceptions for "NutritionReportExtension" folder in "NutritionReportExtension" target */ = {
+		551538CE2F08CD91008DABB6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = 551538C02F08CD91008DABB6 /* NutritionReportExtension */;
 		};
-		551538D72F08CD91008DABB6 /* Exceptions for "ScreenDietWidgets" folder in "ScreenDietWidgets" target */ = {
+		551538D72F08CD91008DABB6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = 551538D02F08CD91008DABB6 /* ScreenDietWidgets */;
 		};
-		557B52432EB6598000E46D58 /* Exceptions for "ShieldConfigurationExtension" folder in "ShieldConfigurationExtension" target */ = {
+		557B52432EB6598000E46D58 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = 557B52312EB6598000E46D58 /* ShieldConfigurationExtension */;
 		};
-		557B52532EB659BD00E46D58 /* Exceptions for "ShieldActionExtension" folder in "ShieldActionExtension" target */ = {
+		557B52532EB659BD00E46D58 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = 557B52482EB659BD00E46D58 /* ShieldActionExtension */;
 		};
-		557B532B2EBA635800E46D58 /* Exceptions for "DeviceActivityMonitorExtension" folder in "DeviceActivityMonitorExtension" target */ = {
+		557B532B2EBA635800E46D58 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
 			target = 557B531F2EBA635800E46D58 /* DeviceActivityMonitorExtension */;
 		};
-		557B53742EBA693F00E46D58 /* Exceptions for "Shared" folder in "screendiet" target */ = {
+		557B53742EBA693F00E46D58 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				DebugConfig.swift,
@@ -195,7 +197,7 @@
 			);
 			target = 557B516C2EB633C500E46D58 /* screendiet */;
 		};
-		557B53752EBA693F00E46D58 /* Exceptions for "Shared" folder in "ShieldActionExtension" target */ = {
+		557B53752EBA693F00E46D58 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				DebugConfig.swift,
@@ -212,14 +214,14 @@
 			);
 			target = 557B52482EB659BD00E46D58 /* ShieldActionExtension */;
 		};
-		557B53782EBA69FB00E46D58 /* Exceptions for "screengate" folder in "ShieldActionExtension" target */ = {
+		557B53782EBA69FB00E46D58 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				"Extensions/TimeInterval+Extensions.swift",
 			);
 			target = 557B52482EB659BD00E46D58 /* ShieldActionExtension */;
 		};
-		557B53792EBA69FB00E46D58 /* Exceptions for "screengate" folder in "DeviceActivityMonitorExtension" target */ = {
+		557B53792EBA69FB00E46D58 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				"Extensions/TimeInterval+Extensions.swift",
@@ -237,7 +239,7 @@
 		551538C22F08CD91008DABB6 /* NutritionReportExtension */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				551538CE2F08CD91008DABB6 /* Exceptions for "NutritionReportExtension" folder in "NutritionReportExtension" target */,
+				551538CE2F08CD91008DABB6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
 			);
 			path = NutritionReportExtension;
 			sourceTree = "<group>";
@@ -245,7 +247,7 @@
 		551538D22F08CD91008DABB6 /* ScreenDietWidgets */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				551538D72F08CD91008DABB6 /* Exceptions for "ScreenDietWidgets" folder in "ScreenDietWidgets" target */,
+				551538D72F08CD91008DABB6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
 			);
 			path = ScreenDietWidgets;
 			sourceTree = "<group>";
@@ -255,19 +257,11 @@
 			path = WidgetsShared;
 			sourceTree = "<group>";
 		};
-		557B516F2EB633C500E46D58 /* screengate */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				557B53782EBA69FB00E46D58 /* Exceptions for "screengate" folder in "ShieldActionExtension" target */,
-				557B53792EBA69FB00E46D58 /* Exceptions for "screengate" folder in "DeviceActivityMonitorExtension" target */,
-			);
-			path = screengate;
-			sourceTree = "<group>";
-		};
+		557B516F2EB633C500E46D58 /* screengate */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (557B53782EBA69FB00E46D58 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 557B53792EBA69FB00E46D58 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); path = screengate; sourceTree = "<group>"; };
 		557B52382EB6598000E46D58 /* ShieldConfigurationExtension */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				557B52432EB6598000E46D58 /* Exceptions for "ShieldConfigurationExtension" folder in "ShieldConfigurationExtension" target */,
+				557B52432EB6598000E46D58 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
 			);
 			path = ShieldConfigurationExtension;
 			sourceTree = "<group>";
@@ -275,7 +269,7 @@
 		557B524B2EB659BD00E46D58 /* ShieldActionExtension */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				557B52532EB659BD00E46D58 /* Exceptions for "ShieldActionExtension" folder in "ShieldActionExtension" target */,
+				557B52532EB659BD00E46D58 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
 			);
 			path = ShieldActionExtension;
 			sourceTree = "<group>";
@@ -283,23 +277,12 @@
 		557B53232EBA635800E46D58 /* DeviceActivityMonitorExtension */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				557B532B2EBA635800E46D58 /* Exceptions for "DeviceActivityMonitorExtension" folder in "DeviceActivityMonitorExtension" target */,
+				557B532B2EBA635800E46D58 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
 			);
 			path = DeviceActivityMonitorExtension;
 			sourceTree = "<group>";
 		};
-		557B535F2EBA65B900E46D58 /* Shared */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				557B53742EBA693F00E46D58 /* Exceptions for "Shared" folder in "screendiet" target */,
-				551538A02F08CD91008DABB6 /* Exceptions for "Shared" folder in "ShieldConfigurationExtension" target */,
-				557B53752EBA693F00E46D58 /* Exceptions for "Shared" folder in "ShieldActionExtension" target */,
-				551538C32F08CD91008DABB6 /* Exceptions for "Shared" folder in "NutritionReportExtension" target */,
-				551538B32F08CD91008DABB6 /* Exceptions for "Shared" folder in "ScreenDietTests" target */,
-			);
-			path = Shared;
-			sourceTree = "<group>";
-		};
+		557B535F2EBA65B900E46D58 /* Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (557B53742EBA693F00E46D58 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 551538A02F08CD91008DABB6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 557B53752EBA693F00E46D58 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 551538C32F08CD91008DABB6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, 551538B32F08CD91008DABB6 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); path = Shared; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -330,6 +313,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				551538552F05109D008DABB6 /* SuperwallKit in Frameworks */,
+				80AA5E8CEC8CCC238D64704F /* RevenueCat in Frameworks */,
+				7EBAAA1F2662BF177BA0A7F2 /* RevenueCatUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -500,6 +485,8 @@
 			name = screendiet;
 			packageProductDependencies = (
 				551538542F05109D008DABB6 /* SuperwallKit */,
+				369D41C3C811AD78CA89BA56 /* RevenueCat */,
+				9F6ED9A392BF16FC7AA3B6F9 /* RevenueCatUI */,
 			);
 			productName = screengate;
 			productReference = 557B516D2EB633C500E46D58 /* screendiet.app */;
@@ -616,6 +603,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				551538532F05109D008DABB6 /* XCRemoteSwiftPackageReference "Superwall-iOS" */,
+				3DA41C2744ADBDBAE5F262C2 /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 557B516E2EB633C500E46D58 /* Products */;
@@ -1355,6 +1343,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		3DA41C2744ADBDBAE5F262C2 /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.95.0;
+			};
+		};
 		551538532F05109D008DABB6 /* XCRemoteSwiftPackageReference "Superwall-iOS" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/superwall/Superwall-iOS";
@@ -1366,10 +1362,20 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		369D41C3C811AD78CA89BA56 /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3DA41C2744ADBDBAE5F262C2 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat;
+		};
 		551538542F05109D008DABB6 /* SuperwallKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 551538532F05109D008DABB6 /* XCRemoteSwiftPackageReference "Superwall-iOS" */;
 			productName = SuperwallKit;
+		};
+		9F6ED9A392BF16FC7AA3B6F9 /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3DA41C2744ADBDBAE5F262C2 /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCatUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

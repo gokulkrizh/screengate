@@ -1,11 +1,11 @@
 import Foundation
-import StoreKit
+import RevenueCat
 import Observation
+import WidgetKit
 
 // MARK: - Placements
 
-/// Superwall placements. Wire these in the dashboard when the paywall goes live;
-/// until then `EntitlementManager.presentPaywall` shows the local offer.
+/// RevenueCat placement identifiers; unmapped placements use the current offering.
 enum PaywallPlacement: String, Identifiable, CaseIterable {
     case onboardingComplete = "onboarding_complete"
     case featureNightFast = "feature_night_fast"
@@ -22,7 +22,7 @@ enum PaywallPlacement: String, Identifiable, CaseIterable {
 // MARK: - Manager
 
 /// Owns the premium entitlement: cached in `SharedState.isPremium`, verified
-/// against StoreKit 2, and (later) kept in sync with Superwall.
+/// against RevenueCat customer info.
 @Observable
 final class EntitlementManager {
 
@@ -34,6 +34,9 @@ final class EntitlementManager {
     ]
 
     private(set) var isPremium: Bool
+    private(set) var restoreError: String?
+    static let entitlementID = "premium"
+    @ObservationIgnored private var customerInfoTask: Task<Void, Never>?
 
     /// Non-nil while a paywall should be shown (observers present the sheet).
     var activePlacement: PaywallPlacement?
@@ -60,55 +63,56 @@ final class EntitlementManager {
     init() {
         self.isPremium = SharedStore.shared.load().isPremium
         self.showDowngradeNotice = UserDefaults.standard.bool(forKey: Self.downgradeNoticeKey)
+        configure()
     }
+
+    deinit { customerInfoTask?.cancel() }
 
     // MARK: Configuration
 
     /// Called once from the app entry point.
     func configure() {
-        // TODO(Superwall): when the dashboard + API key are ready:
-        //
-        //   Superwall.configure(apiKey: "<public key>")
-        //   Superwall.shared.$subscriptionStatus
-        //       .map { $0 == .active }
-        //       .sink { [weak self] active in self?.setPremium(active) }
-        //
-        // The rest of the app already reacts to `setPremium`, so nothing else changes.
-    }
-
-    /// Verify against StoreKit 2 (offline fallback; also covers restores).
-    func refreshEntitlements() async {
-        var premium = false
-        for await result in Transaction.currentEntitlements {
-            guard case .verified(let transaction) = result,
-                  transaction.revocationDate == nil else { continue }
-            if Self.productIDs.contains(transaction.productID) {
-                premium = true
+        guard customerInfoTask == nil else { return }
+        if !Purchases.isConfigured {
+            #if DEBUG
+            Purchases.logLevel = .debug
+            Purchases.configure(withAPIKey: "test_oTGyjylalkzwsGWPOxYslUCPxab")
+            #else
+            Purchases.configure(withAPIKey: "appl_DRCWtuohDsGappugOstXLneKbDQ")
+            #endif
+        }
+        customerInfoTask = Task { @MainActor [weak self] in
+            for await info in Purchases.shared.customerInfoStream {
+                guard !Task.isCancelled else { return }
+                self?.apply(info)
             }
         }
-        setPremium(premium)
     }
 
-    /// Stub purchase path. Superwall/StoreKit replaces this once products exist.
-    func purchase(_ productID: String) async -> Bool {
-        #if DEBUG
-        // Debug builds unlock premium so premium flows can be tested on device.
-        setPremium(true)
-        activePlacement = nil
-        return true
-        #else
-        // Products are not live yet — never grant premium for free in release.
-        return false
-        #endif
-    }
-
-    func restorePurchases() async {
+    /// Preserve cached access if a refresh fails, including while offline.
+    @MainActor
+    func refreshEntitlements() async {
         do {
-            try await AppStore.sync()
+            apply(try await Purchases.shared.customerInfo())
         } catch {
+            print("[EntitlementManager] Refresh failed: \(error)")
+        }
+    }
+
+    @MainActor
+    func apply(_ info: CustomerInfo) {
+        setPremium(info.entitlements[Self.entitlementID]?.isActive == true)
+    }
+
+    @MainActor
+    func restorePurchases() async {
+        restoreError = nil
+        do {
+            apply(try await Purchases.shared.restorePurchases())
+        } catch {
+            restoreError = "We couldn't restore purchases. Check your connection and try again."
             print("[EntitlementManager] Restore failed: \(error)")
         }
-        await refreshEntitlements()
     }
 
     // MARK: Entitlement
@@ -125,6 +129,7 @@ final class EntitlementManager {
         if wasPremium && !value {
             handleDowngrade()
         }
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     /// Debug-only override (Settings → Debug). Never compiled into release.
@@ -139,7 +144,6 @@ final class EntitlementManager {
 
     /// Show the paywall for a placement.
     func presentPaywall(_ placement: PaywallPlacement) {
-        // TODO(Superwall): Superwall.shared.register(placement: placement.rawValue)
         activePlacement = placement
     }
 

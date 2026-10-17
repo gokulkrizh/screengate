@@ -32,6 +32,10 @@ struct ScreenDietApp: App {
             .paywallPresenter()
             .environment(entitlementManager)
             .environment(dietManager)
+            .task { await entitlementManager.refreshEntitlements() }
+            .onChange(of: entitlementManager.isPremium) { _, _ in
+                dietManager.reloadState()
+            }
             .alert("You're back on the free plan", isPresented: Binding(
                 get: { entitlementManager.showDowngradeNotice },
                 set: { if !$0 { entitlementManager.acknowledgeDowngrade() } }
